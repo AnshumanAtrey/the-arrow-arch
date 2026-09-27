@@ -6,6 +6,7 @@ import { FlightBand, FlightPath } from "@/components/flight-path";
 import { HousePanel } from "@/components/house-panel";
 import { LedgerPanel } from "@/components/ledger-panel";
 import { NowStrip } from "@/components/now-strip";
+import { PromptBlock } from "@/components/prompt-block";
 import { Activity, MetricsStrip, ProfilePanel, Section, TaskForm, TaskList } from "@/components/panels";
 import { usePoll, type Payload } from "@/lib/client";
 import { flightOf } from "@/lib/flight";
@@ -25,13 +26,18 @@ export default function ProjectPage() {
 
   return (
     <div>
-      <p className="text-[13px] text-ink-3">
+      {focus && (
+        <div className="mb-6">
+          <PromptBlock taskId={focus.taskId} text={focus.text} href={`/p/${id}/t/${focus.taskId}`} />
+        </div>
+      )}
+      <p className="break-all text-[13px] text-ink-3">
         <span className="font-mono">{s.repoUrl}</span>
         {s.repo && <span className="ml-3 font-mono">{s.repo.branch} @ {s.repo.head.slice(0, 7)}</span>}
       </p>
       <h1 className="display mt-1 break-words text-[34px] sm:text-[46px]">{s.name}</h1>
 
-      <FlightBand caption={focus && s.stage === "ready" ? <><span className="font-mono text-ink-2">{focus.taskId}</span> {focus.spec?.title ?? focus.text}</> : undefined}>
+      <FlightBand caption={focus && s.stage === "ready" ? <><span className="font-mono text-ink-2">{focus.taskId}</span> {focus.spec?.title ?? "The project manager is writing the spec"}</> : undefined}>
         <FlightPath flight={flight} />
       </FlightBand>
 

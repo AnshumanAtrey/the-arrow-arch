@@ -6,6 +6,7 @@ import { NeedsYou } from "@/components/decisions";
 import { FinalReportCard } from "@/components/final-report";
 import { FlightBand, FlightPath } from "@/components/flight-path";
 import { NowStrip } from "@/components/now-strip";
+import { PromptBlock } from "@/components/prompt-block";
 import { Section } from "@/components/panels";
 import { TaskNumbersCard } from "@/components/task-numbers";
 import { TaskTree } from "@/components/task-tree";
@@ -29,8 +30,10 @@ export default function TaskPage() {
       <Link href={`/p/${id}`} className="text-[13px] text-ink-2 underline decoration-rule-strong underline-offset-4 hover:text-ink">
         {s.name}
       </Link>
-      <h1 className="display mt-2 text-[30px] sm:text-[40px]">{t.spec?.title ?? t.text}</h1>
-      <p className="measure mt-2 text-[14px] text-ink-3">{tid}, sent as: “{t.text}”</p>
+      <div className="mt-3">
+        <PromptBlock taskId={tid} text={t.text} />
+      </div>
+      <h1 className="display mt-6 text-[30px] sm:text-[40px]">{t.spec?.title ?? "The project manager is reading it"}</h1>
 
       <FlightBand>
         <FlightPath flight={flightOf(s, t)} />
