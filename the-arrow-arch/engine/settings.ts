@@ -24,10 +24,14 @@ export type Provider = keyof typeof PROVIDERS;
 
 export const KEY_NAMES = ["BOB_API_KEY", "ANTHROPIC_API_KEY", "DEEPSEEK_API_KEY", "MOONSHOT_API_KEY", "DASHSCOPE_API_KEY"] as const;
 
+export const EFFORTS = ["", "low", "medium", "high", "xhigh", "max"] as const;
 const RoleCfg = z.object({
   harness: z.enum(HARNESSES),
+  // the command that starts the harness — use your own wrapper to pick a logged-in session (claude, claude1)
+  command: z.string().trim().regex(/^[\w./-]*$/, "A command name or path, no spaces or flags").max(200).default(""),
   provider: z.enum(Object.keys(PROVIDERS) as [Provider, ...Provider[]]).default("anthropic"),
-  model: z.string().trim().max(100).default(""),
+  model: z.string().trim().regex(/^[\w.:-]*$/).max(100).default(""),
+  effort: z.enum(EFFORTS).default(""),
   baseUrl: z.string().trim().max(300).default(""), // override the provider's endpoint
 });
 export type RoleCfg = z.infer<typeof RoleCfg>;
@@ -46,7 +50,7 @@ export const Settings = z.object({
 });
 export type Settings = z.infer<typeof Settings>;
 
-const role = (harness: Harness): RoleCfg => ({ harness, provider: "anthropic", model: "", baseUrl: "" });
+const role = (harness: Harness): RoleCfg => ({ harness, command: "", provider: "anthropic", model: "", effort: "", baseUrl: "" });
 export const DEFAULT_SETTINGS: Settings = {
   roles: { onboarder: role("bob"), pm: role("bob"), architect: role("bob"), worker: role("bob") },
   keys: {},

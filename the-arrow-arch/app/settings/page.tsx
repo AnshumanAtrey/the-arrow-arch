@@ -11,7 +11,7 @@ const roleWords: Record<RoleName, [string, string]> = {
   architect: ["Architect", "splits the spec into packets"],
   worker: ["Workers", "build one packet each, in parallel"],
 };
-const harnessWords: Record<Harness, string> = { bob: "IBM Bob Shell", claude: "Claude Code (your local login)", mock: "Mock — no model, for trying the flow" };
+const harnessWords: Record<Harness, string> = { bob: "IBM Bob Shell", claude: "Claude Code (a logged-in session)", mock: "Mock — no model, for trying the flow" };
 
 export default function SettingsPage() {
   const [view, setView] = useState<View | null>(null);
@@ -75,6 +75,26 @@ export default function SettingsPage() {
               >
                 {(Object.keys(harnessWords) as Harness[]).map((h) => <option key={h} value={h}>{harnessWords[h]}</option>)}
               </select>
+              {roles[r].harness === "claude" && (
+                <div className="flex flex-wrap gap-2 sm:col-span-2">
+                  <label className="text-[13px] text-ink-3">
+                    Command (your logged-in session)
+                    <input value={roles[r].command} placeholder="claude" onChange={(e) => setRoles({ ...roles, [r]: { ...roles[r], command: e.target.value } })} className="mt-1 block w-40 rounded-md border border-rule bg-panel px-2 py-1.5 font-mono text-[13px] text-ink" />
+                  </label>
+                  <label className="text-[13px] text-ink-3">
+                    Model
+                    <select value={roles[r].model} onChange={(e) => setRoles({ ...roles, [r]: { ...roles[r], model: e.target.value } })} className="mt-1 block rounded-md border border-rule bg-panel px-2 py-1.5 text-[13px] text-ink">
+                      {[["", "session default"], ["haiku", "Haiku (fastest)"], ["sonnet", "Sonnet"], ["opus", "Opus"], ["fable", "Fable"]].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                    </select>
+                  </label>
+                  <label className="text-[13px] text-ink-3">
+                    Effort
+                    <select value={roles[r].effort} onChange={(e) => setRoles({ ...roles, [r]: { ...roles[r], effort: e.target.value as Settings["roles"]["pm"]["effort"] } })} className="mt-1 block rounded-md border border-rule bg-panel px-2 py-1.5 text-[13px] text-ink">
+                      {["", "low", "medium", "high", "xhigh", "max"].map((v) => <option key={v} value={v}>{v || "session default"}</option>)}
+                    </select>
+                  </label>
+                </div>
+              )}
             </li>
           ))}
         </ul>

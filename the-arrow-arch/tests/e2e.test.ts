@@ -132,10 +132,9 @@ describe("ledger", () => {
     await new Promise((r) => setTimeout(r, 200));
     const l = await refreshLedger(pid, project(pid, store.readEvents(pid)));
     expect(l.stale.some((x) => x.kind === "process" && x.pgid === orphan.pid)).toBe(true);
-    await new Promise((r) => setTimeout(r, 300));
-    let alive = true;
-    try { process.kill(orphan.pid!, 0); } catch { alive = false; }
-    expect(alive).toBe(false);
+    const alive = () => { try { process.kill(orphan.pid!, 0); return true; } catch { return false; } };
+    for (let i = 0; i < 30 && alive(); i++) await new Promise((r) => setTimeout(r, 100)); // SIGTERM lands within ~3s even under load
+    expect(alive()).toBe(false);
     expect(readLedger(pid)).not.toBeNull();
     expect(project(pid, store.readEvents(pid)).reaped.length).toBeGreaterThan(0);
   });

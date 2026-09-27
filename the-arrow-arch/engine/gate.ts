@@ -75,14 +75,14 @@ export function planGate(taskId: string, plan: Plan, spec: Spec, rules: Rule[], 
         });
     }
   }
-  // the architect's own read of which rules the plan leans on
+  // the architect's own read of each rule: respecting one is a note, bending one is the human's call
   for (const ri of plan.rulesImpact) {
     const r = byId.get(ri.ruleId);
     items.push({
-      level: r?.criticality === "critical" ? "critical" : "warning",
+      level: !ri.conflict ? "ok" : r?.criticality === "critical" ? "critical" : "warning",
       ruleId: ri.ruleId,
       title: r?.text ?? ri.ruleId,
-      detail: ri.impact,
+      detail: ri.conflict ? `The plan bends this rule: ${ri.impact}` : ri.impact,
     });
   }
   // new libraries are shown, so approving the plan is approving them
@@ -92,8 +92,8 @@ export function planGate(taskId: string, plan: Plan, spec: Spec, rules: Rule[], 
         items.push({ level: "warning", title: `${p.id} adds the library ${d}`, detail: `Approving this plan approves adding ${d}.`, suggestion: "Stop if the team would rather build it without a new dependency." });
   if (spec.risk === "high")
     items.push({ level: "warning", title: "High-risk change", detail: "The project manager rated this task high risk." });
-  if (!items.length)
-    items.push({ level: "ok", title: "No company rule is affected", detail: `${plan.packets.length} packet(s), all inside allowed paths.` });
+  if (!items.some((i) => i.level !== "ok"))
+    items.push({ level: "ok", title: "No company rule is bent", detail: `${plan.packets.length} packet(s), all inside allowed paths.` });
 
   items.sort((a, b) => rank[a.level] - rank[b.level]);
   return {

@@ -60,7 +60,9 @@ packet fails and comes back to you:
 
 ## Rules and the plan check
 
-List in `rulesImpact` every company rule the plan leans on and how. Stay out
+List in `rulesImpact` every company rule the plan leans on and how. Set
+`conflict: true` only where the plan would bend or break the rule — that stops
+the plan for the human; respecting a rule is just a note. Stay out
 of critical rules' protected paths unless the task truly requires it — Arrow
 will stop the plan for the human if a packet may touch one. In `advice`, say
 `continue` or `stop` for the human in one plain sentence, with what to do.

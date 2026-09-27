@@ -20,19 +20,27 @@ you write one result file.
    For each rule:
    - `criticality: critical` when breaking it could hurt data, money, security,
      production, customers or legal standing, or would be expensive to undo.
-     Everything else is `normal`. Do not inflate: a naming convention is normal.
-   - `protectedPaths`: the globs no change may touch while the rule stands
-     (e.g. `db/migrations/**` for "never edit an applied migration"). Only for
-     rules that genuinely protect files; leave empty otherwise.
+     Everything else is `normal`. Do not inflate: naming, folder layout, test
+     placement and code style are `normal`.
+   - `protectedPaths`: ONLY for rules that forbid changing files that exist
+     (e.g. `db/migrations/**` for "never edit an applied migration",
+     `vendor/**` for "never modify vendored code"). A rule that says where code
+     SHOULD go ("logic lives in src/", "tests go in tests/") is never a protected
+     path — protecting it would stop all work there. When unsure, leave it empty.
 6. **Findings.** Check every rule against the repo as it is today:
    `ok`, `violated`, `conflict` (the rule clashes with how the repo or Arrow
    works) or `unclear`. Give the evidence you actually saw (a path, a count, a
-   command's output) and one concrete suggestion when it isn't `ok`.
+   command's output) and one concrete suggestion when it isn't `ok`. A rule the
+   repo doesn't contradict is `ok` — an empty or new folder doesn't break "code
+   lives there". `violated` needs something in the repo that actually breaks it.
 7. **Toolchain and versions.** The package manager and lockfile; the runtime
    versions the repo pins (.nvmrc, engines, .python-version); the installed
    version of each key library (from the lockfile). Workers code against these,
    not against memory. `commands.setup` is a plain install into the worktree
-   (`npm ci`, `bun install`, a venv + pip) — no Docker, no global installs.
+   (`npm ci`, `bun install`, a venv + pip) — no Docker, no global installs — and
+   only when there is something to install; no dependencies means no setup.
+   Name a lockfile only if it exists. A runtime's `name` is its executable
+   (`node`, `python3`, `bun`, `go`), so Arrow can check its version.
 8. **Environment variables.** The NAMES the repo expects (from .env.example and
    the code). Never read or copy a value.
 9. **Decisions.** Decision records the company already keeps (docs/adr, design

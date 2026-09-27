@@ -15,6 +15,21 @@ async function ok(cwd: string, ...args: string[]): Promise<string> {
   return r.out.trim();
 }
 
+const NOISE = [".arrow/", "node_modules/", ".venv/", "venv/", "__pycache__/", "*.pyc", ".pytest_cache/", ".next/", "dist/", "build/", "coverage/", ".DS_Store", "*.tsbuildinfo"];
+
+/** Files an install created that git would otherwise see as changes (a fresh lockfile, say): exclude them. */
+export async function excludeUntracked(wt: string) {
+  const r = await git(wt, "ls-files", "--others", "--exclude-standard", "--directory");
+  const created = r.out.split("\n").map((l) => l.trim()).filter(Boolean);
+  if (!created.length) return [];
+  const common = (await ok(wt, "rev-parse", "--git-common-dir")).trim();
+  const file = path.isAbsolute(common) ? path.join(common, "info", "exclude") : path.join(wt, common, "info", "exclude");
+  const have = fs.existsSync(file) ? fs.readFileSync(file, "utf8").split("\n") : [];
+  const add = created.filter((c) => !have.includes(`/${c}`));
+  if (add.length) fs.appendFileSync(file, `# created by setup\n${add.map((c) => `/${c}`).join("\n")}\n`);
+  return add;
+}
+
 const GITHUB = /^(https:\/\/github\.com\/|git@github\.com:)[\w.-]+\/[\w.-]+?(\.git)?\/?$/;
 
 /** Accept a GitHub URL or an absolute path to a local git repo. Anything else is refused. */
@@ -36,8 +51,9 @@ export async function clone(src: string, dest: string, branch?: string) {
   const args = ["clone", "--quiet", ...(branch ? ["--branch", branch] : []), "--", src, dest];
   const r = await run("git", args, { timeoutMs: 600_000 });
   if (r.code !== 0) throw new Error(r.out.trim().slice(-800) || "git clone failed");
-  // Arrow's own files (agent result files) never belong in a commit — in any worktree
-  fs.appendFileSync(path.join(dest, ".git", "info", "exclude"), "\n# arrow\n.arrow/\n");
+  // Arrow's own files and install/build noise never belong in a commit — in any worktree.
+  // (exclude only affects untracked files, so anything the repo tracks stays tracked)
+  fs.appendFileSync(path.join(dest, ".git", "info", "exclude"), `\n# arrow\n${NOISE.join("\n")}\n`);
   // nothing is ever pushed from Arrow's copy: fetch still works, push has nowhere to go
   await ok(dest, "config", "remote.origin.pushurl", "no-push://arrow-never-pushes");
   return { branch: await ok(dest, "rev-parse", "--abbrev-ref", "HEAD"), head: await ok(dest, "rev-parse", "HEAD") };

@@ -19,7 +19,8 @@ export const Rule = z.object({
   id: str,
   text: str,
   source: z.string().default("company rules"),
-  category: z.enum(["structure", "naming", "code", "testing", "security", "process", "other"]).default("other"),
+  // an unknown category is filed as "other" rather than failing the whole onboarding run
+  category: z.enum(["structure", "naming", "code", "testing", "security", "process", "other"]).catch("other").default("other"),
   criticality: z.enum(["critical", "normal"]),
   // globs a change may never touch while this rule stands, e.g. "db/migrations/**"
   protectedPaths: list(z.string()),
@@ -48,7 +49,7 @@ export const Profile = z.object({
   rules: list(Rule),
   findings: list(RuleFinding),
   // how Arrow itself is tuned for this repo: test command, parallelism, branch naming...
-  adaptations: list(z.object({ setting: str, value: str, why: z.string().default("") })),
+  adaptations: list(z.object({ setting: str, value: z.string().default(""), why: z.string().default("") })),
   // what a fresh worktree needs, and which versions code must be written against
   toolchain: z
     .object({
@@ -98,7 +99,7 @@ export const Packet = z.object({
   regression: list(z.string()),
   risk: z.enum(["low", "medium", "high"]).default("low"),
   // "refactor": behaviour-preserving, so its checks may already pass before the change
-  kind: z.enum(["change", "refactor"]).default("change"),
+  kind: z.enum(["change", "refactor"]).catch("change").default("change"),
   newDependencies: list(z.string()), // libraries this packet adds — shown at the plan check
   env: list(z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/)), // variables the worker needs, by name
 });
@@ -107,7 +108,8 @@ export const Plan = z.object({
   summary: str,
   modules: list(z.object({ id: str, title: str, context: z.string().default("") })),
   packets: z.array(Packet).min(1, "a plan needs at least one packet"),
-  rulesImpact: list(z.object({ ruleId: str, impact: str })),
+  // how the plan leans on each rule; `conflict` only when the plan would bend or break it
+  rulesImpact: list(z.object({ ruleId: str, impact: str, conflict: z.boolean().catch(false).default(false) })),
   advice: Recommendation,
 });
 

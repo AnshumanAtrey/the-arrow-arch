@@ -56,8 +56,13 @@ export const shell = (line: string, cwd: string, timeoutMs: number, env?: NodeJS
   run("/bin/sh", ["-c", line], { cwd, timeoutMs, env });
 
 const BASE_VARS = ["PATH", "HOME", "USER", "LOGNAME", "SHELL", "TERM", "COLORTERM", "LANG", "TMPDIR", "TZ"];
-/** The agent engines' own sign-in variables; everything else in your shell stays out. */
-const ENGINE_PREFIXES = (process.env.ARROW_AGENT_ENV_PREFIXES ?? "ANTHROPIC_,CLAUDE_,BOB_,BOBSHELL_")
+/**
+ * The agent engines' own sign-in variables; everything else in your shell stays out.
+ * Claude/Anthropic variables are deliberately NOT inherited: the command you pick
+ * (claude, claude1, ...) chooses the logged-in session, and a parent Claude Code
+ * session's variables would hijack it. A key reaches an agent only via Settings.
+ */
+const ENGINE_PREFIXES = (process.env.ARROW_AGENT_ENV_PREFIXES ?? "BOB_,BOBSHELL_")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);

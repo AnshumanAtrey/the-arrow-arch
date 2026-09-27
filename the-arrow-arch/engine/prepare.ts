@@ -42,6 +42,9 @@ export async function preparePacket(opts: {
         },
       };
     report.push(`PASS  ${profile.commands.setup}  (install)`);
+    // whatever the install created (node_modules, a new lockfile) is not the worker's change
+    const created = await git.excludeUntracked(wt);
+    if (created.length) report.push(`install created ${created.join(", ")} — kept out of commits`);
   }
 
   const baseline: Record<string, number> = {};

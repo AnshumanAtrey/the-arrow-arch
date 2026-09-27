@@ -128,7 +128,8 @@ function build(s: ProjectState, t: TaskView, now: number, house: HouseSettings, 
   const tid = t.taskId;
   const pks = t.order.map((id) => t.packets[id]);
   if (pks.length && pks.every((p) => p.status === "merged")) {
-    out.push({ kind: "land", taskId: tid });
+    // land only once every step of this task has finished (the last merge cleans up its worktree)
+    if (!runningJobs(s).some((j) => j.subject.startsWith(`${tid}:`))) out.push({ kind: "land", taskId: tid });
     return;
   }
 

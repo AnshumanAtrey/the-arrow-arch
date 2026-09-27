@@ -52,6 +52,8 @@ export function spawnLogged(
   return new Promise((resolve) => {
     const log = fs.createWriteStream(r.logFile, { flags: "a" });
     log.write(`$ ${cmd} ${args.map((a) => (a.length > 80 ? `<${a.length} chars>` : a)).join(" ")}\n`);
+    // exactly what the agent was told — the first thing to read when a result looks wrong
+    log.write(`\n----- prompt -----\n${r.prompt}\n----- output -----\n`);
     let tail = "";
     let buf = "";
     let timedOut = false;

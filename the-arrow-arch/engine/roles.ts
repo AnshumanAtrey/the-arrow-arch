@@ -108,13 +108,20 @@ async function runAgent<T>(o: {
   } catch (e) {
     return o.optional ? { exit, driver } : { failure: { class: "bad_output", message: `The result file is not valid JSON: ${(e as Error).message}` }, exit, driver };
   }
-  const parsed = o.schema.safeParse(raw);
+  const parsed = o.schema.safeParse(stripNulls(raw));
   if (!parsed.success) {
     if (o.optional) return { exit, driver };
     const why = parsed.error.issues.slice(0, 6).map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`).join("; ");
     return { failure: { class: "bad_output", message: `The result didn't match the required shape — ${why}` }, exit, driver };
   }
   return { result: parsed.data, exit, driver };
+}
+
+/** Models often write null for "nothing to say"; treat it as not given, so defaults apply. */
+function stripNulls(v: unknown): unknown {
+  if (Array.isArray(v)) return v.filter((x) => x !== null).map(stripNulls);
+  if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).filter(([, x]) => x !== null).map(([k, x]) => [k, stripNulls(x)]));
+  return v;
 }
 
 type Common = { jobId: string; logFile: string; feedback?: string; resume?: string; env: NodeJS.ProcessEnv; onSpawn?: (pid: number) => void };
@@ -182,7 +189,7 @@ const EXAMPLES = {
         kind: "change", newDependencies: [], env: [],
       },
     ],
-    rulesImpact: [{ ruleId: "R1", impact: "Needs a NEW migration file; no existing migration is edited." }],
+    rulesImpact: [{ ruleId: "R1", impact: "Needs a NEW migration file; no existing migration is edited.", conflict: false }],
     advice: { decision: "continue", reason: "The migration rule is respected — the plan only adds a file.", suggestions: [] },
   },
   report: { status: "implemented", summary: "Added the endpoint and three tests.", newFacts: ["Orders store money in paise."] },

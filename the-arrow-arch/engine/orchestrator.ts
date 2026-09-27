@@ -4,6 +4,8 @@
  * carries that out; every few seconds it rebuilds the ledger from what really
  * runs and reaps what's stale. It never plans and never writes product code.
  */
+import fs from "node:fs";
+import path from "node:path";
 import { decide, type Action } from "./decide";
 import { onboardingGate, planGate } from "./gate";
 import * as git from "./git";
@@ -84,6 +86,10 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
           input: { repoPath: repo, repoUrl: s.repoUrl, rulesText: s.rulesText, houseRules: HOUSE_RULES, houseDefaults: DEFAULTS },
         });
         if (r.result) {
+          // check the onboarder's claims against the repo: a named lockfile must exist
+          const tc = r.result.toolchain;
+          if (tc.lockfile && !fs.existsSync(path.join(repo, tc.lockfile))) tc.lockfile = undefined;
+          tc.runtimes = tc.runtimes.map((rt) => ({ ...rt, name: executableOf(rt.name) }));
           append(pid, { type: "profile.ready", profile: r.result });
           if (r.result.decisions.length)
             append(pid, { type: "knowledge.recorded", entries: r.result.decisions.map((d) => ({ kind: "decision" as const, text: d.why ? `${d.text} (${d.why})` : d.text, source: d.source || "onboarding" })) });
@@ -137,6 +143,16 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
     default:
       return runPacketStep(pid, s, a);
   }
+}
+
+/** "Node.js" -> "node": a runtime is checked by its executable. */
+function executableOf(name: string): string {
+  const n = name.toLowerCase().replace(/\s+/g, "");
+  if (/^node(\.?js)?$/.test(n)) return "node";
+  if (/^python\d?$/.test(n)) return "python3";
+  if (/^go(lang)?$/.test(n)) return "go";
+  if (/^(rust|cargo)$/.test(n)) return "cargo";
+  return n;
 }
 
 /** Does this machine have the runtimes the repo says it needs? Majors only; a mismatch is a note, not a stop. */

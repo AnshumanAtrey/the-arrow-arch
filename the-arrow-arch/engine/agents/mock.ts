@@ -185,7 +185,7 @@ function architect({ taskId, spec, profile }: ArchitectInput): Plan {
     summary: `Three packets: two independent ones run side by side, then one that depends on both. (Mock architect.)`,
     modules: [{ id: "M1", title: spec.title, context: spec.intent }],
     packets,
-    rulesImpact: guarded ? [{ ruleId: guarded.id, impact: `P2 writes inside ${guarded.protectedPaths[0]}, which this rule protects.` }] : [],
+    rulesImpact: guarded ? [{ ruleId: guarded.id, impact: `P2 writes inside ${guarded.protectedPaths[0]}, which this rule protects.`, conflict: true }] : [],
     advice: guarded
       ? { decision: "stop", reason: `The task reaches into a protected area (${guarded.protectedPaths[0]}).`, suggestions: ["Confirm this change is intended, or reword the task to stay outside the protected path."] }
       : { decision: "continue", reason: "Every packet stays inside allowed paths.", suggestions: [] },
