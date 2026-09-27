@@ -52,7 +52,7 @@ nothing pushed. The research behind them: `../dataset/problem_categories/`.
 
 ```
 engine/    orchestrator, loop manager (decide.ts), ledger, checks, git, agent adapters
-prompts/   the five role prompts
+prompts/   the six role prompts
 app/       Next.js UI + API routes     components/  UI pieces
 tests/     bun test — unit + end-to-end on a throwaway repo
 ```
@@ -61,6 +61,6 @@ Data lives in `.arrow-data/` (git-ignored): one event log per repo, the clone,
 worktrees, agent transcripts, `settings.json`.
 
 ```sh
-bun test               # 52 tests
+bun test               # 55 tests
 bunx tsc --noEmit      # typecheck
 ```
