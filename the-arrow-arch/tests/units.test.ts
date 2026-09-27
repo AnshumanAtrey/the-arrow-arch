@@ -15,6 +15,8 @@ import { ledgerBrief } from "../engine/ledger";
 import { acceptanceCounts } from "../lib/tree";
 import { fromThisSite } from "../lib/same-site";
 import { runnableCommands } from "../engine/commands";
+import { spend } from "../engine/metrics";
+import { addsProblem } from "../engine/orchestrator";
 import type { ArrowEvent, JobView, Plan, Profile, Spec } from "../engine/types";
 import { z } from "zod";
 
@@ -97,7 +99,7 @@ describe("rules gate", () => {
   });
   const spec: Spec = { title: "t", intent: "i", methodology: { mode: "one_shot", why: "w" }, acceptance: [{ id: "A1", statement: "s", check: "c" }], outOfScope: [], risk: "low", questions: [], rulesTouched: [] };
   const plan = (files: string[]): Plan => ({
-    summary: "s", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [],
+    summary: "s", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [], acceptanceAdds: [],
     packets: [{ id: "P1", module: "M1", title: "t", objective: "o", context: "", files, deps: [], verification: ["true"], regression: [], risk: "low", kind: "change", newDependencies: [], env: [] }],
   });
   test("a packet that may touch a protected path turns the plan red — computed, not judged", () => {
@@ -127,7 +129,7 @@ describe("rules gate", () => {
 
 describe("plan sanity", () => {
   const pk = (id: string, deps: string[] = []) => ({ id, module: "M1", title: "t", objective: "o", context: "", files: ["a"], deps, verification: ["true"], regression: [], risk: "low" as const, kind: "change" as const, newDependencies: [], env: [] });
-  const plan = (packets: ReturnType<typeof pk>[]): Plan => ({ summary: "s", modules: [], packets, rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [] });
+  const plan = (packets: ReturnType<typeof pk>[]): Plan => ({ summary: "s", modules: [], packets, rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [], acceptanceAdds: [] });
   test("catches duplicate ids, missing deps and cycles", () => {
     expect(planProblem(plan([pk("P1"), pk("P1")]))).toContain("twice");
     expect(planProblem(plan([pk("P1", ["P9"])]))).toContain("P9");
@@ -140,7 +142,7 @@ describe("projection", () => {
   test("provider outages don't count as attempts", () => {
     const ev = (e: object) => ({ at, ...e }) as ArrowEvent;
     const plan: Plan = {
-      summary: "s", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [],
+      summary: "s", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [], acceptanceAdds: [],
       packets: [{ id: "P1", module: "M1", title: "t", objective: "o", context: "", files: ["a"], deps: [], verification: ["true"], regression: [], risk: "low", kind: "change", newDependencies: [], env: [] }],
     };
     const s = project("p", [
@@ -233,7 +235,7 @@ describe("agent transcripts", () => {
 
 describe("the task's timeline", () => {
   const pk = (id: string, deps: string[] = []) => ({ id, module: "M1", title: id, objective: "o", context: "", files: [`${id}.ts`], deps, verification: ["true"], regression: [], risk: "low" as const, kind: "change" as const, newDependencies: [], env: [] });
-  const plan: Plan = { summary: "s", modules: [], packets: [pk("P1")], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [] };
+  const plan: Plan = { summary: "s", modules: [], packets: [pk("P1")], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [], acceptanceAdds: [] };
   const base: ArrowEvent[] = [
     { type: "project.created", at, name: "n", repoUrl: "/r", rulesText: "" },
     { type: "task.submitted", at, taskId: "T1", text: "Build it" },
@@ -262,7 +264,7 @@ describe("the task's timeline", () => {
 
 describe("sending a check back", () => {
   const plan: Plan = {
-    summary: "first try", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [],
+    summary: "first try", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [], acceptanceAdds: [],
     packets: [{ id: "P1", module: "M1", title: "t", objective: "o", context: "", files: ["a.ts"], deps: [], verification: ["true"], regression: [], risk: "low", kind: "change", newDependencies: [], env: [] }],
   };
   const spec: Spec = { title: "t", intent: "i", methodology: { mode: "one_shot", why: "w" }, acceptance: [{ id: "A1", statement: "s", check: "true" }], outOfScope: [], risk: "low", questions: [], rulesTouched: [] };
@@ -341,6 +343,41 @@ describe("profile commands", () => {
       test: "cd repos/a && python3 -m pytest -q && echo ok",
       lint: "",
     })).toEqual({ test: "cd repos/a && python3 -m pytest -q && echo ok" });
+  });
+});
+
+describe("what the agents cost", () => {
+  const j = (sessionId: string | undefined, cost: number, costUnit: "usd" | "bobcoins") => ({ jobId: `${sessionId}-${cost}`, role: "worker", subject: "T1:P1:work", attempt: 1, driver: "bob", startedAt: at, sessionId, cost, costUnit }) as JobView;
+  test("Bob reports a session's running total: a resumed session counts once, at its largest; other sessions add up", () => {
+    // onboarding 2.67, then resumed after a send-back: Bob says 3.37 for the whole session, not 3.37 more
+    expect(spend([j("s1", 2.67, "bobcoins"), j("s1", 3.37, "bobcoins"), j("s2", 1.78, "bobcoins"), j("s3", 1.96, "bobcoins")])).toEqual({ usd: 0, bobcoins: 7.11 });
+  });
+  test("per-run costs (Claude) still add up", () => {
+    expect(spend([j("c1", 0.15, "usd"), j("c1", 0.1, "usd")])).toEqual({ usd: 0.25, bobcoins: 0 });
+  });
+});
+
+describe("the architect cross-checks the spec", () => {
+  const spec: Spec = { title: "t", intent: "i", methodology: { mode: "one_shot", why: "w" }, acceptance: [{ id: "A1", statement: "Valid categories", check: "true" }], outOfScope: [], risk: "low", questions: [], rulesTouched: [] };
+  const pk = { id: "P1", module: "M1", title: "t", objective: "o", context: "", files: ["a.ts"], deps: [], verification: ["true"], regression: [], risk: "low" as const, kind: "change" as const, newDependencies: [], env: [] };
+  const plan = (adds: { id: string; statement: string; check: string }[]): Plan => ({ summary: "s", modules: [], packets: [pk], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [], acceptanceAdds: adds });
+  const base: ArrowEvent[] = [
+    { type: "project.created", at, name: "n", repoUrl: "/r", rulesText: "" },
+    { type: "task.submitted", at, taskId: "T1", text: "Build it" },
+    { type: "spec.ready", at, taskId: "T1", spec },
+  ];
+  test("its stricter checks join the spec beside the project manager's; a new plan's replace the old plan's", () => {
+    const x1 = { id: "X1", statement: "At most 3 categories", check: "test $(jq '.categories|length' a.json) -le 3" };
+    let s = project("p", [...base, { type: "plan.ready", at, taskId: "T1", plan: plan([x1]), branch: "arrow/t1", base: "abc" }]);
+    expect(s.tasks.T1.spec!.acceptance.map((a) => [a.id, a.by])).toEqual([["A1", undefined], ["X1", "architect"]]);
+    const x2 = { id: "X2", statement: "Runs once on its example input", check: "python3 main.py" };
+    s = project("p", [...base, { type: "plan.ready", at, taskId: "T1", plan: plan([x1]), branch: "arrow/t1", base: "abc" }, { type: "plan.ready", at, taskId: "T1", plan: plan([x2]), branch: "arrow/t1", base: "abc" }]);
+    expect(s.tasks.T1.spec!.acceptance.map((a) => a.id)).toEqual(["A1", "X2"]);
+  });
+  test("an added check may not take the project manager's id, or repeat one", () => {
+    expect(addsProblem(spec, [{ id: "A1" }])).toContain("A1");
+    expect(addsProblem(spec, [{ id: "X1" }, { id: "X1" }])).toContain("X1");
+    expect(addsProblem(spec, [{ id: "X1" }, { id: "X2" }])).toBeUndefined();
   });
 });
 

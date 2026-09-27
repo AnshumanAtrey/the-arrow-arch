@@ -71,6 +71,14 @@ export const Question = z.object({
   options: list(z.string()),
 });
 
+/** One "done means": what the person will see, and the command (or manual: step) that proves it. */
+export const AcceptanceItem = z.object({
+  id: str,
+  statement: str,
+  check: str,
+  by: z.enum(["pm", "architect"]).optional(), // the architect adds checks where the spec's are weaker than the rules
+});
+
 export const Spec = z.object({
   title: str,
   intent: str,
@@ -78,9 +86,7 @@ export const Spec = z.object({
     mode: z.enum(["one_shot", "phased", "iterative"]),
     why: str,
   }),
-  acceptance: z
-    .array(z.object({ id: str, statement: str, check: str }))
-    .min(1, "a spec needs at least one acceptance check"),
+  acceptance: z.array(AcceptanceItem).min(1, "a spec needs at least one acceptance check"),
   outOfScope: list(z.string()),
   risk: z.enum(["low", "medium", "high"]),
   questions: list(Question),
@@ -113,6 +119,9 @@ export const Plan = z.object({
   advice: Recommendation,
   // phased / iterative: what the later phases will do, in order; a person signs off before each is planned
   nextPhases: list(z.string()),
+  // the architect's cross-check of the spec: checks it adds where a rule is stricter than the spec's check,
+  // where nothing runs the finished thing, or where the workspace ships its own validator
+  acceptanceAdds: list(AcceptanceItem.omit({ by: true })),
 });
 
 /** A re-aimed packet, plus whatever was taken out of it — work is moved, never dropped. */
@@ -136,6 +145,10 @@ export const FinalReport = z.object({
     })
     .default({ how: "none", entry: "", command: "" }),
   criteria: list(z.object({ id: str, verdict: z.enum(["met", "not_met", "unsure"]).catch("unsure"), evidence: z.string().default("") })),
+  // the cross-check: every company rule against the finished work, not only the spec's own checks
+  rules: list(z.object({ ruleId: str, verdict: z.enum(["kept", "broken", "n/a"]).catch("n/a"), evidence: z.string().default("") })),
+  // what happened when the reviewer ran the finished thing once on its own example input
+  ran: z.string().default(""),
   forYou: list(z.string()), // what only a person can judge, and how to look
   notes: list(z.string()), //  shortcuts, gaps, anything the person should know before merging
 });

@@ -260,11 +260,15 @@ function finish(s: ProjectState, t: TaskView, now: number, house: HouseSettings,
       return;
     }
     const unmet = t.report.criteria.filter((c) => c.verdict === "not_met");
-    if (!unmet.length) {
+    const broken = (t.report.rules ?? []).filter((r) => r.verdict === "broken");
+    if (!unmet.length && !broken.length) {
       out.push({ kind: "land", taskId: tid });
       return;
     }
-    gaps = unmet.map((c) => `${c.id} (project manager's review): ${c.evidence}`);
+    gaps = [
+      ...unmet.map((c) => `${c.id} (project manager's review): ${c.evidence}`),
+      ...broken.map((r) => `Rule ${r.ruleId} is broken (project manager's review): ${r.evidence}`),
+    ];
     owner = report;
     why = "Every check passed, but the project manager's review says the spec isn't met";
   }

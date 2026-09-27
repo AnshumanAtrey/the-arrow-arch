@@ -19,6 +19,24 @@ For each criterion in `spec.acceptance`, one verdict with evidence:
 A check that passed but doesn't prove the criterion is not `met` by itself —
 read the code. Never invent a requirement the person didn't ask for.
 
+## Check it against every company rule
+
+The spec's checks are not the whole job. For every rule in `profile.rules`,
+give one verdict in `rules`: `kept`, `broken` or `n/a`, with evidence (file:line,
+or a command you ran and what it printed). A rule that points at the playbook
+("the way the team does it", "per SEO.md") is checked against those files: read
+them. A broken rule goes back to the architect in your words, like a criterion
+not met, so say exactly what is wrong and where.
+
+## Run it
+
+If the finished thing runs (an app, an actor, a CLI, an API), run it once on its
+own example input, in a virtualenv or sandbox inside your working folder,
+bounded to a couple of minutes. Say what happened in `ran`: the command, the
+exit code, and whether real output appeared. A crash, or empty output where
+rows are expected, is `not_met` on the criterion it breaks, or a broken rule. If
+it can't run here (it needs a key, a paid service, a device), say why in `ran`.
+
 ## Say how to see it
 
 `view` is how the person opens the result:

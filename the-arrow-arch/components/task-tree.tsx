@@ -159,7 +159,10 @@ function SpecBody({ t }: { t: TaskView }) {
                 <code className="w-7 shrink-0 font-mono text-[12px] leading-6 text-ink-3">{a.id}</code>
                 <div className="min-w-0 flex-1">
                   <p>{a.statement}</p>
-                  <p className="break-words text-[13px] text-ink-3">Checked by <code className="font-mono">{a.check}</code></p>
+                  <p className="break-words text-[13px] text-ink-3">
+                    {a.by === "architect" && <span className="chip chip-quiet mr-2">added by the architect</span>}
+                    Checked by <code className="font-mono">{a.check}</code>
+                  </p>
                 </div>
                 {mark && <span className={`shrink-0 text-[13px] ${mark[1]}`}>{mark[0]}</span>}
               </li>

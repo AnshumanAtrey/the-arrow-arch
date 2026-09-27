@@ -128,7 +128,7 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
           input: { taskId: a.taskId, task: t.text, spec: t.spec!, answers: t.answers ?? {}, profile: s.profile!, house, knowledge },
         });
         if (!r.result) return fromRun(r);
-        const problem = planProblem(r.result);
+        const problem = planProblem(r.result) ?? addsProblem(t.spec!, r.result.acceptanceAdds);
         if (problem) return { ...fromRun(r), ok: false, failure: { class: "bad_output", message: problem } };
         const branch = `arrow/${a.taskId.toLowerCase()}`;
         await git.ensureIntegration(repo); // tasks stack: this one starts on top of everything that landed
@@ -157,6 +157,14 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
     default:
       return runPacketStep(pid, s, a);
   }
+}
+
+/** The architect's added checks sit beside the project manager's: each needs its own id. */
+export function addsProblem(spec: NonNullable<ProjectState["tasks"][string]["spec"]>, adds: { id: string }[]): string | undefined {
+  const taken = new Set(spec.acceptance.filter((a) => a.by !== "architect").map((a) => a.id));
+  const ids = adds.map((a) => a.id);
+  const clash = ids.find((id, i) => taken.has(id) || ids.indexOf(id) !== i);
+  return clash ? `Added check ${clash} reuses an id already in the spec — number your additions X1, X2, ...` : undefined;
 }
 
 /** A check that was sent back opens again under a new id: plan-T1, then plan-T1-2. */

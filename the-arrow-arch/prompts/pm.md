@@ -22,6 +22,23 @@ You do not plan files or write code.
   command too (`grep -q '<button' index.html`, `test -f`). Keep `manual:` for
   what truly needs eyes or hands — how it looks, how it feels on a phone. A
   spec where every check is `manual:` proves nothing; Arrow will say so.
+  **As strict as the rule.** When a company rule or the playbook states a limit,
+  the check tests that exact limit: "at most 3 categories" is a count `<= 3`,
+  not "every category is a valid name". A check weaker than its rule passes
+  work the team would reject.
+  **Run the finished thing.** When the task delivers something that runs (an
+  app, an actor, a CLI, an API), one criterion runs it once on its own example
+  input and requires real output (rows, a 200, a written file), not only that
+  its files exist. If you can't know the exact command yet, write `manual:` and
+  what the run must prove; the architect adds the command.
+  **Every step in the request.** A step the person named (clone this, study
+  that, research the market) becomes a criterion, or goes in `outOfScope` with
+  why. Research the rules or the playbook require (competitor prices, a market
+  check) is a criterion whose check proves it happened: a file in the work that
+  records the sources and the numbers.
+  **The workspace's own checks.** If the repo or its playbook ships a validator
+  (a check script, a pre-publish checklist with a command), running it is a
+  criterion.
 - **methodology** — pick one and say why in a line:
   - `one_shot` — one clear outcome; plan once, build in parallel, land.
   - `phased` — several outcomes where later ones build on earlier ones; land

@@ -93,6 +93,15 @@ export function planGate(taskId: string, plan: Plan, spec: Spec, rules: Rule[], 
         items.push({ level: "warning", title: `${p.id} adds the library ${d}`, detail: `Approving this plan approves adding ${d}.`, suggestion: "Stop if the team would rather build it without a new dependency." });
   if (spec.risk === "high")
     items.push({ level: "warning", title: "High-risk change", detail: "The project manager rated this task high risk." });
+  // the architect's cross-check of the spec: shown, so approving the plan is approving the stricter spec
+  const adds = plan.acceptanceAdds ?? [];
+  if (adds.length)
+    items.push({
+      level: "warning",
+      title: `The architect added ${adds.length} check${adds.length === 1 ? "" : "s"} to the spec`,
+      detail: adds.map((a) => `${a.id}: ${a.statement} (${a.check})`).join("; "),
+      suggestion: "These run before it lands, next to the project manager's. Send the plan back if one is wrong.",
+    });
   if (!items.some((i) => i.level !== "ok"))
     items.push({ level: "ok", title: "No company rule is bent", detail: `${plan.packets.length} packet(s), all inside allowed paths.` });
 

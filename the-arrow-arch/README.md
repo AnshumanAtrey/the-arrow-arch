@@ -49,6 +49,14 @@ A paused step resumes with your instructions. Each task page is one tree —
 project manager, architect, every packet, every run — and any run opens to the
 exact prompt it was given and each step it took.
 
+**Every role checks the one before it.** The architect cross-checks the
+project manager's spec against the company rules and playbook before planning:
+where a check is weaker than its rule, nothing runs the finished thing, or the
+repo ships its own validator, it adds a stricter check (shown at the plan check).
+Before landing, the project manager runs the finished thing once and gives every
+company rule a verdict; a broken rule goes back to the architect like an unmet
+criterion.
+
 **House rules** (defaults, changeable per company at onboarding): files 300 lines,
 cap 500 · no new markdown files · no TODO placeholders · no secrets · new
 dependencies need approval · 400 changed lines per packet · typecheck and lint on
@@ -68,6 +76,6 @@ Data lives in `.arrow-data/` (git-ignored): one event log per repo, the clone,
 worktrees, agent transcripts, `settings.json`.
 
 ```sh
-bun test               # 96 tests
+bun test               # 102 tests
 bunx tsc --noEmit      # typecheck
 ```

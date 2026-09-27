@@ -39,7 +39,9 @@ export default function TaskPage() {
         <FlightPath flight={flightOf(s, t)} />
       </FlightBand>
 
-      {t.report && <FinalReportCard t={t} preview={data.preview} repoPath={s.repo?.path} setup={s.profile?.commands.setup} />}
+      {t.report && (
+        <FinalReportCard t={t} preview={data.preview} repoPath={s.repo?.path} setup={s.profile?.commands.setup} ruleText={Object.fromEntries((s.profile?.rules ?? []).map((r) => [r.id, r.text]))} />
+      )}
 
       {data.numbers[tid] && (
         <div className="mt-4">

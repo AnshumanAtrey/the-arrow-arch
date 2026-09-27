@@ -2,7 +2,25 @@
  * The numbers that say whether the one-shot bet is paying off — computed from
  * the event log, never from a counter anyone can reset.
  */
-import type { ProjectState } from "./types";
+import type { JobView, ProjectState } from "./types";
+
+/**
+ * What the agents cost. Bob reports a session's running total, so a resumed
+ * session's later run already includes the earlier ones: each Bob session counts
+ * once, at its largest total. Other engines report what each run cost.
+ */
+export function spend(jobs: JobView[]): { usd: number; bobcoins: number } {
+  const sessions = new Map<string, number>();
+  let usd = 0;
+  let bobcoins = 0;
+  for (const j of jobs) {
+    if (j.costUnit === "usd") usd += j.cost ?? 0;
+    else if (j.costUnit === "bobcoins" && j.sessionId) sessions.set(j.sessionId, Math.max(sessions.get(j.sessionId) ?? 0, j.cost ?? 0));
+    else if (j.costUnit === "bobcoins") bobcoins += j.cost ?? 0;
+  }
+  for (const c of sessions.values()) bobcoins += c;
+  return { usd: round(usd), bobcoins: round(bobcoins) };
+}
 
 export type Metrics = {
   packets: number;
@@ -39,10 +57,7 @@ export function metrics(s: ProjectState): Metrics {
     parked: Object.keys(s.parked).length,
     agentMinutes: Math.round(finished.reduce((n, j) => n + (j.durationMs ?? 0), 0) / 6000) / 10,
     tokens: finished.reduce((n, j) => n + (j.tokens?.total ?? 0), 0),
-    cost: {
-      usd: round(finished.filter((j) => j.costUnit === "usd").reduce((n, j) => n + (j.cost ?? 0), 0)),
-      bobcoins: round(finished.filter((j) => j.costUnit === "bobcoins").reduce((n, j) => n + (j.cost ?? 0), 0)),
-    },
+    cost: spend(finished),
   };
 }
 
@@ -80,10 +95,7 @@ export function taskNumbers(s: ProjectState, taskId: string, events: { type: str
     waitingOnYouMs: Math.max(0, waiting),
     agentMs: jobs.filter((j) => j.role !== "orchestrator").reduce((n, j) => n + (j.durationMs ?? 0), 0),
     tokens: jobs.reduce((n, j) => n + (j.tokens?.total ?? 0), 0),
-    cost: {
-      usd: round(jobs.filter((j) => j.costUnit === "usd").reduce((n, j) => n + (j.cost ?? 0), 0)),
-      bobcoins: round(jobs.filter((j) => j.costUnit === "bobcoins").reduce((n, j) => n + (j.cost ?? 0), 0)),
-    },
+    cost: spend(jobs),
     caught,
     done: Boolean(t.landed),
   };

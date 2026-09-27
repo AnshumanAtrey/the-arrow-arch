@@ -184,6 +184,7 @@ function architect({ taskId, spec, profile, phase }: ArchitectInput): Plan {
       rulesImpact: [],
       advice: { decision: "continue", reason: "Builds on what landed in the earlier phase.", suggestions: [] },
       nextPhases: phase.ahead.slice(1),
+      acceptanceAdds: [],
     };
   }
   const guarded = profile.rules.find((r) => r.criticality === "critical" && r.protectedPaths.length && spec.rulesTouched.includes(r.id));
@@ -206,16 +207,25 @@ function architect({ taskId, spec, profile, phase }: ArchitectInput): Plan {
       ? { decision: "stop", reason: `The task reaches into a protected area (${guarded.protectedPaths[0]}).`, suggestions: ["Confirm this change is intended, or reword the task to stay outside the protected path."] }
       : { decision: "continue", reason: "Every packet stays inside allowed paths.", suggestions: [] },
     nextPhases: spec.methodology.mode === "one_shot" ? [] : ["Finish what the first phase started"],
+    acceptanceAdds: [],
   };
 }
 
-/** The review: every criterion met — unless the task asks for a gap only a review would see ("#pmgap") and nothing closed it yet. */
-function report(cwd: string, { task, spec, packets }: ReportInput) {
-  const gap = task.includes("#pmgap") && !packets.some((p) => p.id === "PG1");
+/**
+ * The review: every criterion met and every rule kept — unless the task asks for a
+ * gap only a review would see ("#pmgap": a criterion; "#rulegap": a company rule)
+ * and no completion packet has closed it yet.
+ */
+function report(cwd: string, { task, spec, packets, profile }: ReportInput) {
+  const open = !packets.some((p) => p.id === "PG1");
+  const gap = task.includes("#pmgap") && open;
+  const ruleGap = task.includes("#rulegap") && open;
   return {
     summary: `${spec.title}. (Mock project manager.)`,
     view: fs.existsSync(path.join(cwd, "index.html")) ? { how: "page", entry: "index.html", command: "" } : { how: "none", entry: "", command: "" },
     criteria: spec.acceptance.map((c, i) => ({ id: c.id, verdict: gap && i === 0 ? "not_met" : "met", evidence: gap && i === 0 ? "No packet handles this yet." : `Checked by ${c.check}.` })),
+    rules: profile.rules.map((r, i) => ({ ruleId: r.id, verdict: ruleGap && i === 0 ? "broken" : "kept", evidence: ruleGap && i === 0 ? "The work does not follow this rule yet." : "Checked against the finished files." })),
+    ran: "",
     forYou: [],
     notes: [],
   };

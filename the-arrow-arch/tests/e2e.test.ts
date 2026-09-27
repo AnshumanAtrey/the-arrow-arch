@@ -225,6 +225,21 @@ describe("the final report", () => {
     expect(t.timeline.findIndex((x) => x.kind === "landed")).toBeGreaterThan(t.timeline.findLastIndex((x) => x.kind === "reported"));
   });
 
+  test("the review checks every company rule: a broken one goes back to the architect, then it is reviewed again", async () => {
+    const pid = start("- Components use PascalCase");
+    let s = await until(pid, (s) => Boolean(s.onboardingGateId));
+    store.append(pid, { type: "gate.decided", gateId: s.onboardingGateId!, decision: "approve" });
+    store.append(pid, { type: "task.submitted", taskId: "T1", text: "Add a helper. #rulegap" });
+    s = await until(pid, (s) => Boolean(s.tasks.T1?.planGateId));
+    store.append(pid, { type: "gate.decided", gateId: "plan-T1", decision: "approve" });
+    s = await until(pid, (s) => s.tasks.T1.stage === "landed");
+    const t = s.tasks.T1;
+    const rule = s.profile!.rules[0].id;
+    expect(t.timeline.filter((x) => x.kind === "reported").map((x) => x.kind === "reported" && x.unmet)).toEqual([[rule], []]);
+    expect(t.packets.PG1.origin?.reason).toContain(`Rule ${rule} is broken`);
+    expect(t.report?.rules.every((r) => r.verdict === "kept")).toBe(true);
+  });
+
   test("the finished work is served from git at the landed commit — files only, nothing outside the task", async () => {
     const { preview } = await import("../engine/preview");
     const pid = start("");

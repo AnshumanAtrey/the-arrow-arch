@@ -10,8 +10,11 @@ const verdictWords = {
  * The final output: the project manager's review of the finished task, and the
  * way to open it. What the person reads first, once the work is done.
  */
-export function FinalReportCard({ t, preview, repoPath, setup }: { t: TaskView; preview: string; repoPath?: string; setup?: string }) {
+export function FinalReportCard({ t, preview, repoPath, setup, ruleText }: { t: TaskView; preview: string; repoPath?: string; setup?: string; ruleText: Record<string, string> }) {
   const r = t.report!;
+  const rules = r.rules ?? []; // reviews from before the rules cross-check had none
+  const broken = rules.filter((x) => x.verdict === "broken");
+  const rest = rules.filter((x) => x.verdict !== "broken");
   const byId = new Map((t.spec?.acceptance ?? []).map((a) => [a.id, a]));
   const link = `${preview}/${t.taskId}/`;
   return (
@@ -35,6 +38,13 @@ export function FinalReportCard({ t, preview, repoPath, setup }: { t: TaskView; 
         {r.view.how === "none" && <p className="text-[14px] text-ink-2">There is nothing to open: this change is proven by its checks.</p>}
       </div>
 
+      {r.ran && (
+        <div className="mt-5 text-[14px]">
+          <p className="heading text-[15px]">It ran it</p>
+          <p className="measure mt-1 whitespace-pre-wrap text-ink-2">{r.ran}</p>
+        </div>
+      )}
+
       <h3 className="heading mt-6 text-[15px]">Done means, reviewed</h3>
       <ul className="mt-1.5 divide-y divide-rule border-y border-rule text-[14px]">
         {r.criteria.map((c) => {
@@ -51,6 +61,45 @@ export function FinalReportCard({ t, preview, repoPath, setup }: { t: TaskView; 
           );
         })}
       </ul>
+
+      {rules.length > 0 && (
+        <div className="mt-6 text-[14px]">
+          <h3 className="heading text-[15px]">
+            Company rules, checked <span className="font-normal text-ink-3">({rules.length - broken.length} of {rules.length} kept or not relevant)</span>
+          </h3>
+          {broken.length > 0 && (
+            <ul className="mt-1.5 divide-y divide-rule border-y border-rule">
+              {broken.map((x) => (
+                <li key={x.ruleId} className="flex gap-3 py-2">
+                  <code className="w-9 shrink-0 font-mono text-[12px] leading-6 text-ink-3">{x.ruleId}</code>
+                  <div className="min-w-0 flex-1">
+                    <p>{ruleText[x.ruleId] ?? x.ruleId}</p>
+                    <p className="break-words text-[13px] text-ink-3">{x.evidence}</p>
+                  </div>
+                  <span className="shrink-0 text-[13px] font-medium text-ink">Broken</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {rest.length > 0 && (
+            <details className="mt-2">
+              <summary className="cursor-pointer text-ink-2">Show the {rest.length} rule{rest.length === 1 ? "" : "s"} it kept</summary>
+              <ul className="mt-1.5 divide-y divide-rule border-y border-rule">
+                {rest.map((x) => (
+                  <li key={x.ruleId} className="flex gap-3 py-2">
+                    <code className="w-9 shrink-0 font-mono text-[12px] leading-6 text-ink-3">{x.ruleId}</code>
+                    <div className="min-w-0 flex-1">
+                      <p>{ruleText[x.ruleId] ?? x.ruleId}</p>
+                      {x.evidence && <p className="break-words text-[13px] text-ink-3">{x.evidence}</p>}
+                    </div>
+                    <span className="shrink-0 text-[13px] text-ink-3">{x.verdict === "kept" ? "Kept" : "Not relevant"}</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+        </div>
+      )}
 
       {r.forYou.length > 0 && (
         <div className="mt-4 rounded-sm bg-accent-soft px-4 py-3 text-[14px]">

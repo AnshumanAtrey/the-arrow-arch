@@ -215,12 +215,20 @@ const EXAMPLES = {
     rulesImpact: [{ ruleId: "R1", impact: "Needs a NEW migration file; no existing migration is edited.", conflict: false }],
     advice: { decision: "continue", reason: "The migration rule is respected — the plan only adds a file.", suggestions: [] },
     nextPhases: [],
+    acceptanceAdds: [
+      { id: "X1", statement: "One real refund runs end to end on the service's own example input and is recorded.", check: "bun run smoke:refund -- --order fixtures/order-1000.json | grep -q 'refunded 30000'" },
+    ],
   },
   report: { status: "implemented", summary: "Added the endpoint and three tests.", needsYou: "", newFacts: ["Orders store money in paise."] },
   finalReport: {
     summary: "Support can now refund part of an order from the order page; the receipt shows the refund as its own line.",
     view: { how: "server", entry: "/admin/orders", command: "bun run dev" },
     criteria: [{ id: "A1", verdict: "met", evidence: "apps/api/test/refunds.test.ts 'partial refund of 300 leaves 700 paid' passes in Arrow's run; receipt.tsx:41 renders refund lines." }],
+    rules: [
+      { ruleId: "R1", verdict: "kept", evidence: "A new migration db/migrations/042_refunds.sql; no applied migration was edited (git diff shows only the new file)." },
+      { ruleId: "R2", verdict: "broken", evidence: "apps/admin/components/refund-dialog.tsx is kebab-case; the rule wants PascalCase file names." },
+    ],
+    ran: "Ran `bun run dev` and refunded ₹300 of a ₹1,000 order at /admin/orders/1000: the receipt showed ₹700 paid and one refund line. Exit 0.",
     forYou: ["Open an order at /admin/orders, refund part of it, and check the receipt reads the way support expects."],
     notes: ["Refunds to a different payment method are out of scope, as the spec says."],
   },

@@ -106,6 +106,9 @@ export async function runPacketStep(pid: string, recorded: ProjectState, a: Pack
       // every "done means" gets a verdict; one left out is not quietly passed
       const missing = t.spec!.acceptance.filter((c) => !r.result!.criteria.some((x) => x.id === c.id)).map((c) => c.id);
       if (missing.length) return { ...fromRun(r), ok: false, failure: { class: "bad_output", message: `The review skipped ${missing.join(", ")} — judge every criterion.` } };
+      // the cross-check: every company rule gets a verdict, not only the spec's own checks
+      const unjudged = s.profile!.rules.filter((x) => !r.result!.rules.some((y) => y.ruleId === x.id)).map((x) => x.id);
+      if (unjudged.length) return { ...fromRun(r), ok: false, failure: { class: "bad_output", message: `The review skipped rules ${unjudged.join(", ")} — give every company rule a verdict: kept, broken or n/a.` } };
       append(pid, { type: "task.reported", taskId: a.taskId, report: r.result });
       return fromRun(r);
     }));

@@ -153,6 +153,12 @@ export function project(pid: string, events: ArrowEvent[]): ProjectState {
         // a copy: the fold adds packets to it later and must never change the event it read
         const plan = { ...e.plan, packets: [...e.plan.packets], nextPhases: [...(e.plan.nextPhases ?? [])] }; // logs from before phases had none
         Object.assign(t, { plan, branch: e.branch, base: e.base, phase: 1 });
+        // the architect's cross-check joins the spec; a new plan's checks replace an older plan's
+        if (t.spec)
+          t.spec = {
+            ...t.spec,
+            acceptance: [...t.spec.acceptance.filter((a) => a.by !== "architect"), ...(e.plan.acceptanceAdds ?? []).map((a) => ({ ...a, by: "architect" as const }))],
+          };
         delete s.humanNotes[subject.architect(e.taskId)];
         t.order = e.plan.packets.map((p) => p.id);
         t.packets = Object.fromEntries(
@@ -265,7 +271,7 @@ export function project(pid: string, events: ArrowEvent[]): ProjectState {
         break;
       case "task.reported":
         if (s.tasks[e.taskId]) s.tasks[e.taskId].report = e.report;
-        step(s.tasks[e.taskId], e.at, { kind: "reported", unmet: e.report.criteria.filter((c) => c.verdict === "not_met").map((c) => c.id) });
+        step(s.tasks[e.taskId], e.at, { kind: "reported", unmet: unmetOf(e.report) });
         break;
       case "task.landed":
         if (s.tasks[e.taskId]) s.tasks[e.taskId].landed = { branch: e.branch, head: e.head };
@@ -314,6 +320,12 @@ function taskStage(s: ProjectState, t: TaskView): TaskStage {
   if (!t.planGateId || s.gates[t.planGateId]?.decision !== "approve") return "plan_gate";
   return "building";
 }
+
+/** What the project manager's review found missing: criteria not met, and company rules the work breaks. */
+export const unmetOf = (r: NonNullable<TaskView["report"]>) => [
+  ...r.criteria.filter((c) => c.verdict === "not_met").map((c) => c.id),
+  ...(r.rules ?? []).filter((x) => x.verdict === "broken").map((x) => x.ruleId), // reviews from before the rules cross-check had none
+];
 
 /** Jobs still running (started, never finished). */
 export const runningJobs = (s: ProjectState) => Object.values(s.jobs).filter((j) => !j.finishedAt);
