@@ -4,7 +4,7 @@ import { stats as bobStats } from "../engine/agents/bob";
 import { stepPolicy } from "../engine/decide";
 import { classifyExit } from "../engine/failures";
 import { onboardingGate, planGate } from "../engine/gate";
-import { DEFAULTS } from "../engine/house-rules";
+import { DEFAULTS, effectiveSettings, HouseSettings } from "../engine/house-rules";
 import { matches, overlaps } from "../engine/glob";
 import { planProblem } from "../engine/orchestrator";
 import { project } from "../engine/project";
@@ -180,6 +180,21 @@ describe("schema hints", () => {
   test("every role's schema converts, and a hint never costs a run", () => {
     for (const s of [S.Profile, S.Spec, S.Plan, S.Packet, S.WorkerReport]) expect(() => allowedValues(s)).not.toThrow();
     expect(allowedValues(z.object({ a: z.string() }))).toEqual([]); // nothing closed, nothing to say
+  });
+});
+
+describe("house settings schema", () => {
+  test("a stored tests outcome that only names mayEditExisting keeps the new field's default", () => {
+    // onboarding wrote { mayEditExisting: true } before requireApprovalForNewSkips
+    // existed. Merged over the defaults it must still parse — a missing field
+    // would drop the company's whole tests setting, silently.
+    const h = effectiveSettings([{ id: "H-TESTS", outcome: "conflict", why: "", settings: { mayEditExisting: true } }], true);
+    expect(h.tests.mayEditExisting).toBe(true);
+    expect(h.tests.requireApprovalForNewSkips).toBe(true);
+    expect(DEFAULTS.tests.requireApprovalForNewSkips).toBe(true);
+    // the field's own default: a tests object that omits it parses, and reads as on
+    expect(HouseSettings.shape.tests.parse({ mayEditExisting: true }).requireApprovalForNewSkips).toBe(true);
+    expect(effectiveSettings([{ id: "H-TESTS", outcome: "replace", why: "", settings: { requireApprovalForNewSkips: false } }], true).tests.requireApprovalForNewSkips).toBe(false);
   });
 });
 
