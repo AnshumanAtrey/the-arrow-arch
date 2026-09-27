@@ -111,6 +111,8 @@ export const Plan = z.object({
   // how the plan leans on each rule; `conflict` only when the plan would bend or break it
   rulesImpact: list(z.object({ ruleId: str, impact: str, conflict: z.boolean().catch(false).default(false) })),
   advice: Recommendation,
+  // phased / iterative: what the later phases will do, in order; a person signs off before each is planned
+  nextPhases: list(z.string()),
 });
 
 /** A re-aimed packet, plus whatever was taken out of it — work is moved, never dropped. */
@@ -123,6 +125,8 @@ export const WorkerReport = z.object({
   status: z.enum(["implemented", "blocked"]),
   summary: z.string().default(""),
   blockedReason: z.string().optional(),
+  // blocked on something only a person can give (a key, access, a decision) — the packet waits for them
+  needsYou: z.string().default(""),
   newFacts: list(z.string()),
 });
 

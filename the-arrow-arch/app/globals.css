@@ -1,72 +1,78 @@
 @import "tailwindcss";
 
-/* Target colours, not SaaS pastels: fletching green = clear/landed, target red =
-   critical, target blue = in flight, bullseye gold = waiting on you. */
+/* White ground, ink text, one orange (walrus-zero's #FE5301). Orange means "you":
+   a gate to approve, a question, a paused step, a critical rule, a form error.
+   Whatever the crew is handling on its own stays ink and grey, so the only
+   orange on screen is the thing waiting for a person. Severity is intensity,
+   not hue: solid orange is a decision, an orange ring is waiting, grey is fine. */
 :root {
-  --paper: #f4f6f9;
-  --panel: #ffffff;
-  --ink: #1b2433;
-  --ink-2: #4a5568;
-  --ink-3: #6f7b8e;
-  --rule: #dce1e8;
-  --rule-strong: #b9c1cd;
-  --green: #1e8a5a;
-  --green-soft: #e3f3eb;
-  --red: #c8362d;
-  --red-soft: #fbe9e7;
-  --blue: #2b59d6;
-  --blue-soft: #e7edfc;
-  --gold: #e3ae12;
-  --gold-ink: #7d5c00;
-  --gold-soft: #fbf3d9;
+  --white: #ffffff;
+  --well: #f4f4f4;
+  --ink: #141417;
+  --ink-2: #4a4a50;
+  --ink-3: #737379;
+  --rule: #e7e7e8;
+  --rule-strong: #cfcfd2;
+  --accent: #fe5301;
+  --accent-deep: #d84600;
+  --accent-ink: #c94100; /* orange that passes 4.5:1 as text on white */
+  --accent-soft: #fff2eb;
+  --accent-line: #ffd2bc;
+
+  /* Earlier status names, folded onto the one-accent system so code that
+     still uses them renders on-theme. New code uses the names above. */
+  --paper: var(--well);
+  --panel: var(--white);
+  --blue: var(--ink);
+  --blue-soft: var(--well);
+  --green: var(--ink);
+  --green-soft: var(--well);
+  --gold: var(--accent);
+  --gold-ink: var(--accent-ink);
+  --gold-soft: var(--accent-soft);
+  --red: var(--accent-ink);
+  --red-soft: var(--accent-soft);
+
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #111722;
-    --panel: #172030;
-    --ink: #e7ebf1;
-    --ink-2: #b4bdca;
-    --ink-3: #8c97a8;
-    --rule: #283346;
-    --rule-strong: #3a475e;
-    --green: #3db37c;
-    --green-soft: #15302a;
-    --red: #e45a4f;
-    --red-soft: #3a1c1c;
-    --blue: #6189f2;
-    --blue-soft: #1a2747;
-    --gold: #f0c23a;
-    --gold-ink: #f0c23a;
-    --gold-soft: #33290f;
-    color-scheme: dark;
-  }
-}
-
 @theme inline {
-  --color-paper: var(--paper);
-  --color-panel: var(--panel);
+  --color-white: var(--white);
+  --color-well: var(--well);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
   --color-rule: var(--rule);
   --color-rule-strong: var(--rule-strong);
-  --color-green: var(--green);
-  --color-green-soft: var(--green-soft);
-  --color-red: var(--red);
-  --color-red-soft: var(--red-soft);
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-paper: var(--paper);
+  --color-panel: var(--panel);
   --color-blue: var(--blue);
   --color-blue-soft: var(--blue-soft);
+  --color-green: var(--green);
+  --color-green-soft: var(--green-soft);
   --color-gold: var(--gold);
   --color-gold-ink: var(--gold-ink);
   --color-gold-soft: var(--gold-soft);
-  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --color-red: var(--red);
+  --color-red-soft: var(--red-soft);
+
+  /* controls 2px, panels 4px — nothing pill-shaped */
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 4px;
+
+  --font-sans: var(--font-host), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-azeret), ui-monospace, "SF Mono", Menlo, monospace;
 }
 
 html {
-  background: var(--paper);
+  background: var(--white);
   color: var(--ink);
 }
 body {
@@ -75,28 +81,227 @@ body {
   line-height: 1.55;
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+code,
+pre,
+.font-mono {
+  font-size: 0.92em;
+  letter-spacing: -0.01em;
 }
 
-/* Archivo's width axis carries the voice: expanded for names and headings, normal for reading */
 .display {
-  font-stretch: 125%;
-  font-weight: 750;
-  letter-spacing: -0.015em;
-  line-height: 1.05;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+  text-wrap: balance;
 }
 .heading {
-  font-stretch: 112%;
-  font-weight: 650;
-  letter-spacing: -0.005em;
+  font-weight: 560;
+  letter-spacing: -0.012em;
 }
 .measure {
   max-width: 68ch;
 }
 
+/* ---- buttons: ink by default, orange only when the button answers something
+   waiting on you. The cut corner is walrus-zero's bevel, drawn in the
+   background so the focus outline stays a plain rectangle. */
+.btn {
+  align-items: center;
+  border-radius: 2px;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 560;
+  gap: 8px;
+  justify-content: center;
+  line-height: 1;
+  min-height: 38px;
+  padding: 0 18px;
+  transition:
+    background-color 160ms var(--ease),
+    border-color 160ms var(--ease),
+    color 160ms var(--ease);
+  white-space: nowrap;
+}
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.btn-primary,
+.btn-accent {
+  --fill: var(--ink);
+  background: linear-gradient(-45deg, transparent 7px, var(--fill) 7px);
+  border-radius: 2px 2px 0 2px;
+  color: var(--white);
+  padding-right: 22px;
+}
+.btn-primary:not(:disabled):hover {
+  --fill: var(--accent);
+}
+.btn-accent {
+  --fill: var(--accent);
+}
+.btn-accent:not(:disabled):hover {
+  --fill: var(--accent-deep);
+}
+.btn-secondary {
+  background: var(--white);
+  border: 1px solid var(--rule-strong);
+  color: var(--ink);
+}
+.btn-secondary:not(:disabled):hover {
+  border-color: var(--ink);
+}
+.btn-sm {
+  font-size: 13px;
+  min-height: 32px;
+  padding: 0 12px;
+}
+.btn-primary.btn-sm,
+.btn-accent.btn-sm {
+  padding-right: 16px;
+}
+
+/* ---- small status marks: squares, not dots. Solid = decided or decision
+   needed, ring = waiting, grey = fine. */
+.mark {
+  display: inline-block;
+  flex-shrink: 0;
+  height: 8px;
+  width: 8px;
+  border-radius: 1px;
+}
+.mark-accent {
+  background: var(--accent);
+}
+.mark-ring {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.mark-ink {
+  background: var(--ink);
+}
+.mark-quiet {
+  background: var(--rule-strong);
+}
+
+.chip {
+  border-radius: 2px;
+  display: inline-block;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+.chip-accent {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.chip-quiet {
+  background: var(--well);
+  color: var(--ink-2);
+}
+/* a critical rule at rest is a standing fact, not something waiting on you:
+   it turns orange only inside a gate, when it is actually at stake */
+.chip-critical {
+  background: var(--well);
+  color: var(--ink);
+  font-weight: 560;
+}
+
+/* in progress, the crew's own: an ink ring (orange stays for what waits on you) */
+.mark-run {
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+
+/* ---- the task tree: native <details>, so every level opens with a click or
+   Enter and any number stay open. A hairline down the left ties a level's
+   children to it. */
+.node > summary {
+  cursor: pointer;
+  list-style: none;
+}
+.node > summary::-webkit-details-marker {
+  display: none;
+}
+.node > summary:hover {
+  background: var(--well);
+}
+.caret {
+  color: var(--ink-3);
+  flex-shrink: 0;
+  transition: transform 160ms var(--ease);
+}
+.node[open] > summary .caret {
+  transform: rotate(90deg);
+}
+.kids {
+  border-left: 1px solid var(--rule);
+  margin-left: 6px;
+  padding-left: 17px;
+}
+
+/* ---- the one marked band: the flight path. Two orange crosshairs on the
+   diagonal, from where the arrow leaves to where it lands. */
+.marked {
+  border: 1px solid var(--rule-strong);
+  position: relative;
+}
+.marked::before,
+.marked::after {
+  background:
+    linear-gradient(var(--accent), var(--accent)) center / 1px 100% no-repeat,
+    linear-gradient(var(--accent), var(--accent)) center / 100% 1px no-repeat;
+  content: "";
+  height: 13px;
+  pointer-events: none;
+  position: absolute;
+  width: 13px;
+}
+.marked::before {
+  left: -7px;
+  top: -7px;
+}
+.marked::after {
+  bottom: -7px;
+  right: -7px;
+}
+
+/* the station that is waiting on you, and nothing else, breathes */
+@keyframes calling {
+  0% {
+    box-shadow: 0 0 0 0 rgba(254, 83, 1, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(254, 83, 1, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(254, 83, 1, 0);
+  }
+}
+.calling {
+  animation: calling 1.8s var(--ease) infinite;
+}
+
+input,
+textarea,
+select {
+  border-radius: 2px;
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  border-color: var(--ink);
+}
+
 :focus-visible {
-  outline: 2px solid var(--blue);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 4px;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

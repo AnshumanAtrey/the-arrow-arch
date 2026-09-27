@@ -21,7 +21,7 @@ import { subject } from "./types";
 import type { Packet, ProjectState } from "./types";
 import { verifyPacket } from "./verify";
 
-type PacketAction = Extract<Action, { kind: "prepare" | "work" | "verify" | "merge" | "repair" | "accept" | "complete" | "land" }>;
+type PacketAction = Extract<Action, { kind: "prepare" | "work" | "verify" | "merge" | "repair" | "accept" | "complete" | "phase" | "land" }>;
 
 export const packetBranch = (t: string, p: string) => `arrow/${t.toLowerCase()}--${p.toLowerCase()}`;
 export const worktreeDir = (pid: string, t: string, p: string) => path.join(paths(pid).worktrees, `${t}--${p}`);
@@ -63,10 +63,14 @@ export async function runPacketStep(pid: string, s: ProjectState, a: PacketActio
       return { ok: true };
     });
 
+  // the architect reads the task as it stands — its own branch, not arrow/main, which it hasn't reached yet
+  const snapshot = (use: (dir: string) => Promise<ReturnType<typeof fromRun>>) =>
+    git.withSnapshot(repo, path.join(paths(pid).dir, "snapshots", a.taskId), t.branch!, use);
+
   if (a.kind === "complete")
-    return job(pid, { role: "architect", subject: subject.complete(a.taskId), attempt: a.attempt }, async (ctx) => {
+    return job(pid, { role: "architect", subject: subject.complete(a.taskId), attempt: a.attempt }, (ctx) => snapshot(async (cwd) => {
       const r = await roles.completer({
-        ...ctx, cwd: repo, env: scrubbedEnv(), feedback: a.feedback,
+        ...ctx, cwd, env: scrubbedEnv(), feedback: a.feedback,
         input: {
           taskId: a.taskId, spec: t.spec!, failures: t.acceptance?.failures ?? [], report: t.acceptance?.report ?? [],
           landedPackets: t.order.map((id) => t.packets[id].packet), profile: s.profile!, house, knowledge: s.knowledge,
@@ -76,9 +80,27 @@ export async function runPacketStep(pid: string, s: ProjectState, a: PacketActio
       const problem = followUpProblem(t, r.result.packets);
       if (problem) return { ...fromRun(r), ok: false, failure: { class: "bad_output", message: problem } };
       await git.ensureIntegration(repo);
-      append(pid, { type: "plan.extended", taskId: a.taskId, packets: r.result.packets, reason: `Closing the gap to the spec: ${(t.acceptance?.failures ?? []).join("; ")}` });
+      append(pid, { type: "plan.extended", taskId: a.taskId, packets: r.result.packets, reason: `Closing the gap to the spec: ${(t.acceptance?.failures ?? []).join("; ")}`, by: "completion" });
       return fromRun(r);
-    });
+    }));
+
+  if (a.kind === "phase")
+    return job(pid, { role: "architect", subject: subject.phase(a.taskId), attempt: a.attempt }, (ctx) => snapshot(async (cwd) => {
+      const ahead = t.plan!.nextPhases;
+      const r = await roles.architect({
+        // the session that planned phase 1 plans phase 2: it already knows the repo
+        ...ctx, cwd, env: scrubbedEnv(), feedback: a.feedback, resume: s.sessions[subject.architect(a.taskId)],
+        input: {
+          taskId: a.taskId, task: t.text, spec: t.spec!, answers: t.answers ?? {}, profile: s.profile!, house, knowledge: s.knowledge,
+          phase: { number: t.phase + 1, landed: t.order.map((id) => t.packets[id].packet), ahead, note: a.human },
+        },
+      });
+      if (!r.result) return fromRun(r);
+      const problem = followUpProblem(t, r.result.packets);
+      if (problem) return { ...fromRun(r), ok: false, failure: { class: "bad_output", message: problem } };
+      append(pid, { type: "plan.extended", taskId: a.taskId, packets: r.result.packets, reason: `Phase ${t.phase + 1}: ${ahead[0]}`, by: "phase", nextPhases: r.result.nextPhases });
+      return fromRun(r);
+    }));
 
   const pv = t.packets[a.packetId];
   const dir = worktreeDir(pid, a.taskId, a.packetId);
@@ -117,6 +139,9 @@ export async function runPacketStep(pid: string, s: ProjectState, a: PacketActio
         if (r.result?.newFacts.length)
           append(pid, { type: "knowledge.recorded", entries: r.result.newFacts.map((text) => ({ kind: "fact" as const, text, source: `${a.taskId}/${a.packetId} worker` })) });
         // a worker that stops and says why is doing its job: the packet's aim needs fixing
+        // only a person can give it (a key, access, a decision): wait for them, don't spend a re-aim on it
+        if (r.result?.status === "blocked" && r.result.needsYou.trim())
+          return { ...fromRun(r), ok: false, failure: { class: "environment", message: `Only you can provide this: ${r.result.needsYou.trim()}` } };
         if (r.result?.status === "blocked")
           return { ...fromRun(r), ok: false, failure: { class: "scope", message: `The worker stopped: ${r.result.blockedReason || "it needs something outside its packet"}.` } };
         return fromRun(r);
@@ -170,7 +195,7 @@ export async function runPacketStep(pid: string, s: ProjectState, a: PacketActio
         append(pid, { type: "packet.repaired", taskId: a.taskId, packetId: a.packetId, packet: r.result.packet, note: pv.lastFailure?.message ?? "" });
         // what the re-aim took out of the packet becomes its own packets — never dropped
         if (r.result.followUps.length)
-          append(pid, { type: "plan.extended", taskId: a.taskId, packets: r.result.followUps, reason: `Split from ${a.packetId}: ${pv.lastFailure?.message ?? ""}` });
+          append(pid, { type: "plan.extended", taskId: a.taskId, packets: r.result.followUps, reason: `Split from ${a.packetId}: ${pv.lastFailure?.message ?? ""}`, by: "reaim", from: a.packetId });
         return fromRun(r);
       });
   }

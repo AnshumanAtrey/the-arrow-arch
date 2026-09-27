@@ -21,7 +21,11 @@ import type { Failure, Packet, Profile, ProjectState, Role, Rule, Spec } from ".
 type Knowledge = ProjectState["knowledge"];
 export type OnboarderInput = { repoPath: string; repoUrl: string; rulesText: string; houseRules: typeof HOUSE_RULES; houseDefaults: HouseSettings };
 export type PmInput = { task: string; profile: Profile; knowledge: Knowledge };
-export type ArchitectInput = { taskId: string; task: string; spec: Spec; answers: Record<string, string>; profile: Profile; house: HouseSettings; knowledge: Knowledge };
+export type ArchitectInput = {
+  taskId: string; task: string; spec: Spec; answers: Record<string, string>; profile: Profile; house: HouseSettings; knowledge: Knowledge;
+  /** planning a later phase: what already landed, and the phases still ahead (the first is the one to plan) */
+  phase?: { number: number; landed: Packet[]; ahead: string[]; note?: string };
+};
 export type RepairInput = { taskId: string; packet: Packet; failure: Failure; profile: Profile; house: HouseSettings; knowledge: Knowledge; otherPacketIds: string[] };
 export type CompleteInput = { taskId: string; spec: Spec; failures: string[]; report: string[]; landedPackets: Packet[]; profile: Profile; house: HouseSettings; knowledge: Knowledge };
 export type WorkerInput = {
@@ -50,6 +54,7 @@ async function runAgent<T>(o: {
   schema: z.ZodType<T>;
   example: unknown;
   feedback?: string;
+  humanNote?: string; // a person sent the last result back with this
   resume?: string;
   optional?: boolean; // the worker's report is a courtesy; its checks decide
   preface?: string; //  live context written by the orchestrator (the worker's ledger brief)
@@ -76,6 +81,7 @@ async function runAgent<T>(o: {
     "```json",
     JSON.stringify(o.input, null, 2),
     "```",
+    ...(o.humanNote ? ["", "# A person sent your last result back", "", o.humanNote, "", "Change what they asked for and keep what they didn't mention. Hand back a complete result."] : []),
     ...(o.feedback ? ["", "# Your previous result was rejected", "", o.feedback, "", "Fix exactly that and hand back a complete result."] : []),
     "",
     "# Hand back your result",
@@ -130,7 +136,7 @@ function stripNulls(v: unknown): unknown {
   return v;
 }
 
-type Common = { jobId: string; logFile: string; feedback?: string; resume?: string; env: NodeJS.ProcessEnv; onSpawn?: (pid: number) => void };
+type Common = { jobId: string; logFile: string; feedback?: string; humanNote?: string; resume?: string; env: NodeJS.ProcessEnv; onSpawn?: (pid: number) => void };
 
 export const onboarder = (c: Common & { input: OnboarderInput }) =>
   runAgent({ ...c, role: "onboarder", promptFile: "onboarder.md", cwd: c.input.repoPath, schema: S.Profile, example: EXAMPLES.profile });
@@ -200,6 +206,7 @@ const EXAMPLES = {
     ],
     rulesImpact: [{ ruleId: "R1", impact: "Needs a NEW migration file; no existing migration is edited.", conflict: false }],
     advice: { decision: "continue", reason: "The migration rule is respected — the plan only adds a file.", suggestions: [] },
+    nextPhases: [],
   },
-  report: { status: "implemented", summary: "Added the endpoint and three tests.", newFacts: ["Orders store money in paise."] },
+  report: { status: "implemented", summary: "Added the endpoint and three tests.", needsYou: "", newFacts: ["Orders store money in paise."] },
 };

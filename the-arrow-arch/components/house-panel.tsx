@@ -34,11 +34,11 @@ export function HousePanel({ pid, state, house, onDone }: { pid: string; state: 
             <li key={r.id} className="py-2">
               <div className="flex items-baseline justify-between gap-3">
                 <span>{r.title}</span>
-                <span className={`shrink-0 text-[12px] ${o.outcome === "conflict" ? "text-red" : o.outcome === "keep" ? "text-ink-3" : "text-gold-ink"}`}>{outcomeWords[o.outcome]}</span>
+                <span className={`shrink-0 text-[12px] ${o.outcome === "conflict" ? "text-accent-ink" : o.outcome === "keep" ? "text-ink-3" : "text-ink-2"}`}>{outcomeWords[o.outcome]}</span>
               </div>
               <p className="text-[13px] text-ink-3">
                 {valueOf(r.id, house)}
-                {r.criticality === "critical" && <span className="ml-2 rounded bg-red-soft px-1 text-red">critical</span>}
+                {r.criticality === "critical" && <span className="chip chip-critical ml-2">critical</span>}
               </p>
               {o.why && <p className="text-[13px] text-ink-2">{o.why}</p>}
             </li>
@@ -89,15 +89,15 @@ function Freeze({ pid, state, onDone }: { pid: string; state: ProjectState; onDo
     }
   }
   return (
-    <div className={`rounded-md px-4 py-3 ${frozen ? "bg-blue-soft" : "bg-paper"}`}>
+    <div className={`rounded-sm px-4 py-3 ${frozen ? "bg-well" : "border border-rule"}`}>
       <p className="heading text-[14px]">{frozen ? "Code freeze is on" : "Code freeze"}</p>
       <p className="text-[13px] text-ink-2">
         {frozen ? "No worker starts and nothing lands. Planning continues. Steps already running finish." : "Stops new work and landing on this repo until you lift it."}
       </p>
-      <button type="button" onClick={toggle} disabled={busy} className="mt-2 rounded-md border border-rule-strong bg-panel px-3 py-1.5 text-[13px] hover:border-ink disabled:opacity-50">
+      <button type="button" onClick={toggle} disabled={busy} className="btn btn-secondary btn-sm mt-2">
         {busy ? "Saving…" : frozen ? "Lift the freeze" : "Freeze this repo"}
       </button>
-      {error && <p className="mt-1 text-[13px] text-red" role="alert">{error}</p>}
+      {error && <p className="mt-1 text-[13px] text-accent-ink" role="alert">{error}</p>}
     </div>
   );
 }

@@ -14,7 +14,19 @@ product code. Packet quality decides whether this lands first time.
 - If several packets need the same new type, table or API, make defining that
   shape its own packet and make the others depend on it.
 - Honour the methodology: `phased` and `iterative` plan only the first phase in
-  packets; describe later phases in the summary.
+  packets, and list the later phases in `nextPhases`, one plain line each, in
+  order. After each phase lands, a person looks at it and approves the next;
+  then you plan it. `one_shot` leaves `nextPhases` empty.
+
+## Planning a later phase
+
+When the inputs carry `phase`, the earlier phases have landed: `phase.landed`
+lists their packets, and your working folder is the task as it stands now —
+read it. Plan only `phase.ahead[0]`, with packet ids that don't repeat any in
+`phase.landed`; deps may point at landed packets. Put the phases still left
+after it in `nextPhases` (drop or reword them if what landed changed the
+picture). `phase.note`, when there is one, is from the person who approved
+the phase: it comes first.
 
 ## Before splitting, run the sizing question
 
@@ -38,6 +50,22 @@ Never cut input validation, error handling, security, accessibility or tests.
 - `context` — file:line pointers and the facts the worker needs. It never sees
   anything else.
 - `deps` — ids that must land first.
+
+## Before you hand it back, read each packet as its worker will
+
+- **Can it all be true at once?** Every instruction, and every `verification`
+  command, together. A test that uses `import { x }` can't read code that only
+  sets `module.exports`; a page that must open straight from disk (file://)
+  can't load ES modules or fetch local files. A packet that contradicts itself
+  costs every run spent on it. Fix it here.
+- **Does the approach meet the spec?** Read every acceptance criterion and make
+  sure the plan's approach can meet it, not just its checks. Each acceptance
+  check that is a command must pass on the finished task: plan the packets and
+  tests that make it pass.
+- **Is it under the budget?** Estimate each packet's changed lines — a new file
+  counts every line. Building a feature from nothing (logic, its tests, markup,
+  styles, wiring) is usually well over one packet's budget: split by layer, so
+  each packet lands at about half the limit, not at the edge of it.
 
 ## Tell each worker what runs beside it
 

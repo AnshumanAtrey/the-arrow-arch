@@ -6,6 +6,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { withSnapshot } from "./git";
 import { run, shell } from "./proc";
 import type { Spec } from "./types";
 
@@ -52,36 +53,29 @@ function installFor(dir: string, setup?: string): string | undefined {
 }
 
 export async function acceptTask(opts: { repo: string; branch: string; dir: string; spec: Spec; setup?: string; env: NodeJS.ProcessEnv }): Promise<Acceptance> {
-  const git = (...a: string[]) => run("git", ["-C", opts.repo, ...a], { timeoutMs: 120_000 });
-  await git("worktree", "remove", "--force", opts.dir);
-  fs.rmSync(opts.dir, { recursive: true, force: true });
-  fs.mkdirSync(path.dirname(opts.dir), { recursive: true });
-  const add = await git("worktree", "add", "--detach", "--quiet", opts.dir, opts.branch);
-  if (add.code !== 0) return { ok: false, report: [add.out.trim()], failures: ["Arrow could not make a clean copy of the task branch."] };
+  return withSnapshot(opts.repo, opts.dir, opts.branch, (dir) => checkAll(dir, opts));
+}
 
+async function checkAll(dir: string, opts: { spec: Spec; setup?: string; env: NodeJS.ProcessEnv }): Promise<Acceptance> {
   const report: string[] = [];
   const failures: string[] = [];
-  try {
-    const install = installFor(opts.dir, opts.setup);
-    if (install) {
-      const r = await shell(install, opts.dir, 600_000, opts.env);
-      report.push(`${r.code === 0 ? "PASS" : "FAIL"}  ${install}  (install)`);
-      if (r.code !== 0) failures.push(`Installing the finished task failed: ${install}`);
+  const install = installFor(dir, opts.setup);
+  if (install) {
+    const r = await shell(install, dir, 600_000, opts.env);
+    report.push(`${r.code === 0 ? "PASS" : "FAIL"}  ${install}  (install)`);
+    if (r.code !== 0) failures.push(`Installing the finished task failed: ${install}`);
+  }
+  for (const a of opts.spec.acceptance) {
+    if (!(await isCommand(a.check))) {
+      report.push(`YOU   ${a.id} ${a.statement} — check: ${a.check}`);
+      continue;
     }
-    for (const a of opts.spec.acceptance) {
-      if (!(await isCommand(a.check))) {
-        report.push(`YOU   ${a.id} ${a.statement} — check: ${a.check}`);
-        continue;
-      }
-      const r = await shell(a.check, opts.dir, 120_000, opts.env);
-      if (r.code === 0) report.push(`PASS  ${a.id} ${a.check}`);
-      else {
-        report.push(`FAIL  ${a.id} ${a.check}  (exit ${r.timedOut ? "timeout" : r.code})`, ...r.out.trim().split("\n").slice(-12).map((l) => `      ${l}`));
-        failures.push(`${a.id} "${a.statement}" — ${a.check} fails`);
-      }
+    const r = await shell(a.check, dir, 120_000, opts.env);
+    if (r.code === 0) report.push(`PASS  ${a.id} ${a.check}`);
+    else {
+      report.push(`FAIL  ${a.id} ${a.check}  (exit ${r.timedOut ? "timeout" : r.code})`, ...r.out.trim().split("\n").slice(-12).map((l) => `      ${l}`));
+      failures.push(`${a.id} "${a.statement}" — ${a.check} fails`);
     }
-  } finally {
-    await git("worktree", "remove", "--force", opts.dir);
   }
   return { ok: failures.length === 0, report, failures };
 }

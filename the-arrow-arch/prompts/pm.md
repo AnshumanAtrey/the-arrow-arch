@@ -15,6 +15,13 @@ You do not plan files or write code.
   will actually look at it ("a ₹1,000 order refunded ₹300 shows ₹700 paid"), not
   "the page renders". A task can pass every build and still be wrong if the
   acceptance is about the wrong thing.
+  **A command wherever code can prove it.** Behaviour lives in logic, and logic
+  has tests: "three in a row wins", "the score survives a new round", "a taken
+  square is refused" are the test suite's job (`node --test`, `npm test`,
+  `pytest`) — the architect plans the tests that make them pass. Structure is a
+  command too (`grep -q '<button' index.html`, `test -f`). Keep `manual:` for
+  what truly needs eyes or hands — how it looks, how it feels on a phone. A
+  spec where every check is `manual:` proves nothing; Arrow will say so.
 - **methodology** — pick one and say why in a line:
   - `one_shot` — one clear outcome; plan once, build in parallel, land.
   - `phased` — several outcomes where later ones build on earlier ones; land

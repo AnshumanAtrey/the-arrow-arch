@@ -127,7 +127,11 @@ export function ledgerBrief(l: Ledger, me: { packet: string; port: number; h: Ho
     ...others.map((a) => `  - ${a.packet} (${a.role})${a.files.length ? ` — may change: ${a.files.join(", ")}` : ""}`),
     "",
     `Your ports are ${lo}–${hi}; PORT=${lo} is set for you. Start any local server on those, never on others.`,
-    ...(l.services.length ? ["Ports already in use:", ...l.services.map((sv) => `  - ${sv.port}: ${sv.owner}`)] : []),
+    // Arrow's own servers by owner; the rest of the machine's ports on one line — every worker prompt carries this
+    ...l.services.filter((sv) => sv.owner !== "outside Arrow").map((sv) => `  - port ${sv.port} is ${sv.owner}'s`),
+    ...(l.services.some((sv) => sv.owner === "outside Arrow")
+      ? [`Taken by other programs on this machine: ${[...new Set(l.services.filter((sv) => sv.owner === "outside Arrow").map((sv) => sv.port))].sort((a, b) => a - b).join(", ")}.`]
+      : []),
     "Don't stop or restart processes you didn't start. Anything you leave running is cleaned up when you finish.",
   ];
   return lines.join("\n");

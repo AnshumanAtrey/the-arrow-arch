@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { isCommand } from "../engine/accept";
 import { stats as bobStats } from "../engine/agents/bob";
-import { stepPolicy } from "../engine/decide";
+import { decide, stepPolicy } from "../engine/decide";
 import { classifyExit } from "../engine/failures";
 import { onboardingGate, planGate } from "../engine/gate";
 import { DEFAULTS } from "../engine/house-rules";
@@ -10,6 +10,9 @@ import { planProblem } from "../engine/orchestrator";
 import { project } from "../engine/project";
 import * as S from "../engine/schemas";
 import { allowedValues } from "../engine/schema-hints";
+import { nowLine, readTranscript } from "../engine/transcript";
+import { ledgerBrief } from "../engine/ledger";
+import { acceptanceCounts } from "../lib/tree";
 import type { ArrowEvent, JobView, Plan, Profile, Spec } from "../engine/types";
 import { z } from "zod";
 
@@ -92,7 +95,7 @@ describe("rules gate", () => {
   });
   const spec: Spec = { title: "t", intent: "i", methodology: { mode: "one_shot", why: "w" }, acceptance: [{ id: "A1", statement: "s", check: "c" }], outOfScope: [], risk: "low", questions: [], rulesTouched: [] };
   const plan = (files: string[]): Plan => ({
-    summary: "s", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] },
+    summary: "s", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [],
     packets: [{ id: "P1", module: "M1", title: "t", objective: "o", context: "", files, deps: [], verification: ["true"], regression: [], risk: "low", kind: "change", newDependencies: [], env: [] }],
   });
   test("a packet that may touch a protected path turns the plan red — computed, not judged", () => {
@@ -122,7 +125,7 @@ describe("rules gate", () => {
 
 describe("plan sanity", () => {
   const pk = (id: string, deps: string[] = []) => ({ id, module: "M1", title: "t", objective: "o", context: "", files: ["a"], deps, verification: ["true"], regression: [], risk: "low" as const, kind: "change" as const, newDependencies: [], env: [] });
-  const plan = (packets: ReturnType<typeof pk>[]): Plan => ({ summary: "s", modules: [], packets, rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] } });
+  const plan = (packets: ReturnType<typeof pk>[]): Plan => ({ summary: "s", modules: [], packets, rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [] });
   test("catches duplicate ids, missing deps and cycles", () => {
     expect(planProblem(plan([pk("P1"), pk("P1")]))).toContain("twice");
     expect(planProblem(plan([pk("P1", ["P9"])]))).toContain("P9");
@@ -135,7 +138,7 @@ describe("projection", () => {
   test("provider outages don't count as attempts", () => {
     const ev = (e: object) => ({ at, ...e }) as ArrowEvent;
     const plan: Plan = {
-      summary: "s", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] },
+      summary: "s", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [],
       packets: [{ id: "P1", module: "M1", title: "t", objective: "o", context: "", files: ["a"], deps: [], verification: ["true"], regression: [], risk: "low", kind: "change", newDependencies: [], env: [] }],
     };
     const s = project("p", [
@@ -163,6 +166,158 @@ describe("Bob Shell output", () => {
   });
   test("no JSON means no numbers, not a crash", () => {
     expect(bobStats("Error: Bob API key is required.")).toEqual({});
+  });
+  test("Bob withholds token counts outside its own team: bobcoins, and no usage rather than zeros", () => {
+    const plain = { type: "result", status: "success", stats: { task_id: "task-7", duration_ms: 4000, session_costs: 1.25, tool_calls: 3 } };
+    const s = bobStats(`{"type":"tool_use","tool_name":"read_file","tool_id":"a","parameters":{"path":"x"}}\n${JSON.stringify(plain)}\n`);
+    expect(s).toMatchObject({ sessionId: "task-7", cost: 1.25, costUnit: "bobcoins" });
+    expect(s.usage).toBeUndefined();
+  });
+});
+
+describe("agent transcripts", () => {
+  const wt = "/Users/x/the-arrow-arch/.arrow-data/projects/demo-1a2b/worktrees/T1--P1";
+  const prompt = ["# You are an Arrow worker", "", "Do the packet.", "", "# Who else is working right now", "", "P2 owns app.js.", "", "# Inputs", "", "```json", '{"a": 1}', "# not a heading inside a fence", "```"].join("\n");
+  const log = (out: string[]) => `$ claude1 -p --output-format stream-json --model haiku --effort low\n\n----- prompt -----\n${prompt}\n----- output -----\n${out.join("\n")}\n`;
+
+  test("Claude Code: the exact prompt, cut at its headings, then each tool call with its outcome", () => {
+    const t = readTranscript(log([
+      JSON.stringify({ type: "system", subtype: "init" }),
+      JSON.stringify({ type: "assistant", message: { content: [{ type: "thinking", thinking: "hm" }, { type: "tool_use", id: "t1", name: "Read", input: { file_path: `${wt}/logic.js` } }] } }),
+      JSON.stringify({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: "t1", content: "export const x = 1;" }] } }),
+      JSON.stringify({ type: "assistant", message: { content: [{ type: "tool_use", id: "t2", name: "Bash", input: { command: `cd ${wt} && node --test` } }] } }),
+      JSON.stringify({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: "t2", content: [{ type: "text", text: "1 failing" }], is_error: true }] } }),
+      JSON.stringify({ type: "assistant", message: { content: [{ type: "text", text: "Fixed the off-by-one." }] } }),
+      JSON.stringify({ type: "result", subtype: "success", is_error: false, result: "Done." }),
+    ]));
+    expect(t).toMatchObject({ model: "haiku", effort: "low" });
+    expect(t.command.startsWith("claude1 ")).toBe(true);
+    expect(t.sections.map((x) => x.title)).toEqual(["You are an Arrow worker", "Who else is working right now", "Inputs"]);
+    expect(t.sections[2].body).toContain("# not a heading inside a fence");
+    expect(t.steps).toEqual([
+      { kind: "tool", tool: "Read", detail: "logic.js", ok: true, output: "export const x = 1;" },
+      { kind: "tool", tool: "Bash", detail: "cd . && node --test", ok: false, output: "1 failing" },
+      { kind: "text", text: "Fixed the off-by-one." },
+      { kind: "end", ok: true, text: "Done." },
+    ]);
+  });
+
+  test("Bob Shell stream-json: tool_use / tool_result by id, streamed words joined, errors kept", () => {
+    const t = readTranscript(log([
+      JSON.stringify({ type: "message", role: "user", content: "the prompt again" }),
+      JSON.stringify({ type: "message", role: "assistant", content: "Reading " }),
+      JSON.stringify({ type: "message", role: "assistant", content: "the file." }),
+      JSON.stringify({ type: "tool_use", tool_name: "read_file", tool_id: "b1", parameters: { path: "logic.js" } }),
+      JSON.stringify({ type: "tool_result", tool_id: "b1", status: "error", error: { type: "tool_error", message: "no such file" } }),
+      "Error: something on stderr",
+      JSON.stringify({ type: "error", severity: "error", message: "The task reached the maximum of 5 turns." }),
+      JSON.stringify({ type: "result", status: "success", stats: { task_id: "t" } }),
+    ]));
+    expect(t.steps).toEqual([
+      { kind: "text", text: "Reading the file." },
+      { kind: "tool", tool: "read_file", detail: "logic.js", ok: false, output: "no such file" },
+      { kind: "note", text: "Error: something on stderr" },
+      { kind: "note", text: "The task reached the maximum of 5 turns." },
+      { kind: "end", ok: true, text: "" },
+    ]);
+  });
+
+  test("what a running agent is doing now, from a tail that starts mid-line", () => {
+    const tail = `"content":"half a line"}]}}\n${JSON.stringify({ type: "assistant", message: { content: [{ type: "tool_use", id: "t", name: "Edit", input: { file_path: `${wt}/app.js` } }] } })}\n`;
+    expect(nowLine(tail)).toBe("Edit app.js");
+    expect(nowLine("")).toBeUndefined();
+  });
+});
+
+describe("the task's timeline", () => {
+  const pk = (id: string, deps: string[] = []) => ({ id, module: "M1", title: id, objective: "o", context: "", files: [`${id}.ts`], deps, verification: ["true"], regression: [], risk: "low" as const, kind: "change" as const, newDependencies: [], env: [] });
+  const plan: Plan = { summary: "s", modules: [], packets: [pk("P1")], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [] };
+  const base: ArrowEvent[] = [
+    { type: "project.created", at, name: "n", repoUrl: "/r", rulesText: "" },
+    { type: "task.submitted", at, taskId: "T1", text: "Build it" },
+    { type: "plan.ready", at, taskId: "T1", plan, branch: "arrow/t1", base: "abc" },
+    { type: "job.started", at, jobId: "w1", role: "worker", subject: "T1:P1:work", attempt: 1, driver: "mock" },
+    { type: "job.finished", at, jobId: "w1", ok: true, durationMs: 5 },
+    { type: "packet.failed", at, taskId: "T1", packetId: "P1", failure: { class: "scope", message: "too big" } },
+    { type: "job.started", at, jobId: "r1", role: "architect", subject: "T1:P1:repair", attempt: 1, driver: "mock" },
+    { type: "packet.repaired", at, taskId: "T1", packetId: "P1", packet: { ...pk("P1"), objective: "smaller" }, note: "too big" },
+  ];
+
+  test("every run, check and re-aim sits under its packet; what a re-aim split off knows where it came from", () => {
+    const s = project("p", [...base, { type: "plan.extended", at, taskId: "T1", packets: [pk("P2", ["P1"])], reason: "Split from P1: too big", by: "reaim", from: "P1" }]);
+    const t = s.tasks.T1;
+    expect(t.timeline.map((x) => [x.packetId, x.kind])).toEqual([["P1", "job"], ["P1", "failed"], ["P1", "job"], ["P1", "reaimed"], ["P1", "added"]]);
+    const re = t.timeline[3];
+    expect(re.kind === "reaimed" && re.before.objective).toBe("o"); // what the worker was told before the re-aim
+    expect(t.packets.P2.origin).toEqual({ by: "reaim", from: "P1", reason: "Split from P1: too big" });
+  });
+
+  test("a log written before lineage was recorded: the step still running is the one that added the packets", () => {
+    const s = project("p", [...base, { type: "plan.extended", at, taskId: "T1", packets: [pk("P2")], reason: "Split from P1: too big" }]);
+    expect(s.tasks.T1.packets.P2.origin).toMatchObject({ by: "reaim", from: "P1" });
+  });
+});
+
+describe("sending a check back", () => {
+  const plan: Plan = {
+    summary: "first try", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [],
+    packets: [{ id: "P1", module: "M1", title: "t", objective: "o", context: "", files: ["a.ts"], deps: [], verification: ["true"], regression: [], risk: "low", kind: "change", newDependencies: [], env: [] }],
+  };
+  const spec: Spec = { title: "t", intent: "i", methodology: { mode: "one_shot", why: "w" }, acceptance: [{ id: "A1", statement: "s", check: "true" }], outOfScope: [], risk: "low", questions: [], rulesTouched: [] };
+  const profile = { recommendation: { decision: "continue", reason: "r", suggestions: [] }, rules: [], houseRules: [] } as unknown as Profile;
+  const gate = (id: string, kind: "onboarding" | "plan", subject: string) =>
+    ({ type: "gate.opened", at, gate: { id, kind, subject, verdict: "green", items: [], recommendation: { decision: "continue", reason: "r", suggestions: [] } } }) as ArrowEvent;
+  const events: ArrowEvent[] = [
+    { type: "project.created", at, name: "n", repoUrl: "/r", rulesText: "" },
+    { type: "repo.cloned", at, path: "/r", branch: "main", head: "abc" },
+    { type: "profile.ready", at, profile },
+    gate("onboarding", "onboarding", "project"),
+    { type: "gate.decided", at, gateId: "onboarding", decision: "approve" },
+    { type: "task.submitted", at, taskId: "T1", text: "Build it" },
+    { type: "spec.ready", at, taskId: "T1", spec },
+    { type: "job.started", at, jobId: "a1", role: "architect", subject: "T1:architect", attempt: 1, driver: "mock" },
+    { type: "job.finished", at, jobId: "a1", ok: true, durationMs: 5, sessionId: "sess-1" },
+    { type: "plan.ready", at, taskId: "T1", plan, branch: "arrow/t1", base: "abc" },
+    gate("plan-T1", "plan", "T1"),
+    { type: "gate.decided", at, gateId: "plan-T1", decision: "revise", note: "One file is enough." },
+  ];
+
+  test("the plan goes back to the architect with your note; nothing builds until a new plan is approved", () => {
+    const s = project("p", events);
+    const t = s.tasks.T1;
+    expect(t.stage).toBe("architect");
+    expect(t.plan).toBeUndefined();
+    expect(s.humanNotes["T1:architect"]).toBe("One file is enough.");
+    expect(t.timeline.at(-1)).toMatchObject({ kind: "gate", gateId: "plan-T1", decision: "revise", note: "One file is enough.", plan: "first try" });
+    expect(decide(s, Date.now())).toEqual([{ kind: "architect", taskId: "T1", attempt: 1, feedback: undefined, human: "One file is enough." }]);
+    // the next plan clears the note
+    expect(project("p", [...events, { type: "plan.ready", at, taskId: "T1", plan, branch: "arrow/t1", base: "abc" }]).humanNotes).toEqual({});
+  });
+
+  test("the rules check goes back to the onboarder; the project isn't stopped", () => {
+    const s = project("p", [events[0], events[1], events[2], events[3], { type: "gate.decided", at, gateId: "onboarding", decision: "revise", note: "R3 is critical." }]);
+    expect(s.stage).toBe("onboarding");
+    expect(s.profile).toBeUndefined();
+    expect(decide(s, Date.now())).toEqual([{ kind: "onboard", attempt: 1, feedback: undefined, human: "R3 is critical." }]);
+  });
+});
+
+describe("saying what was really checked", () => {
+  test("an acceptance where every check is for a person ran nothing — it is not reported as a pass", () => {
+    expect(acceptanceCounts(["PASS  npm install  (install)", "YOU   A1 opens — check: manual: open it", "YOU   A2 plays — check: manual: play"])).toEqual({ ran: 0, passed: 0, forYou: 2 });
+    expect(acceptanceCounts(["PASS  A1 node --test", "FAIL  A2 grep -q x f", "YOU   A3 looks right"])).toEqual({ ran: 2, passed: 1, forYou: 1 });
+  });
+  test("a worker's brief names Arrow's own servers and puts the rest of the machine on one line", () => {
+    const l = { at, agents: [], worktrees: [], stale: [], services: [
+      { port: 5432, pid: 1, command: "postgres", owner: "outside Arrow", stale: false },
+      { port: 5432, pid: 2, command: "postgres", owner: "outside Arrow", stale: false },
+      { port: 3000, pid: 3, command: "node", owner: "outside Arrow", stale: false },
+      { port: 4110, pid: 4, command: "node", owner: "T1/P2", stale: false },
+    ] };
+    const b = ledgerBrief(l, { packet: "T1/P1", port: 4100, h: { base: 4100, perWorker: 10 } });
+    expect(b).toContain("port 4110 is T1/P2's");
+    expect(b).toContain("Taken by other programs on this machine: 3000, 5432.");
+    expect(b).not.toContain("outside Arrow");
   });
 });
 

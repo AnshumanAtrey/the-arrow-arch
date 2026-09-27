@@ -14,6 +14,9 @@ const roleWords: Record<string, string> = { onboarder: "Onboarder", pm: "Project
 export function LedgerPanel({ ledger, state }: { ledger: Ledger | null; state: ProjectState }) {
   if (!ledger) return <p className="text-[14px] text-ink-3">The orchestrator hasn&apos;t written the ledger yet. It does every few seconds once the repo is copied.</p>;
   const reaped = [...state.reaped].reverse().slice(0, 8);
+  // "outside Arrow" is the ledger's own marker for a server no Arrow job owns (engine/ledger.ts)
+  const ours = ledger.services.filter((sv) => sv.owner !== "outside Arrow");
+  const others = ledger.services.length - ours.length;
   return (
     <div className="space-y-6 text-[14px]">
       <p className="text-[13px] text-ink-3">Read-only. Rebuilt by the orchestrator from what is actually running, {ago(ledger.at)}.</p>
@@ -36,13 +39,18 @@ export function LedgerPanel({ ledger, state }: { ledger: Ledger | null; state: P
         ))}
       </Block>
 
-      <Block title="Local servers" empty="Nothing is listening on a port.">
-        {ledger.services.map((sv) => (
+      <Block title="Local servers" empty="No agent is serving a port.">
+        {ours.map((sv) => (
           <Row key={`${sv.port}-${sv.pid}`} left={String(sv.port)} right={sv.stale ? "stale, being stopped" : ""}>
             {sv.owner} <span className="text-ink-3">({sv.command})</span>
           </Row>
         ))}
       </Block>
+      {others > 0 && (
+        <p className="-mt-4 text-[13px] text-ink-3">
+          {others} other server{others === 1 ? " is" : "s are"} listening on this machine. Workers get ports that avoid them.
+        </p>
+      )}
 
       {reaped.length > 0 && (
         <Block title="Cleaned up" empty="">

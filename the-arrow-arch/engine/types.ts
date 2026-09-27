@@ -27,7 +27,7 @@ export type FailureClass =
 
 export type Failure = { class: FailureClass; message: string; report?: string[] };
 
-export type GateKind = "onboarding" | "plan";
+export type GateKind = "onboarding" | "plan" | "phase";
 export type GateItem = {
   level: "critical" | "warning" | "ok";
   title: string;
@@ -43,7 +43,8 @@ export type Gate = {
   items: GateItem[];
   recommendation: Recommendation;
 };
-export type GateDecision = "approve" | "stop";
+/** "revise": send it back to the agent with a person's note, instead of approving or stopping */
+export type GateDecision = "approve" | "stop" | "revise";
 
 type E<T extends string, P> = { type: T; at: string } & P;
 
@@ -80,7 +81,8 @@ export type ArrowEvent =
   // the loop manager gave up on a step (onboard, pm, a packet...) — a human looks
   | E<"step.parked", { subject: string; reason: string }>
   | E<"step.retried", { subject: string; note?: string }>
-  | E<"plan.extended", { taskId: string; packets: Packet[]; reason: string }> // follow-ups from a re-aim or a completion pass
+  // follow-ups from a re-aim (`from` = the packet it was split off), a completion pass, or the next phase
+  | E<"plan.extended", { taskId: string; packets: Packet[]; reason: string; by?: Origin; from?: string; nextPhases?: string[] }>
   | E<"task.accepted", { taskId: string; report: string[] }>
   | E<"task.unaccepted", { taskId: string; report: string[]; failures: string[] }>
   | E<"task.landed", { taskId: string; branch: string; head: string }>
@@ -105,7 +107,14 @@ export const subject = {
   repair: (t: string, p: string) => `${t}:${p}:repair`,
   accept: (t: string) => `${t}:accept`,
   complete: (t: string) => `${t}:complete`,
+  phase: (t: string) => `${t}:phase`,
 };
+
+/** The sign-off after a phase lands, before the next one is planned. */
+export const phaseGateId = (t: { taskId: string; phase: number }) => `phase-${t.taskId}-${t.phase}`;
+
+/** Where a packet that wasn't in the first plan came from. */
+export type Origin = "reaim" | "completion" | "phase";
 
 // ---------------------------------------------------------------- derived state
 
@@ -152,7 +161,29 @@ export type PacketView = {
   report?: string[];
   changedFiles?: string[];
   parkedReason?: string;
+  /** not in the first plan: split off another packet by a re-aim, or added to close the gap to the spec */
+  origin?: { by: Origin; from?: string; reason: string };
 };
+
+/**
+ * One thing that happened to a task, in order — what the UI's tree is drawn from.
+ * `packetId` places it under a packet; without one it belongs to the task itself.
+ */
+export type TaskStep = { at: string; packetId?: string } & (
+  | { kind: "job"; jobId: string }
+  | { kind: "verified"; report: string[] }
+  | { kind: "failed"; failure: Failure }
+  | { kind: "reaimed"; note: string; before: Packet }
+  | { kind: "added"; packets: string[]; reason: string; by: Origin; from?: string }
+  | { kind: "merged"; head: string }
+  | { kind: "accepted"; report: string[] }
+  | { kind: "unaccepted"; report: string[]; failures: string[] }
+  | { kind: "gate"; gateId: string; decision: GateDecision; note?: string; plan?: string }
+  | { kind: "parked"; subject: string; reason: string }
+  | { kind: "retried"; subject: string }
+  | { kind: "landed"; branch: string; head: string }
+  | { kind: "halted"; reason: string }
+);
 
 export type TaskStage = "pm" | "questions" | "architect" | "plan_gate" | "building" | "landed" | "halted";
 
@@ -173,6 +204,9 @@ export type TaskView = {
   haltedReason?: string;
   /** the project manager's "done means", run on the finished task before it lands */
   acceptance?: { ok: boolean; report: string[]; failures: string[] };
+  /** which phase is being built: 1 for the first plan, +1 each time a person approves the next */
+  phase: number;
+  timeline: TaskStep[];
 };
 
 export type ProjectStage = "cloning" | "onboarding" | "onboarding_gate" | "ready" | "stopped";
@@ -197,6 +231,8 @@ export type ProjectState = {
   /** newest agent session per subject, kept across resets so a paused step can resume */
   sessions: Record<string, string>;
   parked: Record<string, { reason: string; at: string }>;
+  /** what a person said when sending a step back — handed to that step's next run, then cleared */
+  humanNotes: Record<string, string>;
   frozen?: { reason?: string; at: string };
   knowledge: { id: string; kind: "fact" | "decision"; text: string; source: string; at: string }[];
   reaped: { at: string; kind: "process" | "worktree"; what: string; why: string }[];

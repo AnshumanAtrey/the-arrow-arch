@@ -7,15 +7,15 @@ import { BUDGETS, LIMITS } from "./config";
 import { overlaps } from "./glob";
 import { effectiveSettings, type HouseSettings } from "./house-rules";
 import { runningJobs } from "./project";
-import { subject } from "./types";
+import { phaseGateId, subject } from "./types";
 import type { Failure, JobView, PacketView, ProjectState, TaskView } from "./types";
 
 export type Action =
   | { kind: "clone"; attempt: number }
-  | { kind: "onboard"; attempt: number; feedback?: string }
+  | { kind: "onboard"; attempt: number; feedback?: string; human?: string }
   | { kind: "open_onboarding_gate" }
   | { kind: "pm"; taskId: string; attempt: number; feedback?: string }
-  | { kind: "architect"; taskId: string; attempt: number; feedback?: string }
+  | { kind: "architect"; taskId: string; attempt: number; feedback?: string; human?: string }
   | { kind: "open_plan_gate"; taskId: string }
   | { kind: "prepare"; taskId: string; packetId: string }
   | { kind: "work"; taskId: string; packetId: string; attempt: number; previous?: Failure; resume?: string }
@@ -24,6 +24,8 @@ export type Action =
   | { kind: "repair"; taskId: string; packetId: string; attempt: number }
   | { kind: "accept"; taskId: string }
   | { kind: "complete"; taskId: string; attempt: number; feedback?: string }
+  | { kind: "open_phase_gate"; taskId: string }
+  | { kind: "phase"; taskId: string; attempt: number; feedback?: string; human?: string }
   | { kind: "land"; taskId: string }
   | { kind: "park"; subject: string; reason: string };
 
@@ -91,7 +93,7 @@ export function decide(s: ProjectState, now: number): Action[] {
     return out;
   }
   if (!s.profile) {
-    agentStep(subject.onboard, (st) => ({ kind: "onboard", attempt: st.attempt, feedback: st.feedback }));
+    agentStep(subject.onboard, (st) => ({ kind: "onboard", attempt: st.attempt, feedback: st.feedback, human: s.humanNotes[subject.onboard] }));
     return out;
   }
   if (!s.onboardingGateId) return [{ kind: "open_onboarding_gate" }];
@@ -110,7 +112,7 @@ export function decide(s: ProjectState, now: number): Action[] {
         agentStep(subject.pm(tid), (st) => ({ kind: "pm", taskId: tid, attempt: st.attempt, feedback: st.feedback }));
         break;
       case "architect":
-        agentStep(subject.architect(tid), (st) => ({ kind: "architect", taskId: tid, attempt: st.attempt, feedback: st.feedback }));
+        agentStep(subject.architect(tid), (st) => ({ kind: "architect", taskId: tid, attempt: st.attempt, feedback: st.feedback, human: s.humanNotes[subject.architect(tid)] }));
         break;
       case "plan_gate":
         if (!t.planGateId) out.push({ kind: "open_plan_gate", taskId: tid });
@@ -218,9 +220,22 @@ function build(s: ProjectState, t: TaskView, now: number, house: HouseSettings, 
   }
 }
 
-/** All packets merged: accept, fill the gap once if the spec isn't met, then land — or hand it to a person. */
+/**
+ * All packets merged. A phased task stops at a checkpoint: a person looks at what
+ * landed before the architect plans the next phase. After the last phase: accept,
+ * fill the gap once if the spec isn't met, then land — or hand it to a person.
+ */
 function finish(s: ProjectState, t: TaskView, now: number, house: HouseSettings, out: Action[]) {
   const tid = t.taskId;
+  if (t.plan?.nextPhases.length) {
+    const g = s.gates[phaseGateId(t)];
+    if (!g) out.push({ kind: "open_phase_gate", taskId: tid });
+    if (g?.decision !== "approve" || s.parked[subject.phase(tid)]) return; // waiting on you
+    const st = stepPolicy(s.runs[subject.phase(tid)] ?? [], now);
+    if (st.go) out.push({ kind: "phase", taskId: tid, attempt: st.attempt, feedback: st.feedback, human: s.humanNotes[subject.phase(tid)] });
+    else if (st.park) out.push({ kind: "park", subject: subject.phase(tid), reason: `The architect couldn't plan the next phase: ${st.park}` });
+    return;
+  }
   const accept = subject.accept(tid);
   if (s.parked[accept]) return;
   if (!t.acceptance) {

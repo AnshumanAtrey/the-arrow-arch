@@ -1,14 +1,15 @@
 /**
- * IBM Bob Shell, headless: `bob run --format json`, prompt on stdin. Bob reads
- * and writes the workspace itself; Arrow only needs the result file back, plus
- * the stats Bob prints at the end (tokens, bobcoins, duration, task id to resume).
+ * IBM Bob Shell, headless: `bob run --format stream-json`, prompt on stdin. Bob
+ * reads and writes the workspace itself; Arrow needs the result file back, the
+ * stats line Bob prints last (bobcoins, duration, task id to resume), and the
+ * tool calls before it, which the UI shows as the run's steps.
  */
 import { spawnLogged, type AgentExit, type Driver } from "./driver";
 
 export const bob: Driver = async (r) => {
   const readOnlyRole = r.role !== "worker";
   const args = [
-    "run", "--format", "json", "--trust", "--accept-license", "--disable-mcp",
+    "run", "--format", "stream-json", "--trust", "--accept-license", "--disable-mcp",
     "-w", r.cwd,
     ...(r.resume ? ["--resume", r.resume] : []),
     ...(r.bob.teamId ? ["--team-id", r.bob.teamId] : []),
@@ -41,7 +42,11 @@ function lastJson(out: string): Record<string, any> | undefined {
   return undefined;
 }
 
-/** Bob's result: {status, stats: {task_id, input_tokens, ...}, last_message}. */
+/**
+ * Bob's result: {type: "result", status, stats: {task_id, session_costs, ...}}. Bob
+ * includes token counts only for its own developers (BOB_DEV_KEY), so a normal run
+ * reports bobcoins and no tokens — then there is no usage, not a usage of zero.
+ */
 export function stats(out: string): Partial<AgentExit> {
   try {
     const j = lastJson(out);
@@ -49,9 +54,10 @@ export function stats(out: string): Partial<AgentExit> {
     const st = j.stats ?? {};
     const n = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
     const cost = typeof st.session_costs === "number" ? st.session_costs : Array.isArray(st.session_costs) ? st.session_costs.reduce((a: number, c: { cost?: number }) => a + n(c?.cost), 0) : undefined;
+    const counted = ["input_tokens", "output_tokens", "total_tokens"].some((k) => typeof st[k] === "number");
     return {
       sessionId: typeof st.task_id === "string" ? st.task_id : undefined,
-      usage: { input: n(st.input_tokens), output: n(st.output_tokens), cacheRead: n(st.cache_read_tokens), total: n(st.total_tokens) || n(st.input_tokens) + n(st.output_tokens) },
+      usage: counted ? { input: n(st.input_tokens), output: n(st.output_tokens), cacheRead: n(st.cache_read_tokens), total: n(st.total_tokens) || n(st.input_tokens) + n(st.output_tokens) } : undefined,
       cost,
       costUnit: cost === undefined ? undefined : "bobcoins",
     };

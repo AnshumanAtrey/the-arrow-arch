@@ -2,9 +2,10 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { NeedsYou } from "@/components/decisions";
-import { FlightPath } from "@/components/flight-path";
+import { FlightBand, FlightPath } from "@/components/flight-path";
 import { HousePanel } from "@/components/house-panel";
 import { LedgerPanel } from "@/components/ledger-panel";
+import { NowStrip } from "@/components/now-strip";
 import { Activity, MetricsStrip, ProfilePanel, Section, TaskForm, TaskList } from "@/components/panels";
 import { usePoll, type Payload } from "@/lib/client";
 import { flightOf } from "@/lib/flight";
@@ -13,7 +14,7 @@ export default function ProjectPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { data, error, reload } = usePoll<Payload>(`/api/projects/${id}`);
-  if (error && !data) return <p className="text-red">{error}</p>;
+  if (error && !data) return <p className="text-accent-ink">{error}</p>;
   if (!data) return <p className="text-ink-3">Loading…</p>;
   const { state: s, metrics, ledger, house } = data;
 
@@ -30,23 +31,22 @@ export default function ProjectPage() {
       </p>
       <h1 className="display mt-1 break-words text-[34px] sm:text-[46px]">{s.name}</h1>
 
-      <div className="mt-8 rounded-lg border border-rule bg-panel px-3 py-5 sm:px-6">
-        {focus && s.stage === "ready" && <p className="mb-4 text-[13px] text-ink-3">{focus.taskId}: {focus.spec?.title ?? focus.text}</p>}
+      <FlightBand caption={focus && s.stage === "ready" ? <><span className="font-mono text-ink-2">{focus.taskId}</span> {focus.spec?.title ?? focus.text}</> : undefined}>
         <FlightPath flight={flight} />
-      </div>
+      </FlightBand>
 
       {s.frozen && (
-        <p className="mt-6 rounded-md bg-blue-soft px-4 py-3 text-[14px]">
+        <p className="mt-6 rounded-sm bg-well px-4 py-3 text-[14px]">
           Code freeze is on{s.frozen.reason ? `: ${s.frozen.reason}` : ""}. No worker starts and nothing lands until you lift it.
         </p>
       )}
       {s.stage === "stopped" && (
-        <p className="mt-6 rounded-md bg-red-soft px-4 py-3 text-[14px]">
+        <p className="mt-6 rounded-sm bg-well px-4 py-3 text-[14px]">
           You stopped this repo at the rules check. Fix what it flagged, then onboard it again.
         </p>
       )}
 
-      <div className="mt-6">
+      <div id="needs" className="mt-6 scroll-mt-6">
         <NeedsYou pid={id} state={s} onDone={reload} />
       </div>
 
@@ -58,11 +58,14 @@ export default function ProjectPage() {
               <TaskList pid={id} state={s} />
             </div>
           </Section>
-          <Section title="Right now" aside="the shared ledger">
-            <LedgerPanel ledger={ledger} state={s} />
+          <Section title="Right now" aside="who is running, and the shared ledger">
+            <NowStrip s={s} now={data.now} />
+            <div className="mt-6">
+              <LedgerPanel ledger={ledger} state={s} />
+            </div>
           </Section>
-          <Section title="Activity" aside="every step, from the log">
-            <Activity pid={id} state={s} />
+          <Section title="Activity" aside="every step; open an agent's run for its prompt">
+            <Activity pid={id} state={s} now={data.now} />
           </Section>
         </div>
         <div>

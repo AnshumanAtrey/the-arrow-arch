@@ -143,6 +143,68 @@ describe("acceptance", () => {
   });
 });
 
+describe("human in the loop", () => {
+  const logOf = (pid: string, jobId: string) => fs.readFileSync(path.join(store.paths(pid).logs, `${jobId}.log`), "utf8");
+  const ready = async (pid: string) => {
+    const s = await until(pid, (s) => Boolean(s.onboardingGateId));
+    store.append(pid, { type: "gate.decided", gateId: s.onboardingGateId!, decision: "approve" });
+  };
+
+  test("sending the plan back: the architect re-plans with your note, and nothing is built from the first plan", async () => {
+    const pid = start("");
+    await ready(pid);
+    store.append(pid, { type: "task.submitted", taskId: "T1", text: "Add a helper." });
+    let s = await until(pid, (s) => Boolean(s.tasks.T1?.planGateId));
+    store.append(pid, { type: "gate.decided", gateId: "plan-T1", decision: "revise", note: "Use one packet only." });
+    s = await until(pid, (s) => s.tasks.T1.planGateId === "plan-T1-2");
+    expect(Object.values(s.jobs).some((j) => j.subject.endsWith(":work"))).toBe(false);
+    const plans = Object.values(s.jobs).filter((j) => j.subject === "T1:architect");
+    expect(plans).toHaveLength(2);
+    expect(logOf(pid, plans[1].jobId)).toContain("# A person sent your last result back\n\nUse one packet only.");
+    store.append(pid, { type: "gate.decided", gateId: "plan-T1-2", decision: "approve" });
+    await until(pid, (s) => s.tasks.T1.stage === "landed");
+  });
+
+  test("a phased task stops after each phase; the architect plans the next on what landed, with your note", async () => {
+    const pid = start("");
+    await ready(pid);
+    const long = Array.from({ length: 70 }, (_, i) => `step${i}`).join(" ");
+    store.append(pid, { type: "task.submitted", taskId: "T1", text: `Build it in stages. ${long}` });
+    let s = await until(pid, (s) => Boolean(s.tasks.T1?.planGateId));
+    expect(s.tasks.T1.plan?.nextPhases.length).toBe(1);
+    store.append(pid, { type: "gate.decided", gateId: "plan-T1", decision: "approve" });
+    s = await until(pid, (s) => Boolean(s.gates["phase-T1-1"]));
+    for (let i = 0; i < 5; i++) await tick(pid); // nothing moves while the checkpoint waits
+    s = project(pid, store.readEvents(pid));
+    expect(s.tasks.T1.order.every((id) => s.tasks.T1.packets[id].status === "merged")).toBe(true);
+    expect(Object.values(s.jobs).some((j) => j.subject === "T1:accept" || j.subject === "T1:phase")).toBe(false);
+    expect(s.tasks.T1.stage).toBe("building");
+
+    store.append(pid, { type: "gate.decided", gateId: "phase-T1-1", decision: "approve", note: "Keep phase two small." });
+    s = await until(pid, (s) => s.tasks.T1.stage === "landed");
+    const t = s.tasks.T1;
+    expect(t.phase).toBe(2);
+    expect(t.packets.PH2.origin?.by).toBe("phase");
+    const phaseRun = Object.values(s.jobs).find((j) => j.subject === "T1:phase")!;
+    expect(logOf(pid, phaseRun.jobId)).toContain('"note": "Keep phase two small."');
+    expect(sh(s.repo!.path, "ls-tree", "-r", "--name-only", "arrow/t1")).toContain("arrow-demo/t1/phase-2.ts");
+    expect(sh(s.repo!.path, "worktree", "list")).not.toContain("snapshots"); // the architect's read-only copy is gone
+  });
+
+  test("what a person sends: a send-back needs a note; a retry's note becomes a decision every agent reads", async () => {
+    const { POST } = await import("../app/api/projects/[id]/actions/route");
+    const post = (pid: string, body: unknown) => POST(new Request("http://arrow/actions", { method: "POST", body: JSON.stringify(body) }), { params: Promise.resolve({ id: pid }) });
+    const pid = start("");
+    let s = await until(pid, (s) => Boolean(s.onboardingGateId));
+    expect((await post(pid, { type: "decide_gate", gateId: s.onboardingGateId, decision: "revise" })).status).toBe(400);
+    store.append(pid, { type: "step.parked", subject: "onboard", reason: "for the test" });
+    expect((await post(pid, { type: "retry", subject: "onboard", note: "Install with npm, not bun." })).status).toBe(200);
+    s = project(pid, store.readEvents(pid));
+    expect(s.knowledge).toContainEqual(expect.objectContaining({ kind: "decision", text: "Install with npm, not bun.", source: "you, resuming onboarding" }));
+    expect(s.parked.onboard).toBeUndefined();
+  });
+});
+
 describe("a plain folder", () => {
   test("a folder that isn't a git repo is onboarded from a snapshot; the folder is left untouched", async () => {
     const dir = path.join(tmp, "plain");

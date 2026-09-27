@@ -10,10 +10,11 @@ export function needsOf(s: ProjectState): Need[] {
   const out: Need[] = [];
   for (const g of Object.values(s.gates)) {
     if (g.decision) continue;
-    if (g.kind === "plan" && s.tasks[g.subject]?.stage === "halted") continue;
+    if (g.kind !== "onboarding" && s.tasks[g.subject]?.stage === "halted") continue;
+    const t = g.kind === "onboarding" ? undefined : s.tasks[g.subject];
     out.push({
-      kind: "gate", key: `gate:${g.id}`, gateId: g.id, taskId: g.kind === "plan" ? g.subject : undefined, tone: g.verdict,
-      title: g.kind === "onboarding" ? "Approve the rules check for this repo" : `Approve the plan for ${g.subject}`,
+      kind: "gate", key: `gate:${g.id}`, gateId: g.id, taskId: t?.taskId, tone: g.verdict,
+      title: g.kind === "onboarding" ? "Approve the rules check for this repo" : g.kind === "plan" ? `Approve the plan for ${g.subject}` : `Phase ${t?.phase} of ${g.subject} landed — plan the next one?`,
     });
   }
   for (const tid of s.taskOrder) {
@@ -35,7 +36,7 @@ export function labelOf(sub: string): string {
   const names: Record<string, string> = {
     clone: "copying the repository", onboard: "onboarding", pm: "project manager", architect: "architect",
     prepare: "preparing its copy", work: "worker", verify: "checking the work", merge: "merging", repair: "architect re-aiming the packet",
-    accept: "checking the finished task against the spec", complete: "architect closing the gap to the spec",
+    accept: "checking the finished task against the spec", complete: "architect closing the gap to the spec", phase: "architect planning the next phase",
   };
   if (!b) return names[a] ?? a;
   if (!c) return `${a}, ${names[b] ?? b}`;

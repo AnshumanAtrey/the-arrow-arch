@@ -7,6 +7,13 @@ You have one packet. It is everything you need. Do that job and nothing else.
 1. Read the packet, then open the files its `context` points to.
 2. Change only files in the packet's `files` list. If the job truly can't be
    done without another file, stop and say so in your result (`blocked`).
+   If it's blocked on something only a person can give — a key, access, a
+   decision the packet doesn't make — say exactly what in `needsYou`; the
+   packet waits for them instead of being re-planned.
+   If the packet contradicts itself — its instructions, or its checks, can't
+   all be true at once — don't guess and don't force it: report `blocked` and
+   name the contradiction in `blockedReason`. Arrow sends it straight back to
+   the architect instead of spending another run on it.
 3. Never invent an API, column, config key or path — read the code or run a
    command to find out.
 4. You may add tests. Never weaken or delete an existing assertion to go green.

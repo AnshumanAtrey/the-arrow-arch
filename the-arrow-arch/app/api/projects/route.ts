@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { checkBranch, checkRepoSource } from "@/engine/git";
-import { project } from "@/engine/project";
+import { project, runningJobs } from "@/engine/project";
 import { append, listProjectIds, newProjectId, readEvents } from "@/engine/store";
 import { needsOf } from "@/lib/needs";
 
@@ -11,9 +11,11 @@ export async function GET() {
   const projects = listProjectIds().map((id) => {
     const s = project(id, readEvents(id));
     const active = s.taskOrder.map((t) => s.tasks[t]).filter((t) => t.stage !== "landed" && t.stage !== "halted");
+    const needs = needsOf(s).map((n) => ({ key: n.key, title: n.title, taskId: n.taskId, tone: n.tone }));
     return {
       id, name: s.name, repoUrl: s.repoUrl, stage: s.stage, updatedAt: s.updatedAt,
-      tasks: s.taskOrder.length, activeTasks: active.length, needs: needsOf(s).length,
+      tasks: s.taskOrder.length, activeTasks: active.length, needs: needs.length, needList: needs,
+      running: runningJobs(s).filter((j) => j.role !== "orchestrator").length,
     };
   });
   projects.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));

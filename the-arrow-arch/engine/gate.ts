@@ -7,7 +7,8 @@
  */
 import { matchesAny } from "./glob";
 import { HOUSE_RULES, normaliseOutcomes, type HouseSettings } from "./house-rules";
-import type { Gate, GateItem, Plan, Profile, Recommendation, Rule, Spec } from "./types";
+import { phaseGateId } from "./types";
+import type { Gate, GateItem, Plan, Profile, Recommendation, Rule, Spec, TaskView } from "./types";
 
 const verdictOf = (items: GateItem[], rec: Recommendation): Gate["verdict"] =>
   items.some((i) => i.level === "critical") || rec.decision === "stop" ? "red" : "green";
@@ -103,6 +104,29 @@ export function planGate(taskId: string, plan: Plan, spec: Spec, rules: Rule[], 
     verdict: verdictOf(items, plan.advice),
     items,
     recommendation: plan.advice,
+  };
+}
+
+/** After a phase lands: what is on the task branch now, and what the next phase will do. */
+export function phaseGate(t: TaskView): Gate {
+  const [next, ...later] = t.plan?.nextPhases ?? [];
+  const landed = t.order.map((id) => t.packets[id].packet);
+  const items: GateItem[] = [
+    { level: "ok", title: `Phase ${t.phase} landed on ${t.branch}`, detail: landed.map((p) => `${p.id} ${p.title}`).join("; ") },
+    { level: "ok", title: `Phase ${t.phase + 1}, planned once you approve`, detail: next ?? "" },
+  ];
+  if (later.length) items.push({ level: "ok", title: "After that", detail: later.join("; ") });
+  return {
+    id: phaseGateId(t),
+    kind: "phase",
+    subject: t.taskId,
+    verdict: "green",
+    items,
+    recommendation: {
+      decision: "continue",
+      reason: `Every packet so far is proven and merged. Look at ${t.branch} before the architect plans phase ${t.phase + 1}; a note you add goes to it.`,
+      suggestions: [],
+    },
   };
 }
 

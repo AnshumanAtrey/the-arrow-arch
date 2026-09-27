@@ -7,7 +7,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { decide, type Action } from "./decide";
-import { onboardingGate, planGate } from "./gate";
+import { onboardingGate, phaseGate, planGate } from "./gate";
 import * as git from "./git";
 import { DEFAULTS, effectiveSettings, HOUSE_RULES } from "./house-rules";
 import { fromRun, job } from "./jobs";
@@ -19,7 +19,7 @@ import { project } from "./project";
 import * as roles from "./roles";
 import { append, paths, readEvents } from "./store";
 import { subject } from "./types";
-import type { GateItem, Plan, ProjectState } from "./types";
+import type { Gate, GateItem, ProjectState } from "./types";
 
 const inflight = new Set<string>(); // dispatched this process, job.started may not be on disk yet
 /** Steps in progress — the ledger refresh is housekeeping, not a step. */
@@ -83,7 +83,8 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
     case "onboard":
       return job(pid, { role: "onboarder", subject: subject.onboard, attempt: a.attempt }, async (ctx) => {
         const r = await roles.onboarder({
-          ...ctx, env: scrubbedEnv(), feedback: a.feedback,
+          // sent back by a person: the same session looks again, so nothing is re-read from scratch
+          ...ctx, env: scrubbedEnv(), feedback: a.feedback, humanNote: a.human, resume: a.human ? s.sessions[subject.onboard] : undefined,
           input: { repoPath: repo, repoUrl: s.repoUrl, rulesText: s.rulesText, houseRules: HOUSE_RULES, houseDefaults: DEFAULTS },
         });
         if (r.result) {
@@ -99,7 +100,7 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
       });
 
     case "open_onboarding_gate":
-      append(pid, { type: "gate.opened", gate: onboardingGate(s.profile!, await toolchainItems(s)) });
+      append(pid, { type: "gate.opened", gate: fresh(s, onboardingGate(s.profile!, await toolchainItems(s))) });
       return;
 
     case "pm": {
@@ -117,7 +118,7 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
       return job(pid, { role: "architect", subject: subject.architect(a.taskId), attempt: a.attempt }, async (ctx) => {
         await git.ensureIntegration(repo); // the architect reads the repo as it is after every landed task
         const r = await roles.architect({
-          ...ctx, env: scrubbedEnv(), cwd: repo, feedback: a.feedback,
+          ...ctx, env: scrubbedEnv(), cwd: repo, feedback: a.feedback, humanNote: a.human, resume: a.human ? s.sessions[subject.architect(a.taskId)] : undefined,
           input: { taskId: a.taskId, task: t.text, spec: t.spec!, answers: t.answers ?? {}, profile: s.profile!, house, knowledge },
         });
         if (!r.result) return fromRun(r);
@@ -135,9 +136,13 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
     case "open_plan_gate": {
       const t = s.tasks[a.taskId];
       const house = effectiveSettings(s.profile!.houseRules, true);
-      append(pid, { type: "gate.opened", gate: planGate(a.taskId, t.plan!, t.spec!, s.profile!.rules, house) });
+      append(pid, { type: "gate.opened", gate: fresh(s, planGate(a.taskId, t.plan!, t.spec!, s.profile!.rules, house)) });
       return;
     }
+
+    case "open_phase_gate":
+      append(pid, { type: "gate.opened", gate: phaseGate(s.tasks[a.taskId]) });
+      return;
 
     case "park":
       append(pid, { type: "step.parked", subject: a.subject, reason: a.reason });
@@ -146,6 +151,13 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
     default:
       return runPacketStep(pid, s, a);
   }
+}
+
+/** A check that was sent back opens again under a new id: plan-T1, then plan-T1-2. */
+function fresh(s: ProjectState, g: Gate): Gate {
+  let id = g.id;
+  for (let n = 2; s.gates[id]; n++) id = `${g.id}-${n}`;
+  return { ...g, id };
 }
 
 /** "Node.js" -> "node": a runtime is checked by its executable. */

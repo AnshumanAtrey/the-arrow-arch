@@ -15,7 +15,7 @@ export function EngineStatus() {
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-ink-2">
       <span className="flex items-center gap-2">
-        <span className={`h-2 w-2 rounded-full ${o?.live ? "bg-green" : "bg-red"}`} aria-hidden="true" />
+        <span className={`mark ${o?.live ? "mark-ink" : "mark-accent calling"}`} aria-hidden="true" />
         {o?.live ? (
           <>Orchestrator running{o.running ? `, ${o.running} step${o.running === 1 ? "" : "s"} in progress` : ""}</>
         ) : (
@@ -27,11 +27,11 @@ export function EngineStatus() {
       {o && (
         <span title={Object.entries(o.drivers).map(([r, d]) => `${r}: ${d}`).join("\n")}>
           Agents: {engines.join(", ")}
-          {mock && <span className="ml-2 rounded bg-gold-soft px-1.5 py-0.5 text-gold-ink">mock — no model is called</span>}
+          {mock && <span className="chip chip-quiet ml-2">mock — no model is called</span>}
         </span>
       )}
       {data?.bobKey === false && (
-        <Link href="/settings" className="rounded bg-red-soft px-1.5 py-0.5 text-red">Bob needs an API key — add it in Settings</Link>
+        <Link href="/settings" className="chip chip-accent">Bob needs an API key — add it in Settings</Link>
       )}
     </div>
   );

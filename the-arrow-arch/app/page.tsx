@@ -4,7 +4,8 @@ import Link from "next/link";
 import type { ProjectStage } from "@/engine/types";
 import { ago, usePoll } from "@/lib/client";
 
-type Row = { id: string; name: string; repoUrl: string; stage: ProjectStage; updatedAt: string; tasks: number; activeTasks: number; needs: number };
+type Need = { key: string; title: string; taskId?: string };
+type Row = { id: string; name: string; repoUrl: string; stage: ProjectStage; updatedAt: string; tasks: number; activeTasks: number; needs: number; needList: Need[]; running: number };
 
 const stageWords: Record<ProjectStage, string> = {
   cloning: "Copying the repo",
@@ -29,14 +30,35 @@ export default function Home() {
             re-run the proof itself.
           </p>
         </div>
-        <Link href="/onboard" className="shrink-0 self-start rounded-md bg-ink px-5 py-2.5 text-[15px] font-semibold text-paper sm:self-auto">
+        <Link href="/onboard" className="btn btn-primary shrink-0 self-start sm:self-auto">
           Onboard a repository
         </Link>
       </div>
 
+      {projects.some((p) => p.needList.length) && (
+        <div className="mt-12">
+          <h2 className="heading mb-3 border-b border-rule pb-2 text-[18px]">Waiting on you</h2>
+          <ul className="divide-y divide-rule">
+            {projects.flatMap((p) =>
+              p.needList.map((n) => (
+                <li key={`${p.id}:${n.key}`}>
+                  <Link href={n.taskId ? `/p/${p.id}/t/${n.taskId}#needs` : `/p/${p.id}#needs`} className="grid grid-cols-1 gap-1 py-3 hover:bg-well sm:grid-cols-[1fr_16rem] sm:items-baseline sm:gap-4 sm:px-2">
+                    <span className="inline-flex items-baseline gap-2.5 text-[15px] text-accent-ink">
+                      <span className="mark mark-accent translate-y-[-1px]" aria-hidden="true" />
+                      {n.title}
+                    </span>
+                    <span className="truncate text-[13px] text-ink-3 sm:text-right">{p.name}</span>
+                  </Link>
+                </li>
+              )),
+            )}
+          </ul>
+        </div>
+      )}
+
       <div className="mt-12">
         <h2 className="heading mb-3 border-b border-rule pb-2 text-[18px]">Repositories</h2>
-        {error && <p className="text-[14px] text-red">{error}</p>}
+        {error && <p className="text-[14px] text-accent-ink">{error}</p>}
         {data && projects.length === 0 && (
           <div className="rounded-lg border border-dashed border-rule-strong px-6 py-10">
             <p className="heading text-[17px]">No repositories yet</p>
@@ -44,7 +66,7 @@ export default function Home() {
               Start with one: paste a GitHub URL or a local path, add your team&apos;s rules, and Arrow will learn the repo and
               check it against them.
             </p>
-            <Link href="/onboard" className="mt-4 inline-block rounded-md border border-ink px-4 py-2 text-[14px] font-semibold">
+            <Link href="/onboard" className="btn btn-secondary mt-4">
               Onboard a repository
             </Link>
           </div>
@@ -52,14 +74,19 @@ export default function Home() {
         <ul className="divide-y divide-rule">
           {projects.map((p) => (
             <li key={p.id}>
-              <Link href={`/p/${p.id}`} className="grid grid-cols-1 gap-1 py-4 hover:bg-panel sm:grid-cols-[1fr_12rem_9rem] sm:items-baseline sm:gap-4 sm:px-2">
-                <span>
+              <Link href={`/p/${p.id}`} className="grid grid-cols-1 gap-1 py-4 hover:bg-well sm:grid-cols-[1fr_12rem_9rem] sm:items-baseline sm:gap-4 sm:px-2">
+                <span className="min-w-0">
                   <span className="heading block text-[17px]">{p.name}</span>
                   <span className="block truncate font-mono text-[12px] text-ink-3">{p.repoUrl}</span>
                 </span>
                 <span className="text-[14px] text-ink-2">
-                  {p.needs > 0 ? <span className="text-gold-ink">{p.needs} waiting on you</span> : stageWords[p.stage]}
-                  {p.tasks > 0 && <span className="block text-[13px] text-ink-3">{p.activeTasks} active of {p.tasks} task{p.tasks === 1 ? "" : "s"}</span>}
+                  {p.needs > 0 ? <span className="inline-flex items-center gap-2 text-accent-ink"><span className="mark mark-accent" aria-hidden="true" />{p.needs} waiting on you</span> : stageWords[p.stage]}
+                  {p.tasks > 0 && (
+                    <span className="block text-[13px] text-ink-3">
+                      {p.activeTasks} active of {p.tasks} task{p.tasks === 1 ? "" : "s"}
+                      {p.running > 0 && `, ${p.running} agent${p.running === 1 ? "" : "s"} running`}
+                    </span>
+                  )}
                 </span>
                 <span className="text-[13px] text-ink-3 sm:text-right">{ago(p.updatedAt)}</span>
               </Link>

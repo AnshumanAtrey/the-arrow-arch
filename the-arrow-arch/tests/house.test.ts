@@ -105,7 +105,7 @@ describe("onboarding tunes the house rules", () => {
 const at = "2026-09-27T00:00:00.000Z";
 const ev = (e: object) => ({ at, ...e }) as ArrowEvent;
 const plan: Plan = {
-  summary: "s", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] },
+  summary: "s", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] }, nextPhases: [],
   packets: ["P1", "P2"].map((id) => ({ id, module: "M1", title: id, objective: "o", context: "", files: [`src/${id}.ts`], deps: [], verification: ["true"], regression: [], risk: "low" as const, kind: "change" as const, newDependencies: [], env: [] })),
 };
 const prof: Profile = {

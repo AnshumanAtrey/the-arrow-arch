@@ -1,5 +1,5 @@
 /** Where the arrow is: onboarding -> project manager -> architect -> workers -> landed. */
-import type { ProjectState, TaskView } from "@/engine/types";
+import { phaseGateId, type ProjectState, type TaskView } from "@/engine/types";
 
 export type Tone = "blue" | "gold" | "red" | "green";
 export type Flight = { stations: { name: string; detail: string }[]; at: number; tone: Tone };
@@ -46,8 +46,14 @@ export function flightOf(s: ProjectState, t?: TaskView): Flight {
     case "plan_gate":
       stations[2].detail = gate?.verdict === "red" ? "Plan touches a critical rule, your call" : "All green, waiting for your approval";
       return { stations, at: 2, tone: gate?.verdict === "red" ? "red" : "gold" };
-    case "building":
+    case "building": {
+      const checkpoint = s.gates[phaseGateId(t)];
+      if (checkpoint && !checkpoint.decision) {
+        stations[3].detail = `Phase ${t.phase} landed, waiting for you`;
+        return { stations, at: 3, tone: "gold" };
+      }
       return { stations, at: 3, tone: parked ? "gold" : "blue" };
+    }
     case "landed":
       return { stations, at: 4, tone: "green" };
     case "halted":

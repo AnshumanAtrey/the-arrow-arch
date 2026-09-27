@@ -15,6 +15,9 @@ import type { Driver } from "./driver";
 const SENSITIVE = /secret|credential|password|token|auth|permission|migration|schema|production|prod\b|deploy|delete|drop|pii|payment|billing|licen[cs]e/i;
 
 export const mock: Driver = async (r) => {
+  // the same log layout as a real engine, so the prompt it was given can be read back
+  fs.mkdirSync(path.dirname(r.logFile), { recursive: true });
+  fs.appendFileSync(r.logFile, `$ mock ${r.role}\n\n----- prompt -----\n${r.prompt}\n----- output -----\n`);
   await new Promise((res) => setTimeout(res, LIMITS.mockDelayMs));
   const input = r.input as Record<string, unknown>;
   let out: unknown;
@@ -170,8 +173,19 @@ function pm({ task, profile }: PmInput): Spec {
   };
 }
 
-function architect({ taskId, spec, profile }: ArchitectInput): Plan {
+function architect({ taskId, spec, profile, phase }: ArchitectInput): Plan {
   const dir = `arrow-demo/${taskId.toLowerCase()}`;
+  if (phase) {
+    const f = `${dir}/phase-${phase.number}.ts`;
+    return {
+      summary: `Phase ${phase.number}: ${phase.ahead[0]}. (Mock architect.)`,
+      modules: [],
+      packets: [{ id: `PH${phase.number}`, module: "M1", title: phase.ahead[0], objective: phase.ahead[0], context: spec.intent, files: [f], deps: [], verification: [`test -s ${f}`], regression: [], risk: "low", kind: "change", newDependencies: [], env: [] }],
+      rulesImpact: [],
+      advice: { decision: "continue", reason: "Builds on what landed in the earlier phase.", suggestions: [] },
+      nextPhases: phase.ahead.slice(1),
+    };
+  }
   const guarded = profile.rules.find((r) => r.criticality === "critical" && r.protectedPaths.length && spec.rulesTouched.includes(r.id));
   const mk = (id: string, title: string, files: string[], deps: string[] = []): Packet => ({
     id, module: "M1", title, objective: `${title} — for: ${spec.title}`, context: spec.intent, files, deps,
@@ -191,6 +205,7 @@ function architect({ taskId, spec, profile }: ArchitectInput): Plan {
     advice: guarded
       ? { decision: "stop", reason: `The task reaches into a protected area (${guarded.protectedPaths[0]}).`, suggestions: ["Confirm this change is intended, or reword the task to stay outside the protected path."] }
       : { decision: "continue", reason: "Every packet stays inside allowed paths.", suggestions: [] },
+    nextPhases: spec.methodology.mode === "one_shot" ? [] : ["Finish what the first phase started"],
   };
 }
 

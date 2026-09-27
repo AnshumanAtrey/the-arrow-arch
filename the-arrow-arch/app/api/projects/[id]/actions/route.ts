@@ -7,15 +7,16 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { project } from "@/engine/project";
 import { append, paths, readEvents } from "@/engine/store";
+import { labelOf } from "@/lib/needs";
 
 export const dynamic = "force-dynamic";
 
 const id = z.string().trim().min(1).max(80);
 const Action = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("decide_gate"), gateId: id, decision: z.enum(["approve", "stop"]), note: z.string().max(2000).optional() }),
+  z.object({ type: z.literal("decide_gate"), gateId: id, decision: z.enum(["approve", "stop", "revise"]), note: z.string().max(2000).optional() }),
   z.object({ type: z.literal("submit_task"), text: z.string().trim().min(10, "Describe the task in a sentence or two.").max(8000) }),
   z.object({ type: z.literal("answer"), taskId: id, answers: z.record(z.string(), z.string().trim().min(1).max(2000)) }),
-  z.object({ type: z.literal("retry"), subject: id }),
+  z.object({ type: z.literal("retry"), subject: id, note: z.string().max(2000).optional() }),
   z.object({ type: z.literal("halt"), taskId: id, reason: z.string().max(2000).optional() }),
   z.object({ type: z.literal("freeze"), frozen: z.boolean(), reason: z.string().max(500).optional() }),
 ]);
@@ -38,12 +39,14 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     case "decide_gate": {
       const g = s.gates[a.gateId];
       if (!g) return bad("That check doesn't exist.", 404);
-      if (g.decision) return bad(`This check was already ${g.decision === "approve" ? "approved" : "stopped"}.`);
-      // stopping a plan halts its task; stopping onboarding stops the project (see project.ts)
+      if (g.decision) return bad(`This check was already ${{ approve: "approved", stop: "stopped", revise: "sent back" }[g.decision]}.`);
+      if (a.decision === "revise" && g.kind === "phase") return bad("A phase check is approved (with a note for the architect) or stopped.", 400);
+      if (a.decision === "revise" && !a.note?.trim()) return bad("Say what should change — that note is what the agent works from.", 400);
+      // stopping a plan halts its task; stopping onboarding stops the project; sending back re-runs the agent (see project.ts)
       append(pid, { type: "gate.decided", gateId: a.gateId, decision: a.decision, note: a.note?.trim() || undefined });
-      // a person's reason is a decision the agents must follow from now on
-      if (a.note?.trim())
-        append(pid, { type: "knowledge.recorded", entries: [{ kind: "decision", text: a.note.trim(), source: `you, at the ${g.kind === "plan" ? `plan check for ${g.subject}` : "rules check"}` }] });
+      // a person's reason is a decision the agents must follow from now on; a send-back note steers only the re-run
+      if (a.note?.trim() && a.decision !== "revise")
+        append(pid, { type: "knowledge.recorded", entries: [{ kind: "decision", text: a.note.trim(), source: `you, at the ${g.kind === "onboarding" ? "rules check" : `${g.kind} check for ${g.subject}`}` }] });
       break;
     }
     case "submit_task": {
@@ -66,7 +69,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     }
     case "retry": {
       if (!s.parked[a.subject]) return bad("That step isn't paused.");
-      append(pid, { type: "step.retried", subject: a.subject });
+      // what you tell it becomes a decision every agent reads from now on, the retried one first
+      if (a.note?.trim()) append(pid, { type: "knowledge.recorded", entries: [{ kind: "decision", text: a.note.trim(), source: `you, resuming ${labelOf(a.subject)}` }] });
+      append(pid, { type: "step.retried", subject: a.subject, note: a.note?.trim() || undefined });
       break;
     }
     case "halt": {

@@ -42,6 +42,13 @@ rebuilding it every few seconds from the event log and what the machine really
 runs (`ps`, `lsof`, `git worktree`). Anything a finished agent left behind is
 reaped. Agents read it; they never edit it.
 
+**You stay in the loop** at every check: approve, stop, or send it back to the
+agent with a note (it re-runs in the same session and a new check opens). A
+phased task stops after each phase for you to look before the next is planned.
+A paused step resumes with your instructions. Each task page is one tree —
+project manager, architect, every packet, every run — and any run opens to the
+exact prompt it was given and each step it took.
+
 **House rules** (defaults, changeable per company at onboarding): files 300 lines,
 cap 500 · no new markdown files · no TODO placeholders · no secrets · new
 dependencies need approval · 400 changed lines per packet · typecheck and lint on
@@ -61,6 +68,6 @@ Data lives in `.arrow-data/` (git-ignored): one event log per repo, the clone,
 worktrees, agent transcripts, `settings.json`.
 
 ```sh
-bun test               # 55 tests
+bun test               # 68 tests
 bunx tsc --noEmit      # typecheck
 ```

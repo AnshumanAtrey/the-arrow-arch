@@ -175,6 +175,23 @@ export async function ensureIntegration(repo: string) {
   await ok(repo, "checkout", "--quiet", INTEGRATION);
 }
 
+/**
+ * A throwaway, detached copy of a branch, for reading a task as it stands (its
+ * finished whole, or the phases landed so far) without touching any packet's
+ * worktree. It lives outside worktrees/, so the ledger never reaps it mid-run.
+ */
+export async function withSnapshot<T>(repo: string, dir: string, ref: string, use: (dir: string) => Promise<T>): Promise<T> {
+  await git(repo, "worktree", "remove", "--force", dir);
+  fs.rmSync(dir, { recursive: true, force: true });
+  fs.mkdirSync(path.dirname(dir), { recursive: true });
+  await ok(repo, "worktree", "add", "--detach", "--quiet", dir, ref);
+  try {
+    return await use(dir);
+  } finally {
+    await git(repo, "worktree", "remove", "--force", dir);
+  }
+}
+
 /** A landed task moves arrow/main forward, so the next task starts on top of it. */
 export async function advanceIntegration(repo: string, branch: string): Promise<boolean> {
   await ensureIntegration(repo);

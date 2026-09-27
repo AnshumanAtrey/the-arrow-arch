@@ -61,7 +61,7 @@ export default function Onboard() {
       </p>
 
       {engine && engine.harnesses.includes("bob") && (
-        <div className={`mt-6 rounded-md px-4 py-3 text-[14px] ${engine.bob.installed && engine.keySet ? "bg-green-soft" : "bg-gold-soft"}`}>
+        <div className={`mt-6 rounded-md px-4 py-3 text-[14px] ${engine.bob.installed && engine.keySet ? "bg-well" : "bg-accent-soft"}`}>
           <p className="heading">Before you start</p>
           <p>{engine.bob.installed ? `Bob Shell ${engine.bob.version} is installed.` : "Bob Shell isn't installed on this machine yet (bob.ibm.com/docs/shell)."}</p>
           <p>
@@ -79,7 +79,7 @@ export default function Onboard() {
             value={repoUrl}
             onChange={(e) => setRepoUrl(e.target.value)}
             placeholder="https://github.com/acme/checkout-service"
-            className="mt-2 block w-full rounded-md border border-rule bg-panel px-3 py-2.5 font-mono text-[14px]"
+            className="mt-2 block w-full rounded-md border border-rule-strong bg-white px-3 py-2.5 font-mono text-[14px]"
             autoComplete="off"
             spellCheck={false}
           />
@@ -88,7 +88,7 @@ export default function Onboard() {
         <label className="block max-w-xs">
           <span className="heading text-[15px]">Branch</span>
           <span className="block text-[13px] text-ink-3">Leave empty for the default branch.</span>
-          <input value={branch} onChange={(e) => setBranch(e.target.value)} placeholder="main" className="mt-2 block w-full rounded-md border border-rule bg-panel px-3 py-2.5 font-mono text-[14px]" spellCheck={false} />
+          <input value={branch} onChange={(e) => setBranch(e.target.value)} placeholder="main" className="mt-2 block w-full rounded-md border border-rule-strong bg-white px-3 py-2.5 font-mono text-[14px]" spellCheck={false} />
         </label>
 
         <div>
@@ -104,7 +104,7 @@ export default function Onboard() {
             rows={9}
             maxLength={20_000}
             placeholder={EXAMPLE}
-            className="mt-2 block w-full rounded-md border border-rule bg-panel px-3 py-2.5 text-[14px] leading-relaxed"
+            className="mt-2 block w-full rounded-md border border-rule-strong bg-white px-3 py-2.5 text-[14px] leading-relaxed"
           />
           <div className="mt-2 flex flex-wrap items-center gap-4 text-[13px]">
             <label className="cursor-pointer text-ink-2 underline decoration-rule-strong underline-offset-4 hover:text-ink">
@@ -121,10 +121,10 @@ export default function Onboard() {
       </div>
 
       <div className="mt-8 flex items-center gap-4">
-        <button type="submit" disabled={busy || !repoUrl.trim()} className="rounded-md bg-ink px-5 py-2.5 text-[15px] font-semibold text-paper disabled:opacity-50">
+        <button type="submit" disabled={busy || !repoUrl.trim()} className="btn btn-primary">
           {busy ? "Starting…" : "Start onboarding"}
         </button>
-        {error && <p className="text-[14px] text-red" role="alert">{error}</p>}
+        {error && <p className="text-[14px] text-accent-ink" role="alert">{error}</p>}
       </div>
     </form>
   );
