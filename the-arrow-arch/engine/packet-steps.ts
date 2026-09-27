@@ -21,7 +21,7 @@ import { subject } from "./types";
 import type { Packet, ProjectState } from "./types";
 import { NO_PRODUCTION_NOTE, verifyPacket } from "./verify";
 
-type PacketAction = Extract<Action, { kind: "prepare" | "work" | "verify" | "merge" | "repair" | "accept" | "complete" | "phase" | "land" }>;
+type PacketAction = Extract<Action, { kind: "prepare" | "work" | "verify" | "merge" | "repair" | "accept" | "complete" | "phase" | "report" | "land" }>;
 
 export const packetBranch = (t: string, p: string) => `arrow/${t.toLowerCase()}--${p.toLowerCase()}`;
 export const worktreeDir = (pid: string, t: string, p: string) => path.join(paths(pid).worktrees, `${t}--${p}`);
@@ -77,7 +77,7 @@ export async function runPacketStep(pid: string, s: ProjectState, a: PacketActio
       const r = await roles.completer({
         ...ctx, cwd, env: scrubbedEnv(), feedback: a.feedback,
         input: {
-          taskId: a.taskId, spec: t.spec!, failures: t.acceptance?.failures ?? [], report: t.acceptance?.report ?? [],
+          taskId: a.taskId, spec: t.spec!, failures: a.gaps, report: t.acceptance?.report ?? [],
           landedPackets: t.order.map((id) => t.packets[id].packet), profile: s.profile!, house, knowledge: s.knowledge,
         },
       });
@@ -85,7 +85,25 @@ export async function runPacketStep(pid: string, s: ProjectState, a: PacketActio
       const problem = followUpProblem(t, r.result.packets);
       if (problem) return { ...fromRun(r), ok: false, failure: { class: "bad_output", message: problem } };
       await git.ensureIntegration(repo);
-      append(pid, { type: "plan.extended", taskId: a.taskId, packets: r.result.packets, reason: `Closing the gap to the spec: ${(t.acceptance?.failures ?? []).join("; ")}`, by: "completion" });
+      append(pid, { type: "plan.extended", taskId: a.taskId, packets: r.result.packets, reason: `Closing the gap to the spec: ${a.gaps.join("; ")}`, by: "completion" });
+      return fromRun(r);
+    }));
+
+  if (a.kind === "report")
+    return job(pid, { role: "pm", subject: subject.report(a.taskId), attempt: a.attempt }, (ctx) => snapshot(async (cwd) => {
+      const r = await roles.reporter({
+        ...ctx, cwd, env: scrubbedEnv(), feedback: a.feedback,
+        input: {
+          taskId: a.taskId, task: t.text, spec: t.spec!, answers: t.answers ?? {}, acceptance: t.acceptance?.report ?? [],
+          packets: t.order.map((id) => ({ id, title: t.packets[id].packet.title, objective: t.packets[id].packet.objective, files: t.packets[id].packet.files, proof: t.packets[id].report ?? [] })),
+          profile: s.profile!, knowledge: s.knowledge,
+        },
+      });
+      if (!r.result) return fromRun(r);
+      // every "done means" gets a verdict; one left out is not quietly passed
+      const missing = t.spec!.acceptance.filter((c) => !r.result!.criteria.some((x) => x.id === c.id)).map((c) => c.id);
+      if (missing.length) return { ...fromRun(r), ok: false, failure: { class: "bad_output", message: `The review skipped ${missing.join(", ")} — judge every criterion.` } };
+      append(pid, { type: "task.reported", taskId: a.taskId, report: r.result });
       return fromRun(r);
     }));
 

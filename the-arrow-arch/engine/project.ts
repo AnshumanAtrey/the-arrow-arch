@@ -211,6 +211,12 @@ export function project(pid: string, events: ArrowEvent[]): ProjectState {
           tAcc.acceptance = undefined;
           resetRuns(subject.complete(tAcc.taskId));
         }
+        // a review sent back by a person is written again (their note is in knowledge)
+        const tRep = e.subject.endsWith(":report") ? s.tasks[e.subject.split(":")[0]] : undefined;
+        if (tRep) {
+          tRep.report = undefined;
+          resetRuns(subject.complete(tRep.taskId));
+        }
         const hit = packetOf(e.subject);
         if (hit && hit[1].status === "parked") {
           const kind = e.subject.split(":")[2];
@@ -243,8 +249,10 @@ export function project(pid: string, events: ArrowEvent[]): ProjectState {
           t.phase += 1;
           delete s.humanNotes[subject.phase(e.taskId)];
         }
-        t.acceptance = undefined; // new work: the finished whole is checked again
+        t.acceptance = undefined; // new work: the finished whole is checked, and reviewed, again
+        t.report = undefined;
         resetRuns(subject.accept(e.taskId));
+        resetRuns(subject.report(e.taskId));
         break;
       }
       case "task.accepted":
@@ -254,6 +262,10 @@ export function project(pid: string, events: ArrowEvent[]): ProjectState {
       case "task.unaccepted":
         if (s.tasks[e.taskId]) s.tasks[e.taskId].acceptance = { ok: false, report: e.report, failures: e.failures };
         step(s.tasks[e.taskId], e.at, { kind: "unaccepted", report: e.report, failures: e.failures });
+        break;
+      case "task.reported":
+        if (s.tasks[e.taskId]) s.tasks[e.taskId].report = e.report;
+        step(s.tasks[e.taskId], e.at, { kind: "reported", unmet: e.report.criteria.filter((c) => c.verdict === "not_met").map((c) => c.id) });
         break;
       case "task.landed":
         if (s.tasks[e.taskId]) s.tasks[e.taskId].landed = { branch: e.branch, head: e.head };

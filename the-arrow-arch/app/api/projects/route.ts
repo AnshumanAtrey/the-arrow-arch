@@ -4,6 +4,7 @@ import { checkBranch, checkRepoSource } from "@/engine/git";
 import { project, runningJobs } from "@/engine/project";
 import { append, listProjectIds, newProjectId, readEvents } from "@/engine/store";
 import { needsOf } from "@/lib/needs";
+import { fromThisSite } from "@/lib/same-site";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ const Body = z.object({
 });
 
 export async function POST(req: Request) {
+  if (!fromThisSite(req)) return NextResponse.json({ error: "Actions come from Arrow's own pages." }, { status: 403 });
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid request." }, { status: 400 });
   const { repoUrl, branch, rulesText } = parsed.data;

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import { NextResponse } from "next/server";
+import { LIMITS } from "@/engine/config";
 import { effectiveSettings } from "@/engine/house-rules";
 import { readLedger } from "@/engine/ledger-scan";
 import { metrics, taskNumbers } from "@/engine/metrics";
@@ -30,6 +31,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     house: state.profile ? effectiveSettings(state.profile.houseRules, approved) : null,
     numbers: Object.fromEntries(state.taskOrder.map((t) => [t, taskNumbers(state, t, events, now)])),
     now: nowLines(p.logs, state),
+    // the finished work of each task opens at <preview>/<task>/ (served by the orchestrator, another origin)
+    preview: `http://localhost:${LIMITS.previewPort}/${id}`,
   });
 }
 

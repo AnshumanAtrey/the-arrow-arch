@@ -207,6 +207,46 @@ describe("human in the loop", () => {
   });
 });
 
+describe("the final report", () => {
+  test("the project manager reviews the finished task before it lands; a gap it finds goes back to the architect", async () => {
+    const pid = start("");
+    let s = await until(pid, (s) => Boolean(s.onboardingGateId));
+    store.append(pid, { type: "gate.decided", gateId: s.onboardingGateId!, decision: "approve" });
+    store.append(pid, { type: "task.submitted", taskId: "T1", text: "Add a helper. #pmgap" });
+    s = await until(pid, (s) => Boolean(s.tasks.T1?.planGateId));
+    store.append(pid, { type: "gate.decided", gateId: "plan-T1", decision: "approve" });
+    s = await until(pid, (s) => s.tasks.T1.stage === "landed");
+    const t = s.tasks.T1;
+    const reviews = t.timeline.filter((x) => x.kind === "reported");
+    expect(reviews.map((x) => x.kind === "reported" && x.unmet)).toEqual([["A1"], []]); // first review: A1 not met; after the gap closed: all met
+    expect(t.order).toContain("PG1");
+    expect(t.packets.PG1.origin?.reason).toContain("project manager's review");
+    expect(t.report?.criteria.every((c) => c.verdict === "met")).toBe(true);
+    expect(t.timeline.findIndex((x) => x.kind === "landed")).toBeGreaterThan(t.timeline.findLastIndex((x) => x.kind === "reported"));
+  });
+
+  test("the finished work is served from git at the landed commit — files only, nothing outside the task", async () => {
+    const { preview } = await import("../engine/preview");
+    const pid = start("");
+    let s = await until(pid, (s) => Boolean(s.onboardingGateId));
+    store.append(pid, { type: "gate.decided", gateId: s.onboardingGateId!, decision: "approve" });
+    store.append(pid, { type: "task.submitted", taskId: "T1", text: "Add a helper." });
+    s = await until(pid, (s) => Boolean(s.tasks.T1?.planGateId));
+    store.append(pid, { type: "gate.decided", gateId: "plan-T1", decision: "approve" });
+    s = await until(pid, (s) => s.tasks.T1.stage === "landed");
+    const file = await preview(`/${pid}/T1/arrow-demo/t1/index.ts`);
+    expect(file.status).toBe(200);
+    expect(file.type).toContain("text/plain"); // source a browser can't run is shown, not downloaded
+    expect(String(file.body)).toContain("mock worker"); // the worker's file, read from the landed commit
+    expect((await preview(`/${pid}/T1/`)).location).toBe(`/${pid}/T1/index.html`);
+    expect((await preview(`/${pid}/T1/nope.txt`)).status).toBe(404);
+    expect((await preview(`/${pid}/T1/arrow-demo`)).status).toBe(404); // a folder is not a file
+    expect((await preview(`/${pid}/T1/../../events.jsonl`)).status).toBe(400); // ".." is refused: nothing outside the task
+    expect((await preview(`/${pid}/T1/a/%2e%2e/b`)).status).toBe(400);
+    expect((await preview(`/nobody/T1/index.html`)).status).toBe(404);
+  });
+});
+
 describe("a plain folder", () => {
   test("a folder that isn't a git repo is onboarded from a snapshot; the folder is left untouched", async () => {
     const dir = path.join(tmp, "plain");

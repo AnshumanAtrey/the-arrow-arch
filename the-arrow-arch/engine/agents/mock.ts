@@ -7,7 +7,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { LIMITS } from "../config";
-import type { ArchitectInput, CompleteInput, OnboarderInput, PmInput, RepairInput, WorkerInput } from "../roles";
+import type { ArchitectInput, CompleteInput, OnboarderInput, PmInput, RepairInput, ReportInput, WorkerInput } from "../roles";
 import type { HouseOutcome } from "../house-rules";
 import type { Packet, Plan, Profile, Rule, RuleFinding, Spec } from "../types";
 import type { Driver } from "./driver";
@@ -26,7 +26,7 @@ export const mock: Driver = async (r) => {
       out = onboard(input as unknown as OnboarderInput);
       break;
     case "pm":
-      out = pm(input as unknown as PmInput);
+      out = "acceptance" in input ? report(r.cwd, input as unknown as ReportInput) : pm(input as unknown as PmInput);
       break;
     case "architect":
       out = "failures" in input ? complete(input as unknown as CompleteInput) : "failure" in input ? repair(input as unknown as RepairInput) : architect(input as unknown as ArchitectInput);
@@ -206,6 +206,18 @@ function architect({ taskId, spec, profile, phase }: ArchitectInput): Plan {
       ? { decision: "stop", reason: `The task reaches into a protected area (${guarded.protectedPaths[0]}).`, suggestions: ["Confirm this change is intended, or reword the task to stay outside the protected path."] }
       : { decision: "continue", reason: "Every packet stays inside allowed paths.", suggestions: [] },
     nextPhases: spec.methodology.mode === "one_shot" ? [] : ["Finish what the first phase started"],
+  };
+}
+
+/** The review: every criterion met — unless the task asks for a gap only a review would see ("#pmgap") and nothing closed it yet. */
+function report(cwd: string, { task, spec, packets }: ReportInput) {
+  const gap = task.includes("#pmgap") && !packets.some((p) => p.id === "PG1");
+  return {
+    summary: `${spec.title}. (Mock project manager.)`,
+    view: fs.existsSync(path.join(cwd, "index.html")) ? { how: "page", entry: "index.html", command: "" } : { how: "none", entry: "", command: "" },
+    criteria: spec.acceptance.map((c, i) => ({ id: c.id, verdict: gap && i === 0 ? "not_met" : "met", evidence: gap && i === 0 ? "No packet handles this yet." : `Checked by ${c.check}.` })),
+    forYou: [],
+    notes: [],
   };
 }
 

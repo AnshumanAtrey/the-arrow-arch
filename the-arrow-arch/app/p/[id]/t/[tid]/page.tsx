@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { NeedsYou } from "@/components/decisions";
+import { FinalReportCard } from "@/components/final-report";
 import { FlightBand, FlightPath } from "@/components/flight-path";
 import { NowStrip } from "@/components/now-strip";
 import { Section } from "@/components/panels";
@@ -34,6 +35,8 @@ export default function TaskPage() {
       <FlightBand>
         <FlightPath flight={flightOf(s, t)} />
       </FlightBand>
+
+      {t.report && <FinalReportCard t={t} preview={data.preview} repoPath={s.repo?.path} setup={s.profile?.commands.setup} />}
 
       {data.numbers[tid] && (
         <div className="mt-4">

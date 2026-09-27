@@ -106,9 +106,17 @@ function Rows({ pid, t, now, rows, title }: { pid: string; t: TaskView; now: Rec
   let n = 0;
   return rows.map((r, i) => {
     switch (r.kind) {
-      case "run":
+      case "run": {
+        if (r.job.subject.endsWith(":report")) return <AgentRun key={i} pid={pid} job={r.job} title="Project manager reviewed the finished task" live={now[r.job.jobId]} />;
         n++;
         return <AgentRun key={i} pid={pid} job={r.job} title={n > 1 ? `${title} (run ${n})` : title} live={now[r.job.jobId]} />;
+      }
+      case "reported":
+        return (
+          <Leaf key={i} mark="done">
+            <span className="text-[14px]">{r.unmet.length ? `The review found ${r.unmet.join(", ")} not met — back to the architect` : "The review: every criterion met or left for you — the final report is at the top"}</span>
+          </Leaf>
+        );
       case "gate":
         return r.decision === "revise" ? (
           <Leaf key={i} mark="done">

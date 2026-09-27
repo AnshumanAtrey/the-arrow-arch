@@ -3,7 +3,7 @@
  * decision the orchestrator makes is derived from these events — nothing is
  * edited in place, so the history (attempts, repairs, cost) can't be rewritten.
  */
-import type { Packet, Plan, Profile, Recommendation, Spec } from "./schemas";
+import type { FinalReport, Packet, Plan, Profile, Recommendation, Spec } from "./schemas";
 
 export * from "./schemas";
 
@@ -85,6 +85,7 @@ export type ArrowEvent =
   | E<"plan.extended", { taskId: string; packets: Packet[]; reason: string; by?: Origin; from?: string; nextPhases?: string[] }>
   | E<"task.accepted", { taskId: string; report: string[] }>
   | E<"task.unaccepted", { taskId: string; report: string[]; failures: string[] }>
+  | E<"task.reported", { taskId: string; report: FinalReport }> // the project manager's review of the finished task
   | E<"task.landed", { taskId: string; branch: string; head: string }>
   | E<"task.halted", { taskId: string; reason: string }>
   | E<"note", { level: "info" | "warn"; message: string; subject?: string }>;
@@ -108,6 +109,7 @@ export const subject = {
   accept: (t: string) => `${t}:accept`,
   complete: (t: string) => `${t}:complete`,
   phase: (t: string) => `${t}:phase`,
+  report: (t: string) => `${t}:report`,
 };
 
 /** The sign-off after a phase lands, before the next one is planned. */
@@ -181,6 +183,7 @@ export type TaskStep = { at: string; packetId?: string } & (
   | { kind: "gate"; gateId: string; decision: GateDecision; note?: string; plan?: string }
   | { kind: "parked"; subject: string; reason: string }
   | { kind: "retried"; subject: string }
+  | { kind: "reported"; unmet: string[] }
   | { kind: "landed"; branch: string; head: string }
   | { kind: "halted"; reason: string }
 );
@@ -204,6 +207,8 @@ export type TaskView = {
   haltedReason?: string;
   /** the project manager's "done means", run on the finished task before it lands */
   acceptance?: { ok: boolean; report: string[]; failures: string[] };
+  /** the project manager's review of the finished task, written before it lands */
+  report?: FinalReport;
   /** which phase is being built: 1 for the first plan, +1 each time a person approves the next */
   phase: number;
   timeline: TaskStep[];

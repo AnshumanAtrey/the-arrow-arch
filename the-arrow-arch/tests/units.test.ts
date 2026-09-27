@@ -13,6 +13,7 @@ import { allowedValues } from "../engine/schema-hints";
 import { nowLine, readTranscript } from "../engine/transcript";
 import { ledgerBrief } from "../engine/ledger";
 import { acceptanceCounts } from "../lib/tree";
+import { fromThisSite } from "../lib/same-site";
 import type { ArrowEvent, JobView, Plan, Profile, Spec } from "../engine/types";
 import { z } from "zod";
 
@@ -318,6 +319,16 @@ describe("saying what was really checked", () => {
     expect(b).toContain("port 4110 is T1/P2's");
     expect(b).toContain("Taken by other programs on this machine: 3000, 5432.");
     expect(b).not.toContain("outside Arrow");
+  });
+});
+
+describe("actions come from Arrow's own pages", () => {
+  const req = (origin?: string) => new Request("http://localhost:7777/api/x", { method: "POST", headers: { host: "localhost:7777", ...(origin ? { origin } : {}) } });
+  test("the UI itself, and tools with no browser, may act; a previewed page on another port may not", () => {
+    expect(fromThisSite(req("http://localhost:7777"))).toBe(true);
+    expect(fromThisSite(req())).toBe(true);
+    expect(fromThisSite(req("http://localhost:7778"))).toBe(false);
+    expect(fromThisSite(req("null"))).toBe(false); // a sandboxed page
   });
 });
 

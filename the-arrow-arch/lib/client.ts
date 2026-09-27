@@ -14,6 +14,8 @@ export type Payload = {
   numbers: Record<string, TaskNumbers>;
   /** for each agent running now: the last thing it did */
   now: Record<string, string>;
+  /** where the finished work opens: <preview>/<task>/ */
+  preview: string;
 };
 
 /** Poll a JSON endpoint. The orchestrator works in the background; the page just watches the log. */

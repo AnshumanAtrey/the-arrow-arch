@@ -52,6 +52,7 @@ export function flightOf(s: ProjectState, t?: TaskView): Flight {
         stations[3].detail = `Phase ${t.phase} landed, waiting for you`;
         return { stations, at: 3, tone: "gold" };
       }
+      if (Object.values(s.jobs).some((j) => !j.finishedAt && j.subject === `${t.taskId}:report`)) stations[3].detail = "Project manager reviewing the result";
       return { stations, at: 3, tone: parked ? "gold" : "blue" };
     }
     case "landed":

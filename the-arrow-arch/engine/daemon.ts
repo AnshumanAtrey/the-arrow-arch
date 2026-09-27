@@ -4,6 +4,7 @@
  */
 import { LIMITS } from "./config";
 import { inflightCount, reconcile, tick } from "./orchestrator";
+import { startPreviewServer } from "./preview";
 import { readSettings, ROLES } from "./settings";
 import { listProjectIds, writeHeartbeat } from "./store";
 
@@ -26,5 +27,6 @@ async function loop() {
 }
 
 console.log(`[arrow] orchestrator up — ${LIMITS.parallelWorkers} parallel workers; engines come from Settings`);
+startPreviewServer();
 await loop();
 setInterval(() => void loop(), LIMITS.tickMs);

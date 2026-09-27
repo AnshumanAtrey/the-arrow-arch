@@ -68,6 +68,6 @@ Data lives in `.arrow-data/` (git-ignored): one event log per repo, the clone,
 worktrees, agent transcripts, `settings.json`.
 
 ```sh
-bun test               # 93 tests
+bun test               # 96 tests
 bunx tsc --noEmit      # typecheck
 ```

@@ -27,6 +27,12 @@ export type ArchitectInput = {
   phase?: { number: number; landed: Packet[]; ahead: string[]; note?: string };
 };
 export type RepairInput = { taskId: string; packet: Packet; failure: Failure; profile: Profile; house: HouseSettings; knowledge: Knowledge; otherPacketIds: string[] };
+export type ReportInput = {
+  taskId: string; task: string; spec: Spec; answers: Record<string, string>;
+  acceptance: string[]; // Arrow's own run of the spec's checks: PASS / FAIL / YOU lines
+  packets: { id: string; title: string; objective: string; files: string[]; proof: string[] }[];
+  profile: Profile; knowledge: Knowledge;
+};
 export type CompleteInput = { taskId: string; spec: Spec; failures: string[]; report: string[]; landedPackets: Packet[]; profile: Profile; house: HouseSettings; knowledge: Knowledge };
 export type WorkerInput = {
   packet: Packet;
@@ -153,6 +159,8 @@ export const repairer = (c: Common & { cwd: string; input: RepairInput }) =>
 export const completer = (c: Common & { cwd: string; input: CompleteInput }) =>
   runAgent({ ...c, role: "architect", promptFile: "complete.md", schema: S.Completion, example: { packets: [EXAMPLES.plan.packets[0]], note: "Adds the missing win-detection tests." } });
 
+export const reporter = (c: Common & { cwd: string; input: ReportInput }) =>
+  runAgent({ ...c, role: "pm", promptFile: "report.md", schema: S.FinalReport, example: EXAMPLES.finalReport });
 export const worker = (c: Common & { cwd: string; input: WorkerInput; preface: string }) =>
   runAgent({ ...c, role: "worker", promptFile: "worker.md", schema: S.WorkerReport, example: EXAMPLES.report, optional: true });
 
@@ -209,4 +217,11 @@ const EXAMPLES = {
     nextPhases: [],
   },
   report: { status: "implemented", summary: "Added the endpoint and three tests.", needsYou: "", newFacts: ["Orders store money in paise."] },
+  finalReport: {
+    summary: "Support can now refund part of an order from the order page; the receipt shows the refund as its own line.",
+    view: { how: "server", entry: "/admin/orders", command: "bun run dev" },
+    criteria: [{ id: "A1", verdict: "met", evidence: "apps/api/test/refunds.test.ts 'partial refund of 300 leaves 700 paid' passes in Arrow's run; receipt.tsx:41 renders refund lines." }],
+    forYou: ["Open an order at /admin/orders, refund part of it, and check the receipt reads the way support expects."],
+    notes: ["Refunds to a different payment method are out of scope, as the spec says."],
+  },
 };

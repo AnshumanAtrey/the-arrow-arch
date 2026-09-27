@@ -8,6 +8,7 @@ import { z } from "zod";
 import { project } from "@/engine/project";
 import { append, paths, readEvents } from "@/engine/store";
 import { labelOf } from "@/lib/needs";
+import { fromThisSite } from "@/lib/same-site";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ const Action = z.discriminatedUnion("type", [
 const bad = (error: string, status = 409) => NextResponse.json({ error }, { status });
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  if (!fromThisSite(req)) return NextResponse.json({ error: "Actions come from Arrow's own pages." }, { status: 403 });
   const { id: pid } = await ctx.params;
   try {
     if (!fs.existsSync(paths(pid).events)) return bad("No such project.", 404);

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { run } from "@/engine/proc";
 import { HARNESSES, KEY_NAMES, publicSettings, readSettings, ROLES, Settings, writeSettings } from "@/engine/settings";
+import { fromThisSite } from "@/lib/same-site";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ const Body = z.object({
 });
 
 export async function PUT(req: Request) {
+  if (!fromThisSite(req)) return NextResponse.json({ error: "Settings change only from Arrow's own pages." }, { status: 403 });
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid settings." }, { status: 400 });
   const cur = readSettings();

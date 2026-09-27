@@ -121,6 +121,25 @@ export const RepairResult = z.object({ packet: Packet, followUps: list(Packet) }
 /** The architect's completion pass: packets that close the gap between the finished task and its spec. */
 export const Completion = z.object({ packets: z.array(Packet).min(1, "add at least one packet that closes the gap"), note: z.string().default("") });
 
+/**
+ * The project manager's review of the finished task — the last step before it
+ * lands, and what the person reads first: what was built, how to open it, each
+ * "done means" judged with evidence, and what is left for a person's eyes.
+ */
+export const FinalReport = z.object({
+  summary: str,
+  view: z
+    .object({
+      how: z.enum(["page", "server", "none"]).catch("none"), // page: opens from its files; server: needs its own server
+      entry: z.string().default(""), //                        the file (page) or URL path (server) to open
+      command: z.string().default(""), //                      server: how to start it
+    })
+    .default({ how: "none", entry: "", command: "" }),
+  criteria: list(z.object({ id: str, verdict: z.enum(["met", "not_met", "unsure"]).catch("unsure"), evidence: z.string().default("") })),
+  forYou: list(z.string()), // what only a person can judge, and how to look
+  notes: list(z.string()), //  shortcuts, gaps, anything the person should know before merging
+});
+
 export const WorkerReport = z.object({
   status: z.enum(["implemented", "blocked"]),
   summary: z.string().default(""),
@@ -141,3 +160,4 @@ export type Plan = z.infer<typeof Plan>;
 export type WorkerReport = z.infer<typeof WorkerReport>;
 export type RepairResult = z.infer<typeof RepairResult>;
 export type Completion = z.infer<typeof Completion>;
+export type FinalReport = z.infer<typeof FinalReport>;

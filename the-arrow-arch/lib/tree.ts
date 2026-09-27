@@ -15,7 +15,8 @@ export type Row =
   | { kind: "added"; packets: string[]; reason: string; by: string; job?: JobView }
   | { kind: "gate"; gateId: string; decision: string; note?: string; plan?: string }
   | { kind: "parked"; reason: string; current: boolean } // current: still waiting on you, not history
-  | { kind: "retried" };
+  | { kind: "retried" }
+  | { kind: "reported"; unmet: string[] }; //             the project manager's review of the finished task
 
 const kindOf = (sub: string) => sub.split(":").at(-1)!;
 
@@ -54,7 +55,7 @@ export function packetRows(s: ProjectState, t: TaskView, id: string): Row[] {
 
 /** The task's own rows for one part of the tree: the project manager, the architect, or the acceptance check. */
 export function taskRows(s: ProjectState, t: TaskView, part: "pm" | "architect" | "accept"): Row[] {
-  const subjects = { pm: ["pm"], architect: ["architect"], accept: ["accept", "complete"] }[part];
+  const subjects = { pm: ["pm"], architect: ["architect"], accept: ["accept", "complete", "report"] }[part];
   const mine = (sub: string) => subjects.includes(kindOf(sub)) && sub.split(":").length === 2;
   const rows: Row[] = [];
   for (const st of t.timeline) {
@@ -65,6 +66,7 @@ export function taskRows(s: ProjectState, t: TaskView, part: "pm" | "architect" 
     } else if ((st.kind === "accepted" || st.kind === "unaccepted") && part === "accept")
       rows.push({ kind: "accepted", ok: st.kind === "accepted", report: st.report, failures: st.kind === "unaccepted" ? st.failures : [] });
     else if (st.kind === "added" && st.by === "completion" && part === "accept") rows.push({ kind: "added", packets: st.packets, reason: st.reason, by: st.by });
+    else if (st.kind === "reported" && part === "accept") rows.push({ kind: "reported", unmet: st.unmet });
     else if (st.kind === "gate" && st.gateId.startsWith("plan-") && part === "architect") rows.push({ kind: "gate", gateId: st.gateId, decision: st.decision, note: st.note, plan: st.plan });
     else if ((st.kind === "parked" || st.kind === "retried") && mine(st.subject))
       rows.push(st.kind === "parked" ? { kind: "parked", reason: st.reason, current: s.parked[st.subject]?.at === st.at } : { kind: "retried" });

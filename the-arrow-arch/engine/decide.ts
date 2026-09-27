@@ -23,7 +23,8 @@ export type Action =
   | { kind: "merge"; taskId: string; packetId: string }
   | { kind: "repair"; taskId: string; packetId: string; attempt: number }
   | { kind: "accept"; taskId: string }
-  | { kind: "complete"; taskId: string; attempt: number; feedback?: string }
+  | { kind: "complete"; taskId: string; attempt: number; feedback?: string; gaps: string[] }
+  | { kind: "report"; taskId: string; attempt: number; feedback?: string }
   | { kind: "open_phase_gate"; taskId: string }
   | { kind: "phase"; taskId: string; attempt: number; feedback?: string; human?: string }
   | { kind: "land"; taskId: string }
@@ -244,18 +245,37 @@ function finish(s: ProjectState, t: TaskView, now: number, house: HouseSettings,
     else if (st.park) out.push({ kind: "park", subject: accept, reason: st.park });
     return;
   }
+  // what is still missing, and whose step waits for a person if the architect can't close it
+  let gaps = t.acceptance.failures;
+  let owner = accept;
+  let why = "Every packet landed, but the finished task still doesn't meet the spec";
   if (t.acceptance.ok) {
-    out.push({ kind: "land", taskId: tid });
-    return;
+    // every command passed; the project manager now reviews the whole against the spec, then it lands
+    const report = subject.report(tid);
+    if (s.parked[report]) return;
+    if (!t.report) {
+      const st = stepPolicy(s.runs[report] ?? [], now);
+      if (st.go) out.push({ kind: "report", taskId: tid, attempt: st.attempt, feedback: st.feedback });
+      else if (st.park) out.push({ kind: "park", subject: report, reason: `The project manager couldn't review the finished task: ${st.park}` });
+      return;
+    }
+    const unmet = t.report.criteria.filter((c) => c.verdict === "not_met");
+    if (!unmet.length) {
+      out.push({ kind: "land", taskId: tid });
+      return;
+    }
+    gaps = unmet.map((c) => `${c.id} (project manager's review): ${c.evidence}`);
+    owner = report;
+    why = "Every check passed, but the project manager's review says the spec isn't met";
   }
   const completions = s.runs[subject.complete(tid)] ?? [];
   if (completions.filter((j) => j.ok).length >= house.loops.repairs) {
-    out.push({ kind: "park", subject: accept, reason: `Every packet landed, but the finished task still doesn't meet the spec: ${t.acceptance.failures.join("; ")}` });
+    out.push({ kind: "park", subject: owner, reason: `${why}: ${gaps.join("; ")}` });
     return;
   }
   const st = stepPolicy(completions, now);
-  if (st.go) out.push({ kind: "complete", taskId: tid, attempt: st.attempt, feedback: st.feedback });
-  else if (st.park) out.push({ kind: "park", subject: accept, reason: `The architect couldn't close the gap: ${st.park}` });
+  if (st.go) out.push({ kind: "complete", taskId: tid, attempt: st.attempt, feedback: st.feedback, gaps });
+  else if (st.park) out.push({ kind: "park", subject: owner, reason: `The architect couldn't close the gap: ${st.park}` });
 }
 
 const clash = (p: PacketView, claimed: string[]) => p.packet.files.some((f) => claimed.some((c) => overlaps(f, c)));

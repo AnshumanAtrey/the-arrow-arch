@@ -15,6 +15,8 @@ export const LIMITS = {
   commandTimeoutMs: int(process.env.ARROW_COMMAND_TIMEOUT_S, 900) * 1000,
   tickMs: int(process.env.ARROW_TICK_MS, 1500),
   mockDelayMs: int(process.env.ARROW_MOCK_DELAY_MS, 1200),
+  // the finished work is served here, apart from the UI (another origin), on this machine only
+  previewPort: int(process.env.ARROW_PREVIEW_PORT, 7778),
 };
 
 /**
