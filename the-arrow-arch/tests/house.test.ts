@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { dependencyCheck, diffBudgetCheck, docsCheck, fileSizeCheck, looksLikeTest, newDependencies, placeholderCheck, secretCheck, testDisabledCheck, testWeakenedCheck, assertions, disables, type FileFacts } from "../engine/checks";
+import { dependencyCheck, diffBudgetCheck, docsCheck, fileSizeCheck, looksLikeTest, newDependencies, placeholderCheck, productionFiles, secretCheck, testDisabledCheck, testWeakenedCheck, assertions, disables, type FileFacts } from "../engine/checks";
 import { decide } from "../engine/decide";
 import { DEFAULTS, effectiveSettings } from "../engine/house-rules";
 import { buildLedger, freeSlot, ledgerBrief, type OsSnapshot } from "../engine/ledger";
@@ -153,6 +153,10 @@ describe("test integrity (H-TESTS)", () => {
     expect(disables("func TestX(t *testing.T) {\n\tt.Skip(\"needs network\")\n}\n")).toBe(1);
     expect(disables("#[ignore = \"slow\"]\n")).toBe(1);
     expect(testDisabledCheck("src/a.test.ts", "it('a', () => {})\n", "it.skip('a', () => {})\n")?.class).toBe("protected");
+  });
+  test("what a packet changed besides its tests is production", () => {
+    expect(productionFiles(["src/greet.js", "src/test/greet.test.js", "tests/b.py", "db/001.sql", "test_x.py"])).toEqual(["src/greet.js", "db/001.sql"]);
+    expect(productionFiles(["src/test/a.test.ts"])).toEqual([]); // test-only
   });
 });
 

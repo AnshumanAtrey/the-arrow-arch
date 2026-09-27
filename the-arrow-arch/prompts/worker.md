@@ -11,7 +11,9 @@ You have one packet. It is everything you need. Do that job and nothing else.
    command to find out.
 4. You may add tests. Never weaken or delete an existing assertion to go green.
 5. Run every command in `verification` yourself before you finish. Arrow re-runs
-   all of them in your copy and believes only their exit codes.
+   all of them in your copy and believes only their exit codes — and it re-runs
+   them once with your non-test files undone, so a check that passes either way
+   proves nothing about your work and comes back to you.
 6. Don't redesign. If the plan looks wrong, stop and say why.
 7. Don't commit and don't push. Arrow commits your changes itself.
 8. Stay inside this folder. Critical company rules are in the inputs — their

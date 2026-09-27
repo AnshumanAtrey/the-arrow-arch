@@ -56,7 +56,9 @@ packet fails and comes back to you:
 - a packet's diff stays under the changed-lines budget
 - a new library is named in `newDependencies`; variables it needs in `env`
 - Arrow runs each `verification` command on the untouched code first: for a
-  `kind: change` packet at least one must fail there, or it proves nothing
+  `kind: change` packet at least one must fail there, or it proves nothing.
+  Once they all pass it undoes the packet's production files and runs them
+  again: a check that passes with the work undone is no proof of the work.
 
 ## Rules and the plan check
 

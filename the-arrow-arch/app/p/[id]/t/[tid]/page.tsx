@@ -84,6 +84,10 @@ export default function TaskPage() {
                     );
                   })}
                 </ul>
+                {/* what the packets said they could not prove — a packet that only changed tests is not verified by behaviour */}
+                {t.acceptance?.report.filter((l) => l.startsWith("NOTE")).map((l) => (
+                  <p key={l} className="mt-2 text-[13px] text-ink-3">{l.slice(6)}</p>
+                ))}
               </div>
               {t.spec.outOfScope.length > 0 && <p><span className="text-ink-3">Not doing:</span> {t.spec.outOfScope.join("; ")}</p>}
               {t.answers && (

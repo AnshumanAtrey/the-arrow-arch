@@ -1,11 +1,13 @@
 /**
  * The orchestrator's own proof. A worker saying "done" changes nothing: this
  * commits its work, reads what actually changed, applies the house rules, and
- * re-runs the packet's commands itself. The first failing check decides.
+ * re-runs the packet's commands itself. The first failing check decides. Once
+ * they all pass it undoes the packet's production change and runs them again —
+ * a check that passes with the work undone proves nothing about it.
  */
 import fs from "node:fs";
 import path from "node:path";
-import { dependencyCheck, diffBudgetCheck, docsCheck, fileSizeCheck, looksLikeTest, newDependencies, placeholderCheck, secretCheck, testDisabledCheck, testWeakenedCheck, type FileFacts } from "./checks";
+import { dependencyCheck, diffBudgetCheck, docsCheck, fileSizeCheck, looksLikeTest, newDependencies, placeholderCheck, productionFiles, secretCheck, testDisabledCheck, testWeakenedCheck, type FileFacts } from "./checks";
 import { LIMITS } from "./config";
 import * as git from "./git";
 import { matchesAny } from "./glob";
@@ -34,6 +36,9 @@ const isLockfile = (f: string) => Object.values(LOCKFILES).flat().includes(path.
 export const proofCommands = (profile: Profile, house: HouseSettings) =>
   house.proof.always.map((k) => profile.commands[k]).filter((c): c is string => Boolean(c));
 
+/** What a packet's report says when it changed only tests: real work, but no behaviour to prove. */
+export const NO_PRODUCTION_NOTE = "no production file changed — tests only, so this packet is not verified by behaviour.";
+
 export async function verifyPacket(opts: {
   wt: string;
   base: string; // the task branch; facts are taken from where the packet forked off it
@@ -53,6 +58,7 @@ export async function verifyPacket(opts: {
   if (!files.length) return fail({ class: "verification", message: "The worker changed no files." });
 
   const fork = await git.mergeBase(wt, base);
+  const tip = await git.head(wt); // the commit holding the worker's work: where this copy must end up
   const facts = await gatherFacts(wt, fork, files);
 
   // 1. critical: protected paths and secrets park for a person
@@ -130,6 +136,66 @@ export async function verifyPacket(opts: {
     const r = await run(cmd);
     const was = opts.baseline[cmd];
     report.push(r.code === 0 ? `PASS  ${cmd}` : `NOTE  ${cmd}  (regression${was !== undefined && was !== 0 ? ", already failing before" : ", newly failing"} — reported, not blocking)`);
+  }
+
+  // 5. the other half of red-first. prepare.ts shows a check failed before; that
+  // cannot show the check was about *this* work. So put the packet's production
+  // files back the way they were at the fork, run its checks again, and put the
+  // whole copy back. A check that passes with the work undone was never about the
+  // work. What this catches is a packet whose *production* change its checks do
+  // not depend on; a packet that changed no production file is out of its reach,
+  // and gets the NOTE below. Cost: verifyPacket runs at the verify step and again
+  // at the merge step, so each check runs once in prepare and twice at each of
+  // those — five, up from three, each inheriting LIMITS.commandTimeoutMs.
+  // The undone run happens in the worker's own copy rather than a fresh one: cheap,
+  // but what it cannot undo is what git ignores — build output, caches — so a check
+  // reading a stale artifact can pass undone and have a correct packet called
+  // inert. Run the experiment in a throwaway copy if that ever bites.
+  const production = productionFiles(files);
+  if (!packet.verification.length)
+    // unreachable through prepare.ts, which fails such a packet as bad_check, but
+    // an empty list must never read as proof: there was nothing to run.
+    return fail({ class: "bad_check", message: "This packet lists no verification commands, so nothing proves the work.", report });
+  if (!production.length)
+    // a test-only packet is a real thing to be, just not a behavioural proof: it
+    // changed no behaviour for a check to be about, and the report says so.
+    report.push(`NOTE  ${NO_PRODUCTION_NOTE}`);
+  else if (packet.kind === "refactor")
+    // a refactor is *meant* to preserve behaviour: its checks should stay green
+    // with the work undone, so running the proof here would invert its meaning
+    // and reject correct work. Leave refactors out; do not "fix" this.
+    report.push("NOTE  refactor — behaviour is meant to stay the same, so its checks are not a behaviour proof.");
+  else {
+    // an inert production change (a comment, dead code) fails here, and should:
+    // its checks are about nothing it did. A packet that means to change nothing
+    // is a refactor, and the kind is in the plan a person approved.
+    const passing: string[] = [];
+    let restore: git.RestoreResult = { ok: true, detail: "" };
+    try {
+      const undone = await git.restoreFiles(wt, fork, production);
+      if (!undone.ok) return fail({ class: "environment", message: `Arrow could not undo the packet's production change to run its checks again: ${undone.detail}.`, report });
+      for (const cmd of packet.verification) if ((await run(cmd)).code === 0) passing.push(cmd);
+    } finally {
+      // never leave the worker's copy in the undone state, whatever ran in it —
+      // restoring to the tip the work is committed at puts back everything the
+      // checks touched, not only the files this packet changed
+      restore = await git.restoreTree(wt, tip, production);
+    }
+    if (!restore.ok)
+      // "environment" because it parks: the copy is not the worker's to fix, and
+      // nothing more may run in it until a person has seen it
+      return fail({
+        class: "environment",
+        message: `The checks ran, but Arrow could not put the packet's copy back afterwards: ${restore.detail}. It is left as the undone run left it — a person should look before anything else runs in it.`,
+        report: [...report, `FAIL  restoring the packet's copy  (${restore.detail})`],
+      });
+    if (passing.length === packet.verification.length)
+      return fail({
+        class: "verification",
+        message: "Every check passes with this packet's production change undone, so none of them prove it. Aim a check at what the change does, or plan the packet as a refactor if behaviour is meant to stay the same.",
+        report: [...report, `FAIL  ${passing.join(", ")}  (passes with the production change undone)`],
+      });
+    report.push("PASS  the checks fail with the production change undone, so they depend on it");
   }
   return { ok: true, report, changedFiles: files };
 }

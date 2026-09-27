@@ -146,6 +146,14 @@ export function testDisabledCheck(file: string, before: string | null, after: st
 
 export { looksLikeTest };
 
+/**
+ * The changed files that aren't tests — what a packet's checks are supposed to be
+ * about. A packet that changed none of these can pass red-first and still prove
+ * nothing behavioural: edit the tests until they go green, and every check passes
+ * while no behaviour changed.
+ */
+export const productionFiles = (files: string[]): string[] => files.filter((f) => !looksLikeTest(f));
+
 const SECRET_PATTERNS: [string, RegExp][] = [
   ["AWS access key", /AKIA[0-9A-Z]{16}/],
   ["private key", /-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----/],
