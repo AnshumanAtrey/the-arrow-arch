@@ -79,20 +79,21 @@ export async function verifyPacket(opts: {
   if (deps) return fail(deps);
 
   // 3. honesty of the work: tests not weakened or switched off, no stubs left behind
-  for (const f of files.filter(looksLikeTest)) {
-    if (!(await git.existedAt(wt, fork, f))) continue; // this packet created it
-    const abs = path.join(wt, f);
-    const after = fs.existsSync(abs) ? readOrEmpty(abs) : null;
-    const before = await git.showAt(wt, fork, f);
-    if (!house.tests.mayEditExisting) {
-      const weakened = testWeakenedCheck(f, before, after);
-      if (weakened) return fail(weakened);
+  if (!house.tests.mayEditExisting || house.tests.requireApprovalForNewSkips)
+    for (const f of files.filter(looksLikeTest)) {
+      if (!(await git.existedAt(wt, fork, f))) continue; // this packet created it
+      const abs = path.join(wt, f);
+      const after = fs.existsSync(abs) ? readOrEmpty(abs) : null;
+      const before = await git.showAt(wt, fork, f);
+      if (!house.tests.mayEditExisting) {
+        const weakened = testWeakenedCheck(f, before, after);
+        if (weakened) return fail(weakened);
+      }
+      if (house.tests.requireApprovalForNewSkips) {
+        const disabled = testDisabledCheck(f, before, after);
+        if (disabled) return fail(disabled);
+      }
     }
-    if (house.tests.requireApprovalForNewSkips) {
-      const disabled = testDisabledCheck(f, before, after);
-      if (disabled) return fail(disabled);
-    }
-  }
   const stub = placeholderCheck(facts, house.placeholders);
   if (stub) return fail(stub);
 

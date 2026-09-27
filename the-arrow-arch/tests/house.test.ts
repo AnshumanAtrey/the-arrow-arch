@@ -128,6 +128,31 @@ describe("test integrity (H-TESTS)", () => {
     expect(disables("#[ignore]\nfn t() { assert_eq!(x, 1); }\n")).toBe(1);
     expect(disables("xit('a', () => {})\nxtest('b', () => {})\n")).toBe(2);
     expect(disables("const x = 'skip the queue';\n")).toBe(0);
+    expect(disables("test.skip.each([1, 2])('a', () => {})\n")).toBe(1);
+    expect(disables("it.skipIf(process.env.CI)('a', () => {})\n")).toBe(1);
+  });
+
+  // found by running the check over its own commit: a test that quotes skip
+  // syntax as data read as switching a test off, and `protected` has no escape,
+  // so the packet could never land. Assertions rise when string content is added
+  // — harmless to the sibling check, which only fails on a drop — so this one has
+  // to strip quoted runs before it looks.
+  test("a marker inside a string is data, not a skip", () => {
+    expect(disables(`expect(disables("it.skip('a', () => {})")).toBe(1);`)).toBe(0);
+    expect(disables(`const line = "it.only('a', () => {})";`)).toBe(0);
+    expect(disables("const helpers = { skip: 'pytest.mark.skip(reason=\"x\")' };\n")).toBe(0);
+    const before = `expect(lint("clean code")).toBe(0);\n`;
+    const after = before + `expect(lint("it.only('x', () => {})")).toBe(1);\nexpect(lint("describe.skip('s', () => {})")).toBe(1);\n`;
+    expect(assertions(after)).toBeGreaterThan(assertions(before)); // the sibling check raises, and passes
+    expect(disables(after)).toBe(0);
+    expect(testDisabledCheck("src/lint.test.ts", before, after)).toBeUndefined();
+  });
+  test("stripping strings keeps every real marker", () => {
+    expect(disables("it.skip('a', () => {})\n")).toBe(1);
+    expect(disables("@pytest.mark.skipif(not P.exists(), reason=\"no data\")\n")).toBe(1);
+    expect(disables("func TestX(t *testing.T) {\n\tt.Skip(\"needs network\")\n}\n")).toBe(1);
+    expect(disables("#[ignore = \"slow\"]\n")).toBe(1);
+    expect(testDisabledCheck("src/a.test.ts", "it('a', () => {})\n", "it.skip('a', () => {})\n")?.class).toBe("protected");
   });
 });
 

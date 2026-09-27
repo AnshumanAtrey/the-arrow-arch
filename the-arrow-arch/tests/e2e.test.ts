@@ -286,4 +286,34 @@ describe("test integrity", () => {
       fs.rmSync(fix.dir, { recursive: true, force: true });
     }
   });
+
+  /** A verify with the tests rules tuned, for the settings that decide what runs. */
+  const verifyWith = (fix: ReturnType<typeof fixture>, tests: typeof DEFAULTS.tests) =>
+    verifyPacket({ wt: fix.wt, base: fix.base, packet, profile, house: { ...DEFAULTS, tests }, attempt: 1, baseline: {}, env: process.env });
+  const skipAdded = (fix: ReturnType<typeof fixture>) =>
+    fs.writeFileSync(path.join(fix.wt, "src/test/a.test.ts"), "it.skip('adds', () => {\n  expect(1 + 1).toBe(2)\n  expect(2 + 2).toBe(4)\n})\n");
+
+  test("with the new-skips rule off, a skip is not checked", async () => {
+    const fix = fixture();
+    skipAdded(fix);
+    try {
+      expect(await verifyWith(fix, { mayEditExisting: false, requireApprovalForNewSkips: false })).toMatchObject({ ok: true });
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  // the setting onboarding actually writes: a company that may edit tests still
+  // gets new skips parked, because the two are separate rules
+  test("mayEditExisting doesn't switch the skip rule off", async () => {
+    const fix = fixture();
+    skipAdded(fix);
+    try {
+      const r = await verifyWith(fix, { mayEditExisting: true, requireApprovalForNewSkips: true });
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.failure).toMatchObject({ class: "protected" });
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
 });

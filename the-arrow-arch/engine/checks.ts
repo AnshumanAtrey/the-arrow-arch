@@ -81,7 +81,11 @@ export function testWeakenedCheck(file: string, before: string | null, after: st
   return fail("verification", `Weakened an existing test: ${file} has ${now} assertion(s), down from ${was}.`, [`-${was - now}: ${file}`]);
 }
 
-/** Code only. Whole-line comments are skipped, so commenting a marker out is not keeping it; a Rust attribute (`#[...]`) is not a comment. */
+/**
+ * Code only. Whole-line comments are skipped, so commenting a marker out is not
+ * keeping it. `#` is a comment, except in Rust, where `#[ignore]` is an
+ * attribute: a line that starts `#[ignore` counts as a marker, not a comment.
+ */
 const codeLines = (text: string): string =>
   text
     .split("\n")
@@ -93,19 +97,26 @@ export const assertions = (text: string): number => (codeLines(text).match(ASSER
 
 /** The way a language switches a test off, across the ones Arrow meets: JS/TS, Python, Go, Rust. */
 const DISABLE =
-  /\bpytest\.mark\.(?:skip|skipif|xfail)\b|\bpytest\.(?:skip|importorskip)\s*\(|\b(?:it|test|describe)\.(?:skip|only)\s*\(|\b(?:xit|xtest|xdescribe|fit|fdescribe)\s*\(|\bt\.Skip\w*\s*\(|#\[ignore\b/g;
+  /\bpytest\.mark\.(?:skip|skipif|xfail)\b|\bpytest\.(?:skip|importorskip)\s*\(|\b(?:it|test|describe)\.(?:skipIf|skip|only)(?:\.each)?\s*\(|\b(?:xit|xtest|xdescribe|fit|fdescribe)\s*\(|\bt\.Skip\w*\s*\(|#\[ignore\b/g;
+
+/** A quoted run on one line, escapes included. */
+const QUOTED = /'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"/g;
 
 /**
- * Markers that switch a test off. Focus counts with skip: focusing one test
- * silently stops the rest from running, which proves as little as a skip.
+ * Markers that switch a test off, and only in code. A marker a test quotes as
+ * data — `expect(disables("it.skip('a', () => {})"))` — is not one, so quoted
+ * runs go first. A heuristic, not a parser: a lone unclosed quote on a line
+ * quotes nothing, and triple-quoted strings are not special.
+ * Focus counts with skip: focusing one test silently stops the rest from
+ * running, which proves as little as a skip.
  */
-export const disables = (text: string): number => (codeLines(text).match(DISABLE) ?? []).length;
+export const disables = (text: string): number => (codeLines(text).replace(QUOTED, "").match(DISABLE) ?? []).length;
 
 /** For the report a person reads: the lines that carry a marker. */
 const disableLines = (text: string): string[] =>
   codeLines(text)
     .split("\n")
-    .filter((l) => l.match(DISABLE)?.length)
+    .filter((l) => disables(l))
     .map((l) => l.trim().slice(0, 120));
 
 /**
@@ -113,6 +124,10 @@ const disableLines = (text: string): string[] =>
  * Counting assertions can't see it: the packet that added two
  * `pytest.mark.skipif` decorators kept all 16 assertions while making the one
  * that mattered unreachable, and was reported verified.
+ * A count, not a diff of marker lines: rewording a skip's reason is not adding
+ * one, and over-detection here parks correct work with no way out. The boundary
+ * that buys: a skip removed and another added in the same file holds level, so a
+ * moved skip goes uncaught — deliberate.
  * Classed `protected`, not `verification`: a skip is often legitimate (the data
  * really isn't there), so this parks for a person instead of spending a retry on
  * a worker that cannot win. `before` is null for a file this packet created;

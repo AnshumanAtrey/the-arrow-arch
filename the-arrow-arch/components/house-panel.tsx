@@ -12,7 +12,7 @@ function valueOf(id: string, h: HouseSettings): string {
   switch (id) {
     case "H-FILESIZE": return `target ${h.fileSize.targetLines}, cap ${h.fileSize.maxLines} lines`;
     case "H-DOCS": return h.docs.allowPaths.length ? `docs allowed in ${h.docs.allowPaths.join(", ")}` : "no new .md files";
-    case "H-TESTS": return h.tests.mayEditExisting ? "existing tests may be edited" : "existing tests only gain cases";
+    case "H-TESTS": return `${h.tests.mayEditExisting ? "existing tests may be edited" : "existing tests only gain cases"}${h.tests.requireApprovalForNewSkips ? ", but a new skip or focus parks for you" : ""}`;
     case "H-DEPS": return h.dependencies.requireApproval ? `approval needed${h.dependencies.approved.length ? `, pre-approved: ${h.dependencies.approved.join(", ")}` : ""}` : "no approval needed";
     case "H-PLACEHOLDERS": return h.placeholders.allowedPattern ? `allowed only as ${h.placeholders.allowedPattern}` : "none allowed";
     case "H-DIFF": return `${h.diff.maxChangedLines} changed lines per packet`;
