@@ -17,10 +17,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen">
         <header className="border-b border-rule bg-panel">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-            <Link href="/" className="flex items-center gap-2.5 text-ink">
-              <Mark />
-              <span className="display text-[19px]">Arrow Arch</span>
-            </Link>
+            <div className="flex items-center gap-6">
+              <Link href="/" className="flex items-center gap-2.5 text-ink">
+                <Mark />
+                <span className="display text-[19px]">Arrow Arch</span>
+              </Link>
+              <nav className="flex gap-4 text-[14px] text-ink-2">
+                <Link href="/" className="hover:text-ink">Repositories</Link>
+                <Link href="/settings" className="hover:text-ink">Settings</Link>
+              </nav>
+            </div>
             <EngineStatus />
           </div>
         </header>

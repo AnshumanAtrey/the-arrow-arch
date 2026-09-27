@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { usePoll } from "@/lib/client";
 
-type Health = { orchestrator: { live: boolean; drivers: Record<string, string>; running: number; at: string } | null };
+type Health = { orchestrator: { live: boolean; drivers: Record<string, string>; running: number; at: string } | null; bobKey: boolean | null };
 
 /** Header strip: is the background orchestrator alive, and is anything real behind the agents? */
 export function EngineStatus() {
@@ -28,6 +29,9 @@ export function EngineStatus() {
           Agents: {engines.join(", ")}
           {mock && <span className="ml-2 rounded bg-gold-soft px-1.5 py-0.5 text-gold-ink">mock — no model is called</span>}
         </span>
+      )}
+      {data?.bobKey === false && (
+        <Link href="/settings" className="rounded bg-red-soft px-1.5 py-0.5 text-red">Bob needs an API key — add it in Settings</Link>
       )}
     </div>
   );

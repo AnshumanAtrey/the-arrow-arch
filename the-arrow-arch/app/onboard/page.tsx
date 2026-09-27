@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const EXAMPLE = `- Never edit an applied migration in db/migrations/; add a new one instead
 - Secrets and API keys never go in code or in commits
@@ -16,6 +17,13 @@ export default function Onboard() {
   const [rulesText, setRules] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [engine, setEngine] = useState<{ bob: { installed: boolean; version: string }; keySet: boolean; harnesses: string[] } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/settings", { cache: "no-store" }).then((r) => r.json()).then((v) =>
+      setEngine({ bob: v.bob, keySet: Boolean(v.settings.keys.BOB_API_KEY), harnesses: [...new Set(Object.values(v.settings.roles).map((r) => (r as { harness: string }).harness))] as string[] }),
+    );
+  }, []);
 
   async function loadFile(f: File | undefined) {
     if (!f) return;
@@ -51,6 +59,16 @@ export default function Onboard() {
         hurt data, money, security or production are marked critical. If one of those is at stake you&apos;ll get
         Arrow&apos;s call and what to do; if nothing is, it shows all green and waits for your approval.
       </p>
+
+      {engine && engine.harnesses.includes("bob") && (
+        <div className={`mt-6 rounded-md px-4 py-3 text-[14px] ${engine.bob.installed && engine.keySet ? "bg-green-soft" : "bg-gold-soft"}`}>
+          <p className="heading">Before you start</p>
+          <p>{engine.bob.installed ? `Bob Shell ${engine.bob.version} is installed.` : "Bob Shell isn't installed on this machine yet (bob.ibm.com/docs/shell)."}</p>
+          <p>
+            {engine.keySet ? "Bob's API key is saved." : <>Bob&apos;s API key isn&apos;t set — <Link href="/settings" className="underline underline-offset-4">add it in Settings</Link>. Onboarding will pause at the first Bob step until it is.</>}
+          </p>
+        </div>
+      )}
 
       <div className="mt-8 space-y-6">
         <label className="block">

@@ -6,6 +6,7 @@ import { NeedsYou } from "@/components/decisions";
 import { FlightPath } from "@/components/flight-path";
 import { GateCard } from "@/components/gate-card";
 import { Activity, PacketTable, Section } from "@/components/panels";
+import { TaskNumbersCard } from "@/components/task-numbers";
 import { usePoll, type Payload } from "@/lib/client";
 import { flightOf } from "@/lib/flight";
 
@@ -36,6 +37,12 @@ export default function TaskPage() {
       <div className="mt-8 rounded-lg border border-rule bg-panel px-3 py-5 sm:px-6">
         <FlightPath flight={flightOf(s, t)} />
       </div>
+
+      {data.numbers[tid] && (
+        <div className="mt-4">
+          <TaskNumbersCard n={data.numbers[tid]} />
+        </div>
+      )}
 
       {t.haltedReason && <p className="mt-6 rounded-md bg-red-soft px-4 py-3 text-[14px]">Stopped: {t.haltedReason}</p>}
       {t.landed && (

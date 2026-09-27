@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import type { HouseSettings } from "@/engine/house-rules";
 import type { Ledger } from "@/engine/ledger";
-import type { Metrics } from "@/engine/metrics";
+import type { Metrics, TaskNumbers } from "@/engine/metrics";
 import type { ProjectState } from "@/engine/types";
 
-export type Payload = { state: ProjectState; metrics: Metrics; ledger: Ledger | null; house: HouseSettings | null };
+export type Payload = { state: ProjectState; metrics: Metrics; ledger: Ledger | null; house: HouseSettings | null; numbers: Record<string, TaskNumbers> };
 
 /** Poll a JSON endpoint. The orchestrator works in the background; the page just watches the log. */
 export function usePoll<T>(url: string, ms = 1500) {
