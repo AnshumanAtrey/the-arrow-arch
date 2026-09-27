@@ -7,7 +7,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { LIMITS } from "../config";
-import type { ArchitectInput, OnboarderInput, PmInput, RepairInput, WorkerInput } from "../roles";
+import type { ArchitectInput, CompleteInput, OnboarderInput, PmInput, RepairInput, WorkerInput } from "../roles";
 import type { HouseOutcome } from "../house-rules";
 import type { Packet, Plan, Profile, Rule, RuleFinding, Spec } from "../types";
 import type { Driver } from "./driver";
@@ -26,7 +26,7 @@ export const mock: Driver = async (r) => {
       out = pm(input as unknown as PmInput);
       break;
     case "architect":
-      out = "failure" in input ? repair(input as unknown as RepairInput) : architect(input as unknown as ArchitectInput);
+      out = "failures" in input ? complete(input as unknown as CompleteInput) : "failure" in input ? repair(input as unknown as RepairInput) : architect(input as unknown as ArchitectInput);
       break;
     case "worker":
       out = work(r.cwd, input as unknown as WorkerInput);
@@ -158,6 +158,8 @@ function pm({ task, profile }: PmInput): Spec {
     acceptance: [
       { id: "A1", statement: "The change described in the task is in place.", check: "each packet's verification commands pass, re-run by Arrow" },
       ...(profile.commands.test ? [{ id: "A2", statement: "Everything that passed before still passes.", check: profile.commands.test }] : []),
+      // "#gap" in a task: an acceptance check no packet covers — exercises the completion pass
+      ...(/#gap/.test(task) ? [{ id: "A3", statement: "The gap is closed.", check: "test -s arrow-demo/t1/gap.ts" }] : []),
     ],
     outOfScope: ["Pushing or deploying — Arrow only prepares a branch."],
     risk: risky ? "high" : "low",
@@ -192,8 +194,17 @@ function architect({ taskId, spec, profile }: ArchitectInput): Plan {
   };
 }
 
-function repair({ packet, failure }: RepairInput): Packet {
-  return { ...packet, context: `${packet.context}\n\nRe-aimed after: ${failure.message}`.trim() };
+function repair({ packet, failure }: RepairInput) {
+  return { packet: { ...packet, context: `${packet.context}\n\nRe-aimed after: ${failure.message}`.trim() }, followUps: [] };
+}
+
+/** One packet that adds a file per failing acceptance check. */
+function complete({ taskId, failures }: CompleteInput) {
+  const f = `arrow-demo/${taskId.toLowerCase()}/gap.ts`;
+  return {
+    packets: [{ id: "PG1", module: "M1", title: "Close the gap to the spec", objective: failures.join("; ") || "close the gap", context: "", files: [f], deps: [], verification: [`test -s ${f}`], regression: [], risk: "low", kind: "change", newDependencies: [], env: [] }],
+    note: "Mock completion pass.",
+  };
 }
 
 function work(cwd: string, { packet, attempt }: WorkerInput) {

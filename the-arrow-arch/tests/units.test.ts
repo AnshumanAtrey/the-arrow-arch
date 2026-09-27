@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { isCommand } from "../engine/accept";
 import { stats as bobStats } from "../engine/agents/bob";
 import { stepPolicy } from "../engine/decide";
 import { classifyExit } from "../engine/failures";
@@ -179,5 +180,15 @@ describe("schema hints", () => {
   test("every role's schema converts, and a hint never costs a run", () => {
     for (const s of [S.Profile, S.Spec, S.Plan, S.Packet, S.WorkerReport]) expect(() => allowedValues(s)).not.toThrow();
     expect(allowedValues(z.object({ a: z.string() }))).toEqual([]); // nothing closed, nothing to say
+  });
+});
+
+describe("acceptance checks", () => {
+  test("commands are run; checks for a person, and GUI commands, never are", async () => {
+    expect(await isCommand("npm test -- win-detection")).toBe(true);
+    expect(await isCommand("test -s index.html")).toBe(true);
+    expect(await isCommand("manual: open index.html with wifi off")).toBe(false);
+    expect(await isCommand("open index.html")).toBe(false);
+    expect(await isCommand("each packet's verification commands pass")).toBe(false);
   });
 });

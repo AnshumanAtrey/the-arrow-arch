@@ -2,7 +2,7 @@ import type { TaskNumbers } from "@/engine/metrics";
 
 const caughtWords: Record<string, string> = {
   verification: "checks failed and were fixed before landing",
-  scope: "changes went outside their packet or a house rule (size, docs, deps)",
+  scope: "changes went outside their packet or a house rule (size, docs, deps) and were re-aimed",
   protected: "tried to touch a protected path or add a secret",
   merge: "broke when combined with landed work",
   bad_check: "checks proved nothing and were re-aimed",

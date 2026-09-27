@@ -80,6 +80,9 @@ export type ArrowEvent =
   // the loop manager gave up on a step (onboard, pm, a packet...) — a human looks
   | E<"step.parked", { subject: string; reason: string }>
   | E<"step.retried", { subject: string; note?: string }>
+  | E<"plan.extended", { taskId: string; packets: Packet[]; reason: string }> // follow-ups from a re-aim or a completion pass
+  | E<"task.accepted", { taskId: string; report: string[] }>
+  | E<"task.unaccepted", { taskId: string; report: string[]; failures: string[] }>
   | E<"task.landed", { taskId: string; branch: string; head: string }>
   | E<"task.halted", { taskId: string; reason: string }>
   | E<"note", { level: "info" | "warn"; message: string; subject?: string }>;
@@ -100,6 +103,8 @@ export const subject = {
   verify: (t: string, p: string) => `${t}:${p}:verify`,
   merge: (t: string, p: string) => `${t}:${p}:merge`,
   repair: (t: string, p: string) => `${t}:${p}:repair`,
+  accept: (t: string) => `${t}:accept`,
+  complete: (t: string) => `${t}:complete`,
 };
 
 // ---------------------------------------------------------------- derived state
@@ -166,6 +171,8 @@ export type TaskView = {
   order: string[];
   landed?: { branch: string; head: string };
   haltedReason?: string;
+  /** the project manager's "done means", run on the finished task before it lands */
+  acceptance?: { ok: boolean; report: string[]; failures: string[] };
 };
 
 export type ProjectStage = "cloning" | "onboarding" | "onboarding_gate" | "ready" | "stopped";

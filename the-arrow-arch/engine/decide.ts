@@ -22,6 +22,8 @@ export type Action =
   | { kind: "verify"; taskId: string; packetId: string }
   | { kind: "merge"; taskId: string; packetId: string }
   | { kind: "repair"; taskId: string; packetId: string; attempt: number }
+  | { kind: "accept"; taskId: string }
+  | { kind: "complete"; taskId: string; attempt: number; feedback?: string }
   | { kind: "land"; taskId: string }
   | { kind: "park"; subject: string; reason: string };
 
@@ -128,8 +130,9 @@ function build(s: ProjectState, t: TaskView, now: number, house: HouseSettings, 
   const tid = t.taskId;
   const pks = t.order.map((id) => t.packets[id]);
   if (pks.length && pks.every((p) => p.status === "merged")) {
-    // land only once every step of this task has finished (the last merge cleans up its worktree)
-    if (!runningJobs(s).some((j) => j.subject.startsWith(`${tid}:`))) out.push({ kind: "land", taskId: tid });
+    // every packet is proven; now the whole: the spec's own checks, then land
+    if (runningJobs(s).some((j) => j.subject.startsWith(`${tid}:`))) return; // the last merge is still cleaning up
+    finish(s, t, now, house, out);
     return;
   }
 
@@ -213,6 +216,31 @@ function build(s: ProjectState, t: TaskView, now: number, house: HouseSettings, 
       } else if (st.park) out.push({ kind: "park", subject: work, reason: st.park });
     }
   }
+}
+
+/** All packets merged: accept, fill the gap once if the spec isn't met, then land — or hand it to a person. */
+function finish(s: ProjectState, t: TaskView, now: number, house: HouseSettings, out: Action[]) {
+  const tid = t.taskId;
+  const accept = subject.accept(tid);
+  if (s.parked[accept]) return;
+  if (!t.acceptance) {
+    const st = stepPolicy(s.runs[accept] ?? [], now);
+    if (st.go) out.push({ kind: "accept", taskId: tid });
+    else if (st.park) out.push({ kind: "park", subject: accept, reason: st.park });
+    return;
+  }
+  if (t.acceptance.ok) {
+    out.push({ kind: "land", taskId: tid });
+    return;
+  }
+  const completions = s.runs[subject.complete(tid)] ?? [];
+  if (completions.filter((j) => j.ok).length >= house.loops.repairs) {
+    out.push({ kind: "park", subject: accept, reason: `Every packet landed, but the finished task still doesn't meet the spec: ${t.acceptance.failures.join("; ")}` });
+    return;
+  }
+  const st = stepPolicy(completions, now);
+  if (st.go) out.push({ kind: "complete", taskId: tid, attempt: st.attempt, feedback: st.feedback });
+  else if (st.park) out.push({ kind: "park", subject: accept, reason: `The architect couldn't close the gap: ${st.park}` });
 }
 
 const clash = (p: PacketView, claimed: string[]) => p.packet.files.some((f) => claimed.some((c) => overlaps(f, c)));

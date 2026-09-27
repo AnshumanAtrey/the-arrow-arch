@@ -166,6 +166,11 @@ export function project(pid: string, events: ArrowEvent[]): ProjectState {
       }
       case "step.retried": {
         resetRuns(e.subject);
+        const tAcc = e.subject.endsWith(":accept") ? s.tasks[e.subject.split(":")[0]] : undefined;
+        if (tAcc) {
+          tAcc.acceptance = undefined;
+          resetRuns(subject.complete(tAcc.taskId));
+        }
         const hit = packetOf(e.subject);
         if (hit && hit[1].status === "parked") {
           const kind = e.subject.split(":")[2];
@@ -178,6 +183,25 @@ export function project(pid: string, events: ArrowEvent[]): ProjectState {
         }
         break;
       }
+      case "plan.extended": {
+        const t = s.tasks[e.taskId];
+        if (!t?.plan) break;
+        for (const p of e.packets) {
+          if (t.packets[p.id]) continue;
+          t.plan.packets.push(p);
+          t.order.push(p.id);
+          t.packets[p.id] = { packet: p, status: "waiting", attempts: 0, repairs: 0 };
+        }
+        t.acceptance = undefined; // new work: the finished whole is checked again
+        resetRuns(subject.accept(e.taskId));
+        break;
+      }
+      case "task.accepted":
+        if (s.tasks[e.taskId]) s.tasks[e.taskId].acceptance = { ok: true, report: e.report, failures: [] };
+        break;
+      case "task.unaccepted":
+        if (s.tasks[e.taskId]) s.tasks[e.taskId].acceptance = { ok: false, report: e.report, failures: e.failures };
+        break;
       case "task.landed":
         if (s.tasks[e.taskId]) s.tasks[e.taskId].landed = { branch: e.branch, head: e.head };
         break;

@@ -11,15 +11,17 @@ import { effectiveSettings } from "./house-rules";
 import { fromRun, job } from "./jobs";
 import { freeSlot, ledgerBrief, portRange } from "./ledger";
 import { readLedger, refreshLedger } from "./ledger-scan";
+import { acceptTask } from "./accept";
+import { planProblem } from "./plan-check";
 import { preparePacket } from "./prepare";
 import { scrubbedEnv } from "./proc";
 import * as roles from "./roles";
 import { append, paths } from "./store";
 import { subject } from "./types";
-import type { ProjectState } from "./types";
+import type { Packet, ProjectState } from "./types";
 import { verifyPacket } from "./verify";
 
-type PacketAction = Extract<Action, { kind: "prepare" | "work" | "verify" | "merge" | "repair" | "land" }>;
+type PacketAction = Extract<Action, { kind: "prepare" | "work" | "verify" | "merge" | "repair" | "accept" | "complete" | "land" }>;
 
 export const packetBranch = (t: string, p: string) => `arrow/${t.toLowerCase()}--${p.toLowerCase()}`;
 export const worktreeDir = (pid: string, t: string, p: string) => path.join(paths(pid).worktrees, `${t}--${p}`);
@@ -48,6 +50,35 @@ export async function runPacketStep(pid: string, s: ProjectState, a: PacketActio
     });
     return;
   }
+
+  if (a.kind === "accept")
+    return job(pid, { role: "orchestrator", subject: subject.accept(a.taskId), attempt: 1 }, async () => {
+      const r = await acceptTask({
+        repo, branch: t.branch!, dir: path.join(paths(pid).dir, "accept", a.taskId), spec: t.spec!,
+        setup: s.profile!.commands.setup, env: commandEnv(s),
+      });
+      append(pid, r.ok
+        ? { type: "task.accepted", taskId: a.taskId, report: r.report }
+        : { type: "task.unaccepted", taskId: a.taskId, report: r.report, failures: r.failures });
+      return { ok: true };
+    });
+
+  if (a.kind === "complete")
+    return job(pid, { role: "architect", subject: subject.complete(a.taskId), attempt: a.attempt }, async (ctx) => {
+      const r = await roles.completer({
+        ...ctx, cwd: repo, env: scrubbedEnv(), feedback: a.feedback,
+        input: {
+          taskId: a.taskId, spec: t.spec!, failures: t.acceptance?.failures ?? [], report: t.acceptance?.report ?? [],
+          landedPackets: t.order.map((id) => t.packets[id].packet), profile: s.profile!, house, knowledge: s.knowledge,
+        },
+      });
+      if (!r.result) return fromRun(r);
+      const problem = followUpProblem(t, r.result.packets);
+      if (problem) return { ...fromRun(r), ok: false, failure: { class: "bad_output", message: problem } };
+      await git.ensureIntegration(repo);
+      append(pid, { type: "plan.extended", taskId: a.taskId, packets: r.result.packets, reason: `Closing the gap to the spec: ${(t.acceptance?.failures ?? []).join("; ")}` });
+      return fromRun(r);
+    });
 
   const pv = t.packets[a.packetId];
   const dir = worktreeDir(pid, a.taskId, a.packetId);
@@ -126,18 +157,30 @@ export async function runPacketStep(pid: string, s: ProjectState, a: PacketActio
       return job(pid, { role: "architect", subject: subject.repair(a.taskId, a.packetId), attempt: a.attempt }, async (ctx) => {
         const r = await roles.repairer({
           ...ctx, cwd: repo, env: scrubbedEnv(),
-          input: { taskId: a.taskId, packet: pv.packet, failure: pv.lastFailure!, profile: s.profile!, house, knowledge: s.knowledge },
+          input: { taskId: a.taskId, packet: pv.packet, failure: pv.lastFailure!, profile: s.profile!, house, knowledge: s.knowledge, otherPacketIds: t.order },
         });
         if (!r.result) return fromRun(r);
-        if (r.result.id !== a.packetId)
+        if (r.result.packet.id !== a.packetId)
           return { ...fromRun(r), ok: false, failure: { class: "bad_output", message: `The re-aimed packet must keep id ${a.packetId}.` } };
+        const problem = followUpProblem(t, r.result.followUps);
+        if (problem) return { ...fromRun(r), ok: false, failure: { class: "bad_output", message: problem } };
         // a new aim gets a clean shot: the old worktree goes, the next prepare re-checks red-first
         const wt = pv.worktree ?? dir;
         if (fs.existsSync(wt)) await git.removeWorktree(repo, wt, packetBranch(a.taskId, a.packetId));
-        append(pid, { type: "packet.repaired", taskId: a.taskId, packetId: a.packetId, packet: r.result, note: pv.lastFailure?.message ?? "" });
+        append(pid, { type: "packet.repaired", taskId: a.taskId, packetId: a.packetId, packet: r.result.packet, note: pv.lastFailure?.message ?? "" });
+        // what the re-aim took out of the packet becomes its own packets — never dropped
+        if (r.result.followUps.length)
+          append(pid, { type: "plan.extended", taskId: a.taskId, packets: r.result.followUps, reason: `Split from ${a.packetId}: ${pv.lastFailure?.message ?? ""}` });
         return fromRun(r);
       });
   }
+}
+
+/** New packets must fit the plan they join: fresh ids, real deps, no loops. */
+function followUpProblem(t: ProjectState["tasks"][string], packets: Packet[]): string | undefined {
+  const clash = packets.find((p) => t.packets[p.id]);
+  if (clash) return `Packet id ${clash.id} is already in the plan — follow-ups need new ids.`;
+  return planProblem({ ...t.plan!, packets: [...t.order.map((id) => t.packets[id].packet), ...packets] });
 }
 
 /** Packets of the same task that may be running at the same time (neither waits on the other). */

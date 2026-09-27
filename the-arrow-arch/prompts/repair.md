@@ -4,7 +4,11 @@ A packet failed after its retry, or passed alone but broke when combined with
 work that already landed. The orchestrator's own check output is in the inputs
 — trust it over any worker's summary. You get exactly one turn.
 
-Fix the aim, not the code. Hand back the same packet (same `id`) rewritten:
+Fix the aim, not the code. Hand back the same packet (same `id`) rewritten as
+`packet`, and put anything you take out of it into `followUps` — new packets
+with new ids (not in `otherPacketIds`), depending on this one if they build on
+it. **Work is moved, never dropped**: if you narrow a packet to fit a budget,
+the rest must appear in `followUps`, or the task will land incomplete.
 
 - If the failure shows the file list was too narrow, widen `files` to what the
   work actually needs.

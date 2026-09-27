@@ -113,6 +113,12 @@ export const Plan = z.object({
   advice: Recommendation,
 });
 
+/** A re-aimed packet, plus whatever was taken out of it — work is moved, never dropped. */
+export const RepairResult = z.object({ packet: Packet, followUps: list(Packet) });
+
+/** The architect's completion pass: packets that close the gap between the finished task and its spec. */
+export const Completion = z.object({ packets: z.array(Packet).min(1, "add at least one packet that closes the gap"), note: z.string().default("") });
+
 export const WorkerReport = z.object({
   status: z.enum(["implemented", "blocked"]),
   summary: z.string().default(""),
@@ -129,3 +135,5 @@ export type Spec = z.infer<typeof Spec>;
 export type Packet = z.infer<typeof Packet>;
 export type Plan = z.infer<typeof Plan>;
 export type WorkerReport = z.infer<typeof WorkerReport>;
+export type RepairResult = z.infer<typeof RepairResult>;
+export type Completion = z.infer<typeof Completion>;

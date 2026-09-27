@@ -126,6 +126,23 @@ describe("red path", () => {
   });
 });
 
+describe("acceptance", () => {
+  test("a spec check no packet covers is caught before landing, and the architect closes the gap", async () => {
+    const pid = start("- Components use PascalCase");
+    let s = await until(pid, (s) => Boolean(s.onboardingGateId));
+    store.append(pid, { type: "gate.decided", gateId: s.onboardingGateId!, decision: "approve" });
+    store.append(pid, { type: "task.submitted", taskId: "T1", text: "Add a helper. #gap" });
+    s = await until(pid, (s) => Boolean(s.tasks.T1?.planGateId));
+    store.append(pid, { type: "gate.decided", gateId: s.tasks.T1.planGateId!, decision: "approve" });
+    s = await until(pid, (s) => s.tasks.T1.stage === "landed");
+    const t = s.tasks.T1;
+    expect(t.order).toContain("PG1"); // the completion pass added a packet
+    expect(t.acceptance?.ok).toBe(true);
+    expect(Object.values(s.jobs).filter((j) => j.subject === "T1:complete").length).toBe(1);
+    expect(sh(s.repo!.path, "ls-tree", "-r", "--name-only", "arrow/t1")).toContain("arrow-demo/t1/gap.ts");
+  });
+});
+
 describe("a plain folder", () => {
   test("a folder that isn't a git repo is onboarded from a snapshot; the folder is left untouched", async () => {
     const dir = path.join(tmp, "plain");

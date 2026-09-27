@@ -70,12 +70,19 @@ export default function TaskPage() {
               <div>
                 <h3 className="heading mb-1.5 text-[14px]">Done means</h3>
                 <ul className="divide-y divide-rule border-y border-rule">
-                  {t.spec.acceptance.map((a) => (
-                    <li key={a.id} className="py-2">
-                      <p>{a.statement}</p>
-                      <p className="text-[13px] text-ink-3">Checked by <code className="font-mono">{a.check}</code></p>
-                    </li>
-                  ))}
+                  {t.spec.acceptance.map((a) => {
+                    const line = t.acceptance?.report.find((l) => l.slice(6).startsWith(`${a.id} `));
+                    const mark = !line ? null : line.startsWith("PASS") ? ["Passed", "text-green"] : line.startsWith("FAIL") ? ["Failed", "text-red"] : ["For you to check", "text-gold-ink"];
+                    return (
+                      <li key={a.id} className="flex gap-3 py-2">
+                        <div className="min-w-0 flex-1">
+                          <p>{a.statement}</p>
+                          <p className="text-[13px] text-ink-3">Checked by <code className="font-mono">{a.check}</code></p>
+                        </div>
+                        {mark && <span className={`shrink-0 text-[13px] ${mark[1]}`}>{mark[0]}</span>}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
               {t.spec.outOfScope.length > 0 && <p><span className="text-ink-3">Not doing:</span> {t.spec.outOfScope.join("; ")}</p>}

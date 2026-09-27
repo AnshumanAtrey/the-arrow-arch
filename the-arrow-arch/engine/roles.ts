@@ -22,7 +22,8 @@ type Knowledge = ProjectState["knowledge"];
 export type OnboarderInput = { repoPath: string; repoUrl: string; rulesText: string; houseRules: typeof HOUSE_RULES; houseDefaults: HouseSettings };
 export type PmInput = { task: string; profile: Profile; knowledge: Knowledge };
 export type ArchitectInput = { taskId: string; task: string; spec: Spec; answers: Record<string, string>; profile: Profile; house: HouseSettings; knowledge: Knowledge };
-export type RepairInput = { taskId: string; packet: Packet; failure: Failure; profile: Profile; house: HouseSettings; knowledge: Knowledge };
+export type RepairInput = { taskId: string; packet: Packet; failure: Failure; profile: Profile; house: HouseSettings; knowledge: Knowledge; otherPacketIds: string[] };
+export type CompleteInput = { taskId: string; spec: Spec; failures: string[]; report: string[]; landedPackets: Packet[]; profile: Profile; house: HouseSettings; knowledge: Knowledge };
 export type WorkerInput = {
   packet: Packet;
   attempt: number;
@@ -141,7 +142,10 @@ export const architect = (c: Common & { cwd: string; input: ArchitectInput }) =>
   runAgent({ ...c, role: "architect", promptFile: "architect.md", schema: S.Plan, example: EXAMPLES.plan });
 
 export const repairer = (c: Common & { cwd: string; input: RepairInput }) =>
-  runAgent({ ...c, role: "architect", promptFile: "repair.md", schema: S.Packet, example: EXAMPLES.plan.packets[0] });
+  runAgent({ ...c, role: "architect", promptFile: "repair.md", schema: S.RepairResult, example: { packet: EXAMPLES.plan.packets[0], followUps: [] } });
+
+export const completer = (c: Common & { cwd: string; input: CompleteInput }) =>
+  runAgent({ ...c, role: "architect", promptFile: "complete.md", schema: S.Completion, example: { packets: [EXAMPLES.plan.packets[0]], note: "Adds the missing win-detection tests." } });
 
 export const worker = (c: Common & { cwd: string; input: WorkerInput; preface: string }) =>
   runAgent({ ...c, role: "worker", promptFile: "worker.md", schema: S.WorkerReport, example: EXAMPLES.report, optional: true });
