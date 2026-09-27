@@ -147,6 +147,28 @@ describe("test integrity (H-TESTS)", () => {
     expect(disables(after)).toBe(0);
     expect(testDisabledCheck("src/lint.test.ts", before, after)).toBeUndefined();
   });
+  // the same hole as strings, one quote type over: a template literal holding
+  // skip syntax as a fixture read as a skip and parked the packet.
+  test("a marker inside a template literal is data too", () => {
+    expect(disables("const fixture = `it.skip('a', () => {})`;\n")).toBe(0);
+    expect(disables("const msg = `pytest.mark.skipif(not P.exists())`;\n")).toBe(0);
+    // a template may cross lines; the marker stays data across them
+    expect(disables("const help = `\nit.only('x', () => {})\n`;\n")).toBe(0);
+    expect(testDisabledCheck("src/lint.test.ts", "expect(1).toBe(1);\n", "expect(1).toBe(1);\nexpect(help(`it.skip('a')`)).toBe(1);\n")).toBeUndefined();
+    // and stripping it still leaves a real marker standing next to it
+    expect(disables("const f = `it.skip('a')`;\nit.skip('b', () => {})\n")).toBe(1);
+  });
+  // Go and Ruby name their tests no other way, and pytest collects `*_test.py`
+  // as well as `test_*.py`: neither reached the checks before this.
+  test("test files are found in every convention Arrow meets", () => {
+    expect(looksLikeTest("handler_test.go")).toBe(true);
+    expect(looksLikeTest("test_loader_test.py")).toBe(true);
+    expect(looksLikeTest("user_spec.rb")).toBe(true);
+    expect(looksLikeTest("src/__tests__/a.ts")).toBe(true);
+    expect(looksLikeTest("latest.go")).toBe(false); // contains "test", is not one
+    expect(looksLikeTest("contest.ts")).toBe(false);
+    expect(looksLikeTest("inspector.rb")).toBe(false);
+  });
   test("stripping strings keeps every real marker", () => {
     expect(disables("it.skip('a', () => {})\n")).toBe(1);
     expect(disables("@pytest.mark.skipif(not P.exists(), reason=\"no data\")\n")).toBe(1);

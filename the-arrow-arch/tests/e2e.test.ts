@@ -318,6 +318,18 @@ describe("test integrity", () => {
       fs.rmSync(fix.dir, { recursive: true, force: true });
     }
   });
+
+  // the false positive that would matter most: a test whose fixture data quotes
+  // skip syntax in a template literal is a working test, not a switched-off one.
+  test("a fixture that quotes skip syntax in a template is not a skip", async () => {
+    const fix = fixture();
+    fs.writeFileSync(path.join(fix.wt, "src/test/a.test.ts"), "it('adds', () => {\n  expect(1 + 1).toBe(2)\n  expect(2 + 2).toBe(4)\n  expect(lint(`it.skip('x', () => {})`)).toBe(0)\n})\n");
+    try {
+      expect(await verify(fix)).toMatchObject({ ok: true });
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("proof depends on the change", () => {
