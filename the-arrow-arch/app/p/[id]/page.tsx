@@ -7,7 +7,8 @@ import { HousePanel } from "@/components/house-panel";
 import { LedgerPanel } from "@/components/ledger-panel";
 import { NowStrip } from "@/components/now-strip";
 import { PromptBlock } from "@/components/prompt-block";
-import { Activity, MetricsStrip, ProfilePanel, Section, TaskForm, TaskList } from "@/components/panels";
+import { Activity, MetricsStrip, ProfilePanel, TaskForm, TaskList } from "@/components/panels";
+import { TabBar, TabPanel, useTab } from "@/components/tabs";
 import { usePoll, type Payload } from "@/lib/client";
 import { flightOf } from "@/lib/flight";
 
@@ -15,6 +16,7 @@ export default function ProjectPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { data, error, reload } = usePoll<Payload>(`/api/projects/${id}`);
+  const [tab, setTab] = useTab(["tasks", "live", "learned", "house", "numbers"], "tasks");
   if (error && !data) return <p className="text-accent-ink">{error}</p>;
   if (!data) return <p className="text-ink-3">Loading…</p>;
   const { state: s, metrics, ledger, house } = data;
@@ -24,18 +26,16 @@ export default function ProjectPage() {
   const focus = live.find((t) => t.stage !== "landed" && t.stage !== "halted") ?? live[0];
   const flight = flightOf(s, s.stage === "ready" ? focus : undefined);
 
+  const running = Object.values(s.jobs).filter((j) => !j.finishedAt).length;
+
   return (
     <div>
-      {focus && (
-        <div className="mb-6">
-          <PromptBlock taskId={focus.taskId} text={focus.text} href={`/p/${id}/t/${focus.taskId}`} />
-        </div>
-      )}
-      <p className="break-all text-[13px] text-ink-3">
-        <span className="font-mono">{s.repoUrl}</span>
-        {s.repo && <span className="ml-3 font-mono">{s.repo.branch} @ {s.repo.head.slice(0, 7)}</span>}
-      </p>
-      <h1 className="display mt-1 break-words text-[34px] sm:text-[46px]">{s.name}</h1>
+      {focus && <PromptBlock taskId={focus.taskId} text={focus.text} href={`/p/${id}/t/${focus.taskId}`} />}
+      <div className={`${focus ? "mt-6" : ""} flex flex-wrap items-baseline justify-between gap-x-6`}>
+        <h1 className="display break-words text-[34px] sm:text-[44px]">{s.name}</h1>
+        {s.repo && <p className="font-mono text-[12px] text-ink-3">{s.repo.branch} @ {s.repo.head.slice(0, 7)}</p>}
+      </div>
+      <p className="mt-1 truncate font-mono text-[12px] text-ink-3" title={s.repoUrl}>{s.repoUrl}</p>
 
       <FlightBand caption={focus && s.stage === "ready" ? <><span className="font-mono text-ink-2">{focus.taskId}</span> {focus.spec?.title ?? "The project manager is writing the spec"}</> : undefined}>
         <FlightPath flight={flight} />
@@ -56,43 +56,64 @@ export default function ProjectPage() {
         <NeedsYou pid={id} state={s} onDone={reload} />
       </div>
 
-      <div className="grid gap-x-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
-        <div>
-          <Section title="Tasks" aside={s.taskOrder.length ? `${s.taskOrder.length} sent` : undefined}>
-            <TaskForm pid={id} enabled={s.stage === "ready"} onDone={(t) => router.push(`/p/${id}/t/${t}`)} />
-            <div className="mt-4">
-              <TaskList pid={id} state={s} />
-            </div>
-          </Section>
-          <Section title="Right now" aside="who is running, and the shared ledger">
+      <div className="mt-10">
+        <TabBar
+          label="This repository"
+          current={tab}
+          onChange={setTab}
+          tabs={[
+            { id: "tasks", label: "Tasks", count: s.taskOrder.length },
+            { id: "live", label: "Live", count: running || undefined },
+            { id: "learned", label: "What Arrow learned", count: s.profile?.rules.length },
+            { id: "house", label: "House rules" },
+            { id: "numbers", label: "Numbers" },
+          ]}
+        />
+        <TabPanel id="tasks" current={tab}>
+          <TaskForm pid={id} enabled={s.stage === "ready"} onDone={(t) => router.push(`/p/${id}/t/${t}`)} />
+          <div className="mt-6">
+            <TaskList pid={id} state={s} />
+          </div>
+        </TabPanel>
+        <TabPanel id="live" current={tab}>
+          <Sub title="Running now">
             <NowStrip s={s} now={data.now} />
-            <div className="mt-6">
-              <LedgerPanel ledger={ledger} state={s} />
-            </div>
-          </Section>
-          <Section title="Activity" aside="every step; open an agent's run for its prompt">
+          </Sub>
+          <Sub title="Activity" aside="every step; open an agent's run for its prompt and what it did">
             <Activity pid={id} state={s} now={data.now} />
-          </Section>
-        </div>
-        <div>
-          <Section title="What Arrow learned">
-            {s.profile ? (
-              <ProfilePanel profile={s.profile} />
-            ) : (
-              <p className="text-[14px] text-ink-3">{s.repo ? "The onboarder is reading the repo." : "Copying the repository."}</p>
-            )}
-          </Section>
-          {house && (
-            <Section title="House rules" aside="Arrow's defaults, tuned by onboarding">
-              <HousePanel pid={id} state={s} house={house} onDone={reload} />
-            </Section>
+          </Sub>
+          <Sub title="The shared ledger" aside="worktrees, local servers, what was cleaned up">
+            <LedgerPanel ledger={ledger} state={s} />
+          </Sub>
+        </TabPanel>
+        <TabPanel id="learned" current={tab}>
+          {s.profile ? (
+            <ProfilePanel profile={s.profile} />
+          ) : (
+            <p className="text-[14px] text-ink-3">{s.repo ? "The onboarder is reading the repo." : "Copying the repository."}</p>
           )}
-        </div>
+        </TabPanel>
+        <TabPanel id="house" current={tab}>
+          {house ? <HousePanel pid={id} state={s} house={house} onDone={reload} /> : <p className="text-[14px] text-ink-3">House rules are tuned once onboarding finishes.</p>}
+        </TabPanel>
+        <TabPanel id="numbers" current={tab}>
+          <MetricsStrip m={metrics} />
+          <p className="mt-4 text-[13px] text-ink-3">Computed from the event log, never from a counter.</p>
+        </TabPanel>
       </div>
-
-      <Section title="Numbers" aside="computed from the event log, never from a counter">
-        <MetricsStrip m={metrics} />
-      </Section>
     </div>
+  );
+}
+
+/** A block inside a tab: a small heading, then its content, full width. */
+function Sub({ title, aside, children }: { title: string; aside?: string; children: React.ReactNode }) {
+  return (
+    <section className="mb-10">
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4">
+        <h2 className="heading text-[15px]">{title}</h2>
+        {aside && <p className="text-[13px] text-ink-3">{aside}</p>}
+      </div>
+      {children}
+    </section>
   );
 }

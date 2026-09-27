@@ -56,8 +56,14 @@ export function ProfilePanel({ profile }: { profile: Profile }) {
                 <span className="w-7 shrink-0 font-mono text-[12px] leading-6 text-ink-3">{r.id}</span>
                 <div className="min-w-0 flex-1">
                   <p>{r.text}</p>
-                  {r.protectedPaths.length > 0 && (
+                  {r.protectedPaths.length > 0 && r.protectedPaths.length <= 3 && (
                     <p className="mt-0.5 text-[13px] text-ink-3">Protects {r.protectedPaths.map((p) => <code key={p} className="mr-1.5 font-mono text-ink-2">{p}</code>)}</p>
+                  )}
+                  {r.protectedPaths.length > 3 && (
+                    <details className="mt-0.5 text-[13px] text-ink-3">
+                      <summary className="cursor-pointer">Protects {r.protectedPaths.length} paths</summary>
+                      <p className="mt-1 break-all">{r.protectedPaths.map((p) => <code key={p} className="mr-2 inline-block font-mono text-ink-2">{p}</code>)}</p>
+                    </details>
                   )}
                 </div>
                 <span className={`chip h-fit shrink-0 ${r.criticality === "critical" ? "chip-critical" : "text-ink-3"}`}>{r.criticality}</span>
@@ -79,9 +85,9 @@ export function ProfilePanel({ profile }: { profile: Profile }) {
       )}
 
       {profile.adaptations.length > 0 && (
-        <div>
-          <h3 className="heading mb-1.5 text-[14px]">How Arrow runs in this repo</h3>
-          <ul className="space-y-1.5 text-[14px]">
+        <details className="text-[14px]">
+          <summary className="cursor-pointer text-ink-2">How Arrow runs in this repo ({profile.adaptations.length})</summary>
+          <ul className="mt-2 space-y-1.5 text-[14px]">
             {profile.adaptations.map((a) => (
               <li key={a.setting}>
                 <span className="text-ink-3">{a.setting}:</span> {a.value}
@@ -89,7 +95,7 @@ export function ProfilePanel({ profile }: { profile: Profile }) {
               </li>
             ))}
           </ul>
-        </div>
+        </details>
       )}
 
       {profile.structure.length > 0 && (
