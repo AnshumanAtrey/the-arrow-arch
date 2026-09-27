@@ -45,6 +45,37 @@
   width: 16px;
   height: 16px;
 }
+/* the source, beside the main call to action: same height, quieter */
+.launch-header .header-repo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 9px 13px;
+  border: 1px solid #e4e5e7;
+  border-radius: 6px;
+  background: #fff;
+  color: #44484f;
+  font-size: 11px;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.launch-header .header-repo:hover {
+  background: #fafafa;
+  border-color: #c5c7cb;
+}
+.launch-header .header-repo .icon {
+  width: 15px;
+  height: 15px;
+  color: #747880;
+}
+.launch-header .header-repo + .header-cta {
+  margin-left: -18px;
+}
+.launch-header .header-cta-short {
+  display: none;
+}
 .launch-hero {
   position: relative;
   isolation: isolate;
@@ -977,5 +1008,30 @@
   }
   .launch-powered {
     margin-top: 14px;
+  }
+}
+
+/* phones: the source link shrinks to its icon and takes the push to the right */
+@media (max-width: 780px) {
+  .launch-header .header-repo {
+    margin-left: auto;
+    min-height: 34px;
+    padding: 8px 10px;
+  }
+  .launch-header .header-repo-label {
+    display: none;
+  }
+  .launch-header .header-repo + .header-cta {
+    margin-left: -8px;
+  }
+  /* one line on a phone: the short label */
+  .launch-header .header-cta {
+    white-space: nowrap;
+  }
+  .launch-header .header-cta-long {
+    display: none;
+  }
+  .launch-header .header-cta-short {
+    display: inline;
   }
 }

@@ -3,11 +3,11 @@ import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Brand, DemoLink, Icon } from "./ui";
+import { Brand, GitHubLink, Icon, SubmissionLink } from "./ui";
 import Hero from "./hero";
 import "./sections.css";
+import { repoUrl as REPO, submissionUrl } from "../lib/site";
 gsap.registerPlugin(ScrollTrigger);
-const REPO = "https://github.com/AnshumanAtrey/the-arrow-arch";
 const roles = [
   {
     name: "PM",
@@ -338,7 +338,11 @@ export default function Landing() {
               </Link>
             ))}
           </nav>
-          <DemoLink className="button-small header-cta" />
+          <GitHubLink />
+          <SubmissionLink className="button-small header-cta">
+            <span className="header-cta-long">View on lablab.ai</span>
+            <span className="header-cta-short">lablab.ai</span>
+          </SubmissionLink>
           <button
             className="menu-button"
             aria-label={menu ? "Close navigation" : "Open navigation"}
@@ -749,7 +753,7 @@ export default function Landing() {
                 proof trail.
               </p>
               <div className="launch-actions">
-                <DemoLink />
+                <SubmissionLink />
                 <a
                   href={REPO}
                   target="_blank"
@@ -785,6 +789,9 @@ export default function Landing() {
             </nav>
             <nav className="footer-col" aria-label="Resources">
               <span>RESOURCES</span>
+              <a href={submissionUrl} target="_blank" rel="noreferrer">
+                lablab.ai submission ↗
+              </a>
               <Link href="/demo">Interactive walkthrough</Link>
               <Link href="/demo#setup">Run it locally</Link>
               <a href={REPO} target="_blank" rel="noreferrer">

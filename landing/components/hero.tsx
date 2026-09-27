@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import gsap from "gsap";
-import { DemoLink, Icon } from "./ui";
+import { Icon, SubmissionLink } from "./ui";
 import "./hero.css";
 const stages = [
   {
@@ -118,7 +118,7 @@ export default function Hero() {
             <strong>proves the change</strong> before it lands.
           </p>
           <div className="launch-actions launch-reveal">
-            <DemoLink />
+            <SubmissionLink />
             <a
               href="https://github.com/AnshumanAtrey/the-arrow-arch"
               target="_blank"

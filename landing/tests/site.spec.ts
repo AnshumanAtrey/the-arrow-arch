@@ -19,7 +19,12 @@ test("desktop story, FAQ and demo navigation", async ({ page }) => {
     page.getByRole("button", { name: "Does Arrow replace developers?" }),
   ).toHaveAttribute("aria-expanded", "false");
   await expect(page.locator("#faq-panel-2")).toBeVisible();
-  await page.locator(".header-cta").click();
+  // the main call to action is the lablab.ai submission; the source sits beside it
+  const cta = page.locator(".header-cta");
+  await expect(cta).toHaveAttribute("href", /lablab\.ai\/ai-hackathons\/ibm-bob-2-hackathon\//);
+  await expect(cta).toHaveAttribute("target", "_blank");
+  await expect(page.locator(".header-repo")).toHaveAttribute("href", "https://github.com/AnshumanAtrey/the-arrow-arch");
+  await page.goto("/demo");
   await expect(page).toHaveURL(/\/demo/);
   await expect(page.getByText("NO LIVE AGENTS RUNNING")).toBeVisible();
   for (let i = 0; i < 4; i++)
