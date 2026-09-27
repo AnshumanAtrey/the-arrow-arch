@@ -3,6 +3,7 @@
  * orchestrator gathers the facts from git (verify.ts); these decide. Each returns
  * a failure or nothing — no judgment, no model.
  */
+import path from "node:path";
 import { matchesAny } from "./glob";
 import type { HouseSettings } from "./house-rules";
 import type { Failure } from "./types";
@@ -57,6 +58,38 @@ export function placeholderCheck(files: FileFacts[], s: HouseSettings["placehold
   }
   return hits.length ? fail("verification", "The change leaves placeholders instead of finished work.", hits.slice(0, 20)) : undefined;
 }
+
+const looksLikeTest = (f: string) =>
+  /(^|\/)(tests?|__tests__|spec)\//.test(f) || /\.(test|spec)\.[a-z]+$/.test(path.basename(f)) || /^test_.*\.py$/.test(path.basename(f));
+
+/** The assertion a language writes, across the ones Arrow meets: JS/TS, Python, Go, Rust. */
+const ASSERTION = /\bexpect\s*\(|\bassert\b|\bassert_\w+!|\bpanic!\s*\(|\bt\.(?:Error|Fatal)\w*|\.should\b/g;
+
+/**
+ * H-TESTS — an existing test may be rewritten, but not left asserting less.
+ * `before` is null for a file this packet created; `after` is null when it was
+ * deleted. Assertions are counted, not lines: replacing an import used to read
+ * as weakening a test, which rejected correct work and taught the worker to
+ * leave dead code behind.
+ */
+export function testWeakenedCheck(file: string, before: string | null, after: string | null): Failure | undefined {
+  if (before === null) return undefined; // nothing existed to weaken
+  if (after === null) return fail("verification", `An existing test was deleted: ${file}.`);
+  const was = assertions(before);
+  const now = assertions(after);
+  if (now >= was) return undefined;
+  return fail("verification", `Weakened an existing test: ${file} has ${now} assertion(s), down from ${was}.`, [`-${was - now}: ${file}`]);
+}
+
+/** Assertion-shaped code in a file. Whole-line comments are skipped, so commenting one out doesn't count as keeping it. */
+export const assertions = (text: string): number =>
+  (text
+    .split("\n")
+    .filter((l) => !/^\s*(\/\/|#|\*|\/\*)/.test(l))
+    .join("\n")
+    .match(ASSERTION) ?? []).length;
+
+export { looksLikeTest };
 
 const SECRET_PATTERNS: [string, RegExp][] = [
   ["AWS access key", /AKIA[0-9A-Z]{16}/],

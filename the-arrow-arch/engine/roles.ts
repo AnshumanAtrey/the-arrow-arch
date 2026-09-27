@@ -15,6 +15,7 @@ import { keysFor, readSettings, type Harness } from "./settings";
 import { classifyExit } from "./failures";
 import { HOUSE_RULES, type HouseSettings } from "./house-rules";
 import * as S from "./schemas";
+import { allowedValues } from "./schema-hints";
 import type { Failure, Packet, Profile, ProjectState, Role, Rule, Spec } from "./types";
 
 type Knowledge = ProjectState["knowledge"];
@@ -64,6 +65,7 @@ async function runAgent<T>(o: {
   fs.rmSync(outFile, { force: true });
   fs.mkdirSync(path.dirname(o.logFile), { recursive: true });
 
+  const allowed = allowedValues(o.schema);
   const prompt = [
     fs.readFileSync(path.join(PROMPTS_DIR, o.promptFile), "utf8").trim(),
     ...(o.preface ? ["", o.preface] : []),
@@ -86,6 +88,9 @@ async function runAgent<T>(o: {
     "```json",
     JSON.stringify(o.example, null, 2),
     "```",
+    ...(allowed.length
+      ? ["", "# Allowed values", "", "These sets are closed. Use one of these spellings — anything else is rejected, or quietly filed under a fallback, and neither is what you meant:", "", ...allowed.map((l) => `- ${l}`)]
+      : []),
     "",
     "Arrow validates that file. Anything you print instead is ignored.",
   ].join("\n");

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { dependencyCheck, diffBudgetCheck, docsCheck, fileSizeCheck, newDependencies, placeholderCheck, secretCheck, type FileFacts } from "../engine/checks";
+import { dependencyCheck, diffBudgetCheck, docsCheck, fileSizeCheck, looksLikeTest, newDependencies, placeholderCheck, secretCheck, testWeakenedCheck, assertions, type FileFacts } from "../engine/checks";
 import { decide } from "../engine/decide";
 import { DEFAULTS, effectiveSettings } from "../engine/house-rules";
 import { buildLedger, freeSlot, ledgerBrief, type OsSnapshot } from "../engine/ledger";
@@ -45,6 +45,44 @@ describe("house-rule checks", () => {
   test("diff budget", () => {
     expect(diffBudgetCheck(401, DEFAULTS.diff)).toBeDefined();
     expect(diffBudgetCheck(400, DEFAULTS.diff)).toBeUndefined();
+  });
+});
+
+describe("test integrity (H-TESTS)", () => {
+  // the real one: a setup file holds no assertions, so rewriting its import is
+  // not weakening anything. Counting removed lines read it as a violation,
+  // rejected correct work, and taught the worker to leave dead code behind.
+  const setupBefore = "import '@testing-library/jest-dom'\n";
+  test("swapping an import in a setup file is not weakening a test", () => {
+    expect(testWeakenedCheck("src/test/setup.ts", setupBefore, "import '@testing-library/jest-dom/vitest'\n")).toBeUndefined();
+  });
+  test("the file filter still covers setup files, so a lost assertion there would be caught", () => {
+    expect(looksLikeTest("src/test/setup.ts")).toBe(true);
+    expect(looksLikeTest("src/test/a.test.ts")).toBe(true);
+    expect(looksLikeTest("test_x.py")).toBe(true);
+    expect(looksLikeTest("vitest.config.ts")).toBe(false);
+    expect(testWeakenedCheck("src/test/setup.ts", "beforeAll(() => expect(x).toBe(1))\n", "beforeAll(() => {})\n")?.class).toBe("verification");
+  });
+  test("losing an assertion is caught", () => {
+    const before = "it('a', () => {\n  expect(1).toBe(1)\n  expect(2).toBe(2)\n})\n";
+    const f = testWeakenedCheck("src/a.test.ts", before, "it('a', () => {\n  expect(1).toBe(1)\n})\n");
+    expect(f?.class).toBe("verification");
+    expect(f?.message).toContain("down from 2");
+  });
+  test("commenting an assertion out is not keeping it", () => {
+    expect(testWeakenedCheck("src/a.test.ts", "expect(1).toBe(1)\n", "// expect(1).toBe(1)\n")).toBeDefined();
+    expect(testWeakenedCheck("src/a.test.ts", "  expect(1).toBe(1)\n", "  expect(1).toBe(1)\n  expect(2).toBe(2)\n")).toBeUndefined(); // adding is always fine
+  });
+  test("a new test file has nothing to weaken; deleting an existing one is caught", () => {
+    expect(testWeakenedCheck("src/a.test.ts", null, "expect(1).toBe(1)\n")).toBeUndefined();
+    expect(testWeakenedCheck("src/a.test.ts", "expect(1).toBe(1)\n", null)?.message).toContain("deleted");
+  });
+  test("assertions are counted in the languages Arrow meets", () => {
+    expect(assertions("def test_x():\n    assert x == 1\n")).toBe(1);
+    expect(assertions("func TestX(t *testing.T) {\n\tif x != 1 { t.Error(\"no\") }\n}\n")).toBe(1);
+    expect(assertions("fn t() { assert_eq!(x, 1); }\n")).toBe(1);
+    expect(assertions("expect(a).to.equal(1);\na.should.equal(2);\n")).toBe(2);
+    expect(assertions("export const hi = 1;\nimport x from 'y';\n")).toBe(0);
   });
 });
 
