@@ -59,8 +59,16 @@ export function placeholderCheck(files: FileFacts[], s: HouseSettings["placehold
   return hits.length ? fail("verification", "The change leaves placeholders instead of finished work.", hits.slice(0, 20)) : undefined;
 }
 
+/**
+ * Is this a test file? A directory named for tests, or a test-named basename.
+ * `_test` and `_spec` are not decoration: they are the only convention Go and
+ * Ruby have (`handler_test.go`), and one of pytest's two defaults
+ * (`test_loader_test.py`). Missing them left whole languages outside H-TESTS.
+ */
 const looksLikeTest = (f: string) =>
-  /(^|\/)(tests?|__tests__|spec)\//.test(f) || /\.(test|spec)\.[a-z]+$/.test(path.basename(f)) || /^test_.*\.py$/.test(path.basename(f));
+  /(^|\/)(tests?|__tests__|spec)\//.test(f) ||
+  /[._](?:test|spec)\.[a-z]+$/.test(path.basename(f)) || // a.test.ts, a_test.go, a_spec.rb
+  /^test_.*\.py$/.test(path.basename(f)); // pytest's other default
 
 /** The assertion a language writes, across the ones Arrow meets: JS/TS, Python, Go, Rust. */
 const ASSERTION = /\bexpect\s*\(|\bassert\b|\bassert_\w+!|\bpanic!\s*\(|\bt\.(?:Error|Fatal)\w*|\.should\b/g;
@@ -81,15 +89,80 @@ export function testWeakenedCheck(file: string, before: string | null, after: st
   return fail("verification", `Weakened an existing test: ${file} has ${now} assertion(s), down from ${was}.`, [`-${was - now}: ${file}`]);
 }
 
-/** Assertion-shaped code in a file. Whole-line comments are skipped, so commenting one out doesn't count as keeping it. */
-export const assertions = (text: string): number =>
-  (text
+/**
+ * Code only. Whole-line comments are skipped, so commenting a marker out is not
+ * keeping it. `#` is a comment, except in Rust, where `#[ignore]` is an
+ * attribute: a line that starts `#[ignore` counts as a marker, not a comment.
+ */
+const codeLines = (text: string): string =>
+  text
     .split("\n")
-    .filter((l) => !/^\s*(\/\/|#|\*|\/\*)/.test(l))
-    .join("\n")
-    .match(ASSERTION) ?? []).length;
+    .filter((l) => !/^\s*(\/\/|#(?!\[)|\*|\/\*)/.test(l))
+    .join("\n");
+
+/** Assertion-shaped code in a file. */
+export const assertions = (text: string): number => (codeLines(text).match(ASSERTION) ?? []).length;
+
+/** The way a language switches a test off, across the ones Arrow meets: JS/TS, Python, Go, Rust. */
+const DISABLE =
+  /\bpytest\.mark\.(?:skip|skipif|xfail)\b|\bpytest\.(?:skip|importorskip)\s*\(|\b(?:it|test|describe)\.(?:skipIf|skip|only)(?:\.each)?\s*\(|\b(?:xit|xtest|xdescribe|fit|fdescribe)\s*\(|\bt\.Skip\w*\s*\(|#\[ignore\b/g;
+
+/** A quoted run, escapes included. Quotes don't cross a line; a template literal may. */
+const QUOTED = /'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g;
+
+/**
+ * Markers that switch a test off, and only in code. A marker a test quotes as
+ * data — `expect(disables("it.skip('a', () => {})"))` — is not one, so quoted
+ * runs go first, template literals included. A heuristic, not a parser: a lone
+ * unclosed quote on a line quotes nothing, triple-quoted strings are not
+ * special, and a `${...}` inside a template goes with it — consistent with the
+ * under-detection boundary on testDisabledCheck below.
+ * Focus counts with skip: focusing one test silently stops the rest from
+ * running, which proves as little as a skip.
+ */
+export const disables = (text: string): number => (codeLines(text).replace(QUOTED, "").match(DISABLE) ?? []).length;
+
+/** For the report a person reads: the lines that carry a marker. */
+const disableLines = (text: string): string[] =>
+  codeLines(text)
+    .split("\n")
+    .filter((l) => disables(l))
+    .map((l) => l.trim().slice(0, 120));
+
+/**
+ * H-TESTS — a test that switches itself off is a decision a person makes.
+ * Counting assertions can't see it: the packet that added two
+ * `pytest.mark.skipif` decorators kept all 16 assertions while making the one
+ * that mattered unreachable, and was reported verified.
+ * A count, not a diff of marker lines: rewording a skip's reason is not adding
+ * one, and over-detection here parks correct work with no way out. The boundary
+ * that buys: a skip removed and another added in the same file holds level, so a
+ * moved skip goes uncaught — deliberate.
+ * Classed `protected`, not `verification`: a skip is often legitimate (the data
+ * really isn't there), so this parks for a person instead of spending a retry on
+ * a worker that cannot win. `before` is null for a file this packet created;
+ * `after` is null when it was deleted — a deletion testWeakenedCheck already owns.
+ */
+export function testDisabledCheck(file: string, before: string | null, after: string | null): Failure | undefined {
+  if (before === null || after === null) return undefined;
+  const was = disables(before);
+  const now = disables(after);
+  if (now <= was) return undefined;
+  return fail("protected", `${file} gained ${now - was} way(s) to switch a test off (${was} -> ${now}). A skipped or focused test proves nothing; a person decides whether this one should.`, [
+    `+${now - was}: ${file}`,
+    ...[...new Set(disableLines(after))].slice(0, 19),
+  ]);
+}
 
 export { looksLikeTest };
+
+/**
+ * The changed files that aren't tests — what a packet's checks are supposed to be
+ * about. A packet that changed none of these can pass red-first and still prove
+ * nothing behavioural: edit the tests until they go green, and every check passes
+ * while no behaviour changed.
+ */
+export const productionFiles = (files: string[]): string[] => files.filter((f) => !looksLikeTest(f));
 
 const SECRET_PATTERNS: [string, RegExp][] = [
   ["AWS access key", /AKIA[0-9A-Z]{16}/],

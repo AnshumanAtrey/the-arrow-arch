@@ -17,6 +17,8 @@ process.env.ARROW_DRIVER = "mock";
 process.env.ARROW_MOCK_DELAY_MS = "1";
 
 const { tick, reconcile } = await import("../engine/orchestrator");
+const { acceptTask } = await import("../engine/accept");
+const git = await import("../engine/git");
 const { refreshLedger, readLedger } = await import("../engine/ledger-scan");
 const { verifyPacket } = await import("../engine/verify");
 const { DEFAULTS } = await import("../engine/house-rules");
@@ -328,6 +330,252 @@ describe("test integrity", () => {
       const r = await verify(fix);
       expect(r.ok).toBe(false);
       if (!r.ok) expect(r.failure.message).toContain("deleted");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  // the chewsy packet: two tests kept every assertion, and gained a skipif that
+  // made the assertion that mattered unreachable. No assertion was lost, so the
+  // count saw nothing — this parks the packet for a person instead.
+  test("hanging a skip off an existing test parks the packet for a person", async () => {
+    const fix = fixture();
+    fs.writeFileSync(path.join(fix.wt, "src/test/a.test.ts"), "it.skip('adds', () => {\n  expect(1 + 1).toBe(2)\n  expect(2 + 2).toBe(4)\n})\n");
+    try {
+      const r = await verify(fix);
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.failure).toMatchObject({ class: "protected" });
+      if (!r.ok) expect(r.failure.message).toContain("switch a test off");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  /** A verify with the tests rules tuned, for the settings that decide what runs. */
+  const verifyWith = (fix: ReturnType<typeof fixture>, tests: typeof DEFAULTS.tests) =>
+    verifyPacket({ wt: fix.wt, base: fix.base, packet, profile, house: { ...DEFAULTS, tests }, attempt: 1, baseline: {}, env: process.env });
+  const skipAdded = (fix: ReturnType<typeof fixture>) =>
+    fs.writeFileSync(path.join(fix.wt, "src/test/a.test.ts"), "it.skip('adds', () => {\n  expect(1 + 1).toBe(2)\n  expect(2 + 2).toBe(4)\n})\n");
+
+  test("with the new-skips rule off, a skip is not checked", async () => {
+    const fix = fixture();
+    skipAdded(fix);
+    try {
+      expect(await verifyWith(fix, { mayEditExisting: false, requireApprovalForNewSkips: false })).toMatchObject({ ok: true });
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  // the setting onboarding actually writes: a company that may edit tests still
+  // gets new skips parked, because the two are separate rules
+  test("mayEditExisting doesn't switch the skip rule off", async () => {
+    const fix = fixture();
+    skipAdded(fix);
+    try {
+      const r = await verifyWith(fix, { mayEditExisting: true, requireApprovalForNewSkips: true });
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.failure).toMatchObject({ class: "protected" });
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  // both findings at once: a skip added and an assertion dropped. The park wins —
+  // retrying a packet that has to park anyway only spends the budget — but the
+  // drop still reaches the person, folded into the report.
+  test("a skip and a dropped assertion together park, and the drop is reported", async () => {
+    const fix = fixture();
+    fs.writeFileSync(path.join(fix.wt, "src/test/a.test.ts"), "it.skip('adds', () => {\n  expect(1 + 1).toBe(2)\n})\n");
+    try {
+      const r = await verify(fix);
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.failure).toMatchObject({ class: "protected" });
+      if (!r.ok) expect(r.failure.message).toContain("switch a test off");
+      if (!r.ok) expect(r.failure.report?.join("\n")).toContain("down from 2");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  // the false positive that would matter most: a test whose fixture data quotes
+  // skip syntax in a template literal is a working test, not a switched-off one.
+  test("a fixture that quotes skip syntax in a template is not a skip", async () => {
+    const fix = fixture();
+    fs.writeFileSync(path.join(fix.wt, "src/test/a.test.ts"), "it('adds', () => {\n  expect(1 + 1).toBe(2)\n  expect(2 + 2).toBe(4)\n  expect(lint(`it.skip('x', () => {})`)).toBe(0)\n})\n");
+    try {
+      expect(await verify(fix)).toMatchObject({ ok: true });
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("proof depends on the change", () => {
+  // red-first shows a check failed before; only undoing the work shows the check
+  // was about the work. The packet that prompted this was a test-only diff with
+  // every check green — no production change for a check to be about, so it gets
+  // the NOTE; a packet whose production change its checks ignore fails here.
+  const profile: Profile = {
+    summary: "s", stack: [], commands: {}, structure: [], rules: [], findings: [], adaptations: [],
+    toolchain: { runtimes: [] }, dependencies: [], envVars: [], decisions: [], houseRules: [],
+    recommendation: { decision: "continue", reason: "r", suggestions: [] },
+  };
+
+  const packet = (over: Partial<Packet> = {}): Packet => ({
+    id: "P1", module: "M1", title: "greet takes a greeting", objective: "o", context: "",
+    files: ["src/greet.js", "src/extra.js", "src/test/greet.test.js"], deps: [],
+    verification: ["bun src/test/greet.test.js"], regression: [], risk: "low",
+    kind: "change", newDependencies: [], env: [], ...over,
+  });
+
+  /** A repo whose greet() takes one argument, and the worktree a packet works in. */
+  function fixture(also: Record<string, string> = {}) {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "arrow-depends-"));
+    const origin = path.join(dir, "repo");
+    const wt = path.join(dir, "work");
+    fs.mkdirSync(path.join(origin, "src/test"), { recursive: true });
+    fs.writeFileSync(path.join(origin, "src/greet.js"), "module.exports = { greet: (name) => 'hi ' + name };\n");
+    for (const [f, body] of Object.entries(also)) {
+      fs.mkdirSync(path.dirname(path.join(origin, f)), { recursive: true });
+      fs.writeFileSync(path.join(origin, f), body);
+    }
+    execFileSync("git", ["init", "-q", "-b", "main", origin]);
+    sh(origin, "add", "-A");
+    sh(origin, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "init");
+    sh(origin, "branch", "arrow/t1");
+    sh(origin, "worktree", "add", "-q", "-b", "arrow/t1--p1", wt, "arrow/t1");
+    fs.mkdirSync(path.join(wt, "src/test"), { recursive: true }); // git tracks no empty directory
+    return { dir, origin, wt, base: "arrow/t1" };
+  }
+
+  const verify = (fix: ReturnType<typeof fixture>, p: Packet) =>
+    verifyPacket({ wt: fix.wt, base: fix.base, packet: p, profile, house: DEFAULTS, attempt: 1, baseline: {}, env: process.env });
+
+  test("a check that fails with the work undone is verified", async () => {
+    const fix = fixture();
+    try {
+      fs.writeFileSync(path.join(fix.wt, "src/greet.js"), "module.exports = { greet: (name, greeting = 'hi') => greeting + ' ' + name };\n");
+      fs.writeFileSync(path.join(fix.wt, "src/test/greet.test.js"), "const { greet } = require('../greet.js');\nif (greet('a', 'yo') !== 'yo a') throw new Error('the greeting was ignored');\n");
+      const r = await verify(fix, packet());
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.report.join("\n")).toContain("depend on it");
+      // the work is back where the worker left it
+      expect(fs.readFileSync(path.join(fix.wt, "src/greet.js"), "utf8")).toContain("greeting = 'hi'");
+      expect(sh(fix.wt, "status", "--porcelain")).toBe("");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  test("a check that passes with the production change undone fails the packet", async () => {
+    const fix = fixture();
+    try {
+      // a new file no check runs, plus a test that only exercises the default path
+      fs.writeFileSync(path.join(fix.wt, "src/extra.js"), "module.exports = { unused: true };\n");
+      fs.writeFileSync(path.join(fix.wt, "src/test/greet.test.js"), "const { greet } = require('../greet.js');\nif (greet('a') !== 'hi a') throw new Error('wrong greeting');\n");
+      const r = await verify(fix, packet());
+      expect(r.ok).toBe(false);
+      if (!r.ok) {
+        expect(r.failure.class).toBe("verification");
+        expect(r.failure.message).toContain("production change undone");
+      }
+      // including the file the revert deleted: the worker's tree is untouched
+      expect(fs.readFileSync(path.join(fix.wt, "src/extra.js"), "utf8")).toContain("unused");
+      expect(sh(fix.wt, "status", "--porcelain")).toBe("");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  test("a test-only packet is kept, and the report says it is not verified by behaviour", async () => {
+    const fix = fixture();
+    try {
+      fs.writeFileSync(path.join(fix.wt, "src/test/greet.test.js"), "const { greet } = require('../greet.js');\nif (greet('a') !== 'hi a') throw new Error('wrong greeting');\n");
+      const r = await verify(fix, packet({ files: ["src/test/greet.test.js"] }));
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.report.join("\n")).toContain("not verified by behaviour");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  test("a refactor is not judged by it — its checks are meant to hold with the work undone", async () => {
+    const fix = fixture();
+    try {
+      fs.writeFileSync(path.join(fix.wt, "src/greet.js"), "module.exports = { greet: (name) => `hi ${name}` };\n");
+      fs.writeFileSync(path.join(fix.wt, "src/test/greet.test.js"), "const { greet } = require('../greet.js');\nif (greet('a') !== 'hi a') throw new Error('wrong greeting');\n");
+      const r = await verify(fix, packet({ kind: "refactor" }));
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.report.join("\n")).toContain("refactor");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  test("a check that rewrites the copy while the proof runs leaves it as the worker left it", async () => {
+    // the checks run against the undone copy and may dirty files themselves: gen.js
+    // regenerates generated.js from the source it finds, and drops an untracked file
+    const fix = fixture({
+      "src/gen.js": 'const fs = require("fs");\nconst src = fs.readFileSync(__dirname + "/greet.js", "utf8");\nfs.writeFileSync(__dirname + "/generated.js", "// from " + src.trim());\nfs.writeFileSync(__dirname + "/scratch.tmp", "x");\n',
+      "src/generated.js": "// stale\n",
+    });
+    try {
+      fs.writeFileSync(path.join(fix.wt, "src/greet.js"), "module.exports = { greet: (name, greeting = 'hi') => greeting + ' ' + name };\n");
+      fs.writeFileSync(path.join(fix.wt, "src/test/greet.test.js"), "const { greet } = require('../greet.js');\nif (greet('a', 'yo') !== 'yo a') throw new Error('the greeting was ignored');\n");
+      const r = await verify(fix, packet({ files: ["src/greet.js", "src/test/greet.test.js"], verification: ["node src/gen.js && bun src/test/greet.test.js"] }));
+      expect(r.ok).toBe(true);
+      // the copy is the worker's again: not the reverted source's output, no residue
+      expect(fs.readFileSync(path.join(fix.wt, "src/generated.js"), "utf8")).toBe("// stale\n");
+      expect(fs.existsSync(path.join(fix.wt, "src/scratch.tmp"))).toBe(false);
+      expect(sh(fix.wt, "status", "--porcelain")).toBe("");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  test("a packet with no verification commands is refused, not passed", async () => {
+    const fix = fixture();
+    try {
+      fs.writeFileSync(path.join(fix.wt, "src/greet.js"), "module.exports = { greet: (name) => `hi ${name}` };\n");
+      const r = await verify(fix, packet({ verification: [] }));
+      expect(r.ok).toBe(false);
+      if (!r.ok) {
+        expect(r.failure.class).toBe("bad_check");
+        expect(r.failure.message).toContain("no verification commands");
+      }
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  test("a renamed file is two changed paths, so the undo can put both back", async () => {
+    const fix = fixture();
+    try {
+      sh(fix.wt, "mv", "src/greet.js", "src/hello.js");
+      fs.writeFileSync(path.join(fix.wt, "src/hello.js"), "module.exports = { greet: (name) => `hi ${name}` };\n");
+      sh(fix.wt, "add", "-A");
+      sh(fix.wt, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "rename");
+      expect((await git.changedFiles(fix.wt, fix.base)).sort()).toEqual(["src/greet.js", "src/hello.js"]);
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  test("what a packet could not prove reaches the acceptance report", async () => {
+    const fix = fixture();
+    try {
+      const r = await acceptTask({
+        repo: fix.origin, branch: fix.base, dir: path.join(fix.dir, "accept"), env: process.env,
+        spec: {
+          title: "t", intent: "i", methodology: { mode: "one_shot", why: "w" },
+          acceptance: [{ id: "A1", statement: "greets", check: "true" }],
+          outOfScope: [], risk: "low" as const, questions: [], rulesTouched: [],
+        },
+        notes: ["P1: no production file changed — tests only, so this packet is not verified by behaviour."],
+      });
+      expect(r.ok).toBe(true);
+      expect(r.report.join("\n")).toContain("NOTE  P1: no production file changed");
     } finally {
       fs.rmSync(fix.dir, { recursive: true, force: true });
     }

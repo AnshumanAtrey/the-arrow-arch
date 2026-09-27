@@ -17,7 +17,7 @@ export const HouseSettings = z.object({
     exempt: z.array(z.string()),
   }),
   docs: z.object({ allowPaths: z.array(z.string()) }), // where new .md files may be added
-  tests: z.object({ mayEditExisting: z.boolean() }),
+  tests: z.object({ mayEditExisting: z.boolean(), requireApprovalForNewSkips: z.boolean().default(true) }),
   dependencies: z.object({ requireApproval: z.boolean(), approved: z.array(z.string()) }),
   placeholders: z.object({ allowedPattern: z.string() }), // e.g. "TODO\\([A-Z]+-\\d+\\)"; "" = none allowed
   diff: z.object({ maxChangedLines: z.number().int().positive() }),
@@ -34,7 +34,7 @@ export const DEFAULTS: HouseSettings = {
     exempt: ["**/*.lock", "**/*-lock.json", "**/*.lockb", "**/*.snap", "**/*.svg", "**/*.min.*", "**/migrations/**", "**/generated/**", "**/fixtures/**", "**/*.csv", "**/*.json"],
   },
   docs: { allowPaths: [] },
-  tests: { mayEditExisting: false },
+  tests: { mayEditExisting: false, requireApprovalForNewSkips: true },
   dependencies: { requireApproval: true, approved: [] },
   placeholders: { allowedPattern: "" },
   diff: { maxChangedLines: 400 },
@@ -48,7 +48,7 @@ export type HouseRule = { id: string; key: Key | null; title: string; criticalit
 
 export const HOUSE_RULES: HouseRule[] = [
   { id: "H-VERIFY", key: null, category: "C04", criticality: "critical", title: "Arrow re-runs every check itself", plain: "A worker saying it's done changes nothing; only checks Arrow re-ran count." },
-  { id: "H-TESTS", key: "tests", category: "C04", criticality: "critical", title: "Existing tests are never weakened", plain: "Workers may add tests; they may not delete or loosen existing assertions." },
+  { id: "H-TESTS", key: "tests", category: "C04", criticality: "critical", title: "Existing tests are never weakened", plain: "Workers may add tests; they may not delete or loosen existing assertions, or add a way to skip or focus one — that parks for you." },
   { id: "H-SCOPE", key: null, category: "C06", criticality: "critical", title: "A packet changes only its listed files", plain: "Anything outside the packet's file list fails the check." },
   { id: "H-SECRETS", key: null, category: "C13", criticality: "critical", title: "No secrets in code, commits or agent environments", plain: "Added lines are scanned for keys; agents get only the variables their packet names." },
   { id: "H-NOPUSH", key: null, category: "C06", criticality: "critical", title: "Nothing is pushed; no production credentials", plain: "Pushing is disabled on Arrow's copy; work lands on a local branch for you to review." },

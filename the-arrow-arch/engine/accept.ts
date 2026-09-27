@@ -52,13 +52,16 @@ function installFor(dir: string, setup?: string): string | undefined {
   return undefined;
 }
 
-export async function acceptTask(opts: { repo: string; branch: string; dir: string; spec: Spec; setup?: string; env: NodeJS.ProcessEnv }): Promise<Acceptance> {
+export async function acceptTask(opts: { repo: string; branch: string; dir: string; spec: Spec; setup?: string; env: NodeJS.ProcessEnv; notes?: string[] }): Promise<Acceptance> {
   return withSnapshot(opts.repo, opts.dir, opts.branch, (dir) => checkAll(dir, opts));
 }
 
-async function checkAll(dir: string, opts: { spec: Spec; setup?: string; env: NodeJS.ProcessEnv }): Promise<Acceptance> {
+async function checkAll(dir: string, opts: { spec: Spec; setup?: string; env: NodeJS.ProcessEnv; notes?: string[] }): Promise<Acceptance> {
   const report: string[] = [];
   const failures: string[] = [];
+  // what the packets reported they could not prove (a packet that changed only
+  // tests is not verified by behaviour) — a person reads these with "done means"
+  for (const n of opts.notes ?? []) report.push(`NOTE  ${n}`);
   const install = installFor(dir, opts.setup);
   if (install) {
     const r = await shell(install, dir, 600_000, opts.env);
