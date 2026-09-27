@@ -318,6 +318,35 @@ describe("test integrity", () => {
       fs.rmSync(fix.dir, { recursive: true, force: true });
     }
   });
+
+  // both findings at once: a skip added and an assertion dropped. The park wins —
+  // retrying a packet that has to park anyway only spends the budget — but the
+  // drop still reaches the person, folded into the report.
+  test("a skip and a dropped assertion together park, and the drop is reported", async () => {
+    const fix = fixture();
+    fs.writeFileSync(path.join(fix.wt, "src/test/a.test.ts"), "it.skip('adds', () => {\n  expect(1 + 1).toBe(2)\n})\n");
+    try {
+      const r = await verify(fix);
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.failure).toMatchObject({ class: "protected" });
+      if (!r.ok) expect(r.failure.message).toContain("switch a test off");
+      if (!r.ok) expect(r.failure.report?.join("\n")).toContain("down from 2");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  // the false positive that would matter most: a test whose fixture data quotes
+  // skip syntax in a template literal is a working test, not a switched-off one.
+  test("a fixture that quotes skip syntax in a template is not a skip", async () => {
+    const fix = fixture();
+    fs.writeFileSync(path.join(fix.wt, "src/test/a.test.ts"), "it('adds', () => {\n  expect(1 + 1).toBe(2)\n  expect(2 + 2).toBe(4)\n  expect(lint(`it.skip('x', () => {})`)).toBe(0)\n})\n");
+    try {
+      expect(await verify(fix)).toMatchObject({ ok: true });
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("proof depends on the change", () => {

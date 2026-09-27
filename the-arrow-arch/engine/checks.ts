@@ -59,8 +59,16 @@ export function placeholderCheck(files: FileFacts[], s: HouseSettings["placehold
   return hits.length ? fail("verification", "The change leaves placeholders instead of finished work.", hits.slice(0, 20)) : undefined;
 }
 
+/**
+ * Is this a test file? A directory named for tests, or a test-named basename.
+ * `_test` and `_spec` are not decoration: they are the only convention Go and
+ * Ruby have (`handler_test.go`), and one of pytest's two defaults
+ * (`test_loader_test.py`). Missing them left whole languages outside H-TESTS.
+ */
 const looksLikeTest = (f: string) =>
-  /(^|\/)(tests?|__tests__|spec)\//.test(f) || /\.(test|spec)\.[a-z]+$/.test(path.basename(f)) || /^test_.*\.py$/.test(path.basename(f));
+  /(^|\/)(tests?|__tests__|spec)\//.test(f) ||
+  /[._](?:test|spec)\.[a-z]+$/.test(path.basename(f)) || // a.test.ts, a_test.go, a_spec.rb
+  /^test_.*\.py$/.test(path.basename(f)); // pytest's other default
 
 /** The assertion a language writes, across the ones Arrow meets: JS/TS, Python, Go, Rust. */
 const ASSERTION = /\bexpect\s*\(|\bassert\b|\bassert_\w+!|\bpanic!\s*\(|\bt\.(?:Error|Fatal)\w*|\.should\b/g;
@@ -99,14 +107,16 @@ export const assertions = (text: string): number => (codeLines(text).match(ASSER
 const DISABLE =
   /\bpytest\.mark\.(?:skip|skipif|xfail)\b|\bpytest\.(?:skip|importorskip)\s*\(|\b(?:it|test|describe)\.(?:skipIf|skip|only)(?:\.each)?\s*\(|\b(?:xit|xtest|xdescribe|fit|fdescribe)\s*\(|\bt\.Skip\w*\s*\(|#\[ignore\b/g;
 
-/** A quoted run on one line, escapes included. */
-const QUOTED = /'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"/g;
+/** A quoted run, escapes included. Quotes don't cross a line; a template literal may. */
+const QUOTED = /'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g;
 
 /**
  * Markers that switch a test off, and only in code. A marker a test quotes as
  * data — `expect(disables("it.skip('a', () => {})"))` — is not one, so quoted
- * runs go first. A heuristic, not a parser: a lone unclosed quote on a line
- * quotes nothing, and triple-quoted strings are not special.
+ * runs go first, template literals included. A heuristic, not a parser: a lone
+ * unclosed quote on a line quotes nothing, triple-quoted strings are not
+ * special, and a `${...}` inside a template goes with it — consistent with the
+ * under-detection boundary on testDisabledCheck below.
  * Focus counts with skip: focusing one test silently stops the rest from
  * running, which proves as little as a skip.
  */

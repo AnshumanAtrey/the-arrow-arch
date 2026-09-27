@@ -91,14 +91,14 @@ export async function verifyPacket(opts: {
       const abs = path.join(wt, f);
       const after = fs.existsSync(abs) ? readOrEmpty(abs) : null;
       const before = await git.showAt(wt, fork, f);
-      if (!house.tests.mayEditExisting) {
-        const weakened = testWeakenedCheck(f, before, after);
-        if (weakened) return fail(weakened);
-      }
-      if (house.tests.requireApprovalForNewSkips) {
-        const disabled = testDisabledCheck(f, before, after);
-        if (disabled) return fail(disabled);
-      }
+      const weakened = house.tests.mayEditExisting ? undefined : testWeakenedCheck(f, before, after);
+      const disabled = house.tests.requireApprovalForNewSkips ? testDisabledCheck(f, before, after) : undefined;
+      // A park is a decision no worker action settles, so it outranks a failure a
+      // retry could fix: sending a packet back that has to park anyway only spends
+      // the budget. The weakened finding still reaches the person — folded into the
+      // report, since only one failure is shown at a time.
+      if (disabled) return fail(weakened ? { ...disabled, report: [...(disabled.report ?? []), weakened.message] } : disabled);
+      if (weakened) return fail(weakened);
     }
   const stub = placeholderCheck(facts, house.placeholders);
   if (stub) return fail(stub);
