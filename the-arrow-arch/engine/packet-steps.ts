@@ -19,7 +19,7 @@ import * as roles from "./roles";
 import { append, paths } from "./store";
 import { subject } from "./types";
 import type { Packet, ProjectState } from "./types";
-import { verifyPacket } from "./verify";
+import { NO_PRODUCTION_NOTE, verifyPacket } from "./verify";
 
 type PacketAction = Extract<Action, { kind: "prepare" | "work" | "verify" | "merge" | "repair" | "accept" | "complete" | "land" }>;
 
@@ -53,9 +53,14 @@ export async function runPacketStep(pid: string, s: ProjectState, a: PacketActio
 
   if (a.kind === "accept")
     return job(pid, { role: "orchestrator", subject: subject.accept(a.taskId), attempt: 1 }, async () => {
+      // a packet that changed only tests cannot be proven by behaviour: carry its
+      // NOTE into the acceptance report, where the person landing decides
+      const notes = t.order
+        .filter((id) => t.packets[id].report?.some((l) => l.includes(NO_PRODUCTION_NOTE)))
+        .map((id) => `${id}: ${NO_PRODUCTION_NOTE}`);
       const r = await acceptTask({
         repo, branch: t.branch!, dir: path.join(paths(pid).dir, "accept", a.taskId), spec: t.spec!,
-        setup: s.profile!.commands.setup, env: commandEnv(s),
+        setup: s.profile!.commands.setup, env: commandEnv(s), notes,
       });
       append(pid, r.ok
         ? { type: "task.accepted", taskId: a.taskId, report: r.report }

@@ -2,7 +2,9 @@
  * Before a task lands: does the finished whole meet the spec? Every packet was
  * proven on its own; this runs the project manager's own "done means" checks on
  * a clean copy of the task branch. A check that is a command is run; a check
- * for a person ("manual: ...") is listed for you, never run.
+ * for a person ("manual: ...") is listed for you, never run. What a packet said
+ * it could not prove (a test-only packet is not verified by behaviour) is
+ * carried through as a NOTE, so the gap reaches the person deciding to land.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -51,7 +53,7 @@ function installFor(dir: string, setup?: string): string | undefined {
   return undefined;
 }
 
-export async function acceptTask(opts: { repo: string; branch: string; dir: string; spec: Spec; setup?: string; env: NodeJS.ProcessEnv }): Promise<Acceptance> {
+export async function acceptTask(opts: { repo: string; branch: string; dir: string; spec: Spec; setup?: string; env: NodeJS.ProcessEnv; notes?: string[] }): Promise<Acceptance> {
   const git = (...a: string[]) => run("git", ["-C", opts.repo, ...a], { timeoutMs: 120_000 });
   await git("worktree", "remove", "--force", opts.dir);
   fs.rmSync(opts.dir, { recursive: true, force: true });
@@ -61,6 +63,9 @@ export async function acceptTask(opts: { repo: string; branch: string; dir: stri
 
   const report: string[] = [];
   const failures: string[] = [];
+  // what the packets reported they could not prove (a packet that changed only
+  // tests is not verified by behaviour) — a person reads these with "done means"
+  for (const n of opts.notes ?? []) report.push(`NOTE  ${n}`);
   try {
     const install = installFor(opts.dir, opts.setup);
     if (install) {

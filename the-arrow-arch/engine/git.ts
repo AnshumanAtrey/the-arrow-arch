@@ -96,8 +96,14 @@ export async function commitAll(wt: string, message: string): Promise<boolean> {
   return true;
 }
 
+/**
+ * The files a packet changed. `--no-renames` on purpose: a rename is two changed
+ * paths, and only saying so lets the scope check see both and lets verify.ts put
+ * both back when it undoes the work. Detected as a rename, the old path is
+ * invisible and the undone copy is missing both.
+ */
 export async function changedFiles(wt: string, base: string): Promise<string[]> {
-  const out = await ok(wt, "diff", "--name-only", `${base}...HEAD`);
+  const out = await ok(wt, "diff", "--name-only", "--no-renames", `${base}...HEAD`);
   return out.split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith(".arrow/"));
 }
 
@@ -148,22 +154,51 @@ export async function showAt(wt: string, ref: string, file: string): Promise<str
   return r.code === 0 ? r.out : "";
 }
 
+export type RestoreResult = { ok: boolean; detail: string };
+
+/** A revision as a person reads it. */
+const short = (ref: string) => ref.slice(0, 7);
+
 /**
  * Put the named paths back the way they were at `ref` — their content then, or
  * gone if they weren't there. Both the tree and the index move, so a caller can
  * set paths to one ref and back to another and leave the worktree as it was.
- * Used by verify.ts to undo a packet's production change in place and see
- * whether its checks notice.
+ * Reports rather than throws: verify.ts has to know the copy is clean before it
+ * trusts anything else that runs on it.
  */
-export async function restoreFiles(wt: string, ref: string, files: string[]): Promise<void> {
+export async function restoreFiles(wt: string, ref: string, files: string[]): Promise<RestoreResult> {
+  const bad: string[] = [];
   const present: string[] = [];
   const absent: string[] = [];
   for (const f of files) ((await existedAt(wt, ref, f)) ? present : absent).push(f);
-  if (present.length) await ok(wt, "checkout", ref, "--", ...present);
+  if (present.length) {
+    const r = await git(wt, "checkout", ref, "--", ...present);
+    if (r.code !== 0) bad.push(`git checkout ${short(ref)} -- ${present.join(" ")}`);
+  }
   for (const f of absent) {
     fs.rmSync(path.join(wt, f), { force: true }); // tracked here now, gone at ref
-    await git(wt, "rm", "--cached", "-q", "--", f);
+    const r = await git(wt, "rm", "--cached", "-q", "--", f);
+    if (r.code !== 0) bad.push(`git rm --cached -- ${f}`);
   }
+  return { ok: !bad.length, detail: bad.join("; ") };
+}
+
+/**
+ * The whole copy as it was at `ref`, after commands have run in it: the named
+ * paths first, then every tracked file, then untracked residue. Safe precisely
+ * because the worker's work is committed at `ref` — anything that differs now
+ * was made by the commands. Files git ignores (build output, caches) are left
+ * where they are: a stale artifact is the residual this cannot clean.
+ */
+export async function restoreTree(wt: string, ref: string, files: string[]): Promise<RestoreResult> {
+  const bad: string[] = [];
+  const r = await restoreFiles(wt, ref, files);
+  if (!r.ok) bad.push(r.detail);
+  const co = await git(wt, "checkout", ref, "--", ".");
+  if (co.code !== 0) bad.push(`git checkout ${short(ref)} -- .`);
+  const cl = await git(wt, "clean", "-fd");
+  if (cl.code !== 0) bad.push("git clean -fd");
+  return { ok: !bad.length, detail: bad.join("; ") };
 }
 
 /** The commit a branch forked from another. */
