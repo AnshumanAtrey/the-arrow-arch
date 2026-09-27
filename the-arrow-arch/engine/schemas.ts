@@ -4,6 +4,7 @@
  * compiles against can never drift apart.
  */
 import { z } from "zod";
+import { HouseOutcome } from "./house-rules";
 
 const str = z.string().trim().min(1);
 const list = <T extends z.ZodTypeAny>(t: T) => z.array(t).default([]);
@@ -48,6 +49,18 @@ export const Profile = z.object({
   findings: list(RuleFinding),
   // how Arrow itself is tuned for this repo: test command, parallelism, branch naming...
   adaptations: list(z.object({ setting: str, value: str, why: z.string().default("") })),
+  // what a fresh worktree needs, and which versions code must be written against
+  toolchain: z
+    .object({
+      packageManager: z.string().optional(),
+      lockfile: z.string().optional(),
+      runtimes: list(z.object({ name: str, version: str, source: z.string().default("") })),
+    })
+    .default({ runtimes: [] }),
+  dependencies: list(z.object({ name: str, version: str })),
+  envVars: list(z.object({ name: z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/), source: z.string().default("") })), // names only, never values
+  decisions: list(z.object({ text: str, why: z.string().default(""), source: z.string().default("") })), // e.g. imported ADRs
+  houseRules: list(HouseOutcome),
   recommendation: Recommendation,
 });
 
@@ -84,6 +97,10 @@ export const Packet = z.object({
   verification: z.array(str).min(1, "a packet must list commands that prove it"),
   regression: list(z.string()),
   risk: z.enum(["low", "medium", "high"]).default("low"),
+  // "refactor": behaviour-preserving, so its checks may already pass before the change
+  kind: z.enum(["change", "refactor"]).default("change"),
+  newDependencies: list(z.string()), // libraries this packet adds — shown at the plan check
+  env: list(z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/)), // variables the worker needs, by name
 });
 
 export const Plan = z.object({

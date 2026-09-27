@@ -15,6 +15,9 @@ const PROVIDER_MARKS = [
 
 export type ExitInfo = { exitCode: number; timedOut: boolean; tail: string };
 
+/** The engine can't sign in: no amount of retrying fixes that — a person adds the key. */
+const AUTH_MARKS = ["api key is required", "bob_api_key", "invalid api key", "unauthorized", "not logged in", "authentication failed", "please log in", "license agreement"];
+
 /**
  * Only the tail counts: a failure that killed the agent is the last thing it
  * printed, while a passing mention early in a long run is not evidence.
@@ -23,6 +26,8 @@ export function classifyExit(x: ExitInfo): Failure | undefined {
   if (x.timedOut) return { class: "timeout", message: "Ran out of time. Its work so far is kept." };
   if (x.exitCode === 0) return undefined;
   const tail = x.tail.slice(-4000).toLowerCase();
+  const auth = AUTH_MARKS.find((m) => tail.includes(m));
+  if (auth) return { class: "environment", message: "The agent engine couldn't sign in. Add its API key on the Settings page, then press Try again." };
   const mark = PROVIDER_MARKS.find((m) => tail.includes(m));
   if (mark) return { class: "provider", message: `The model provider failed (${mark}). Not a code problem.` };
   if (x.exitCode === 127) return { class: "internal", message: "The agent command was not found. Check ARROW_*_CMD." };

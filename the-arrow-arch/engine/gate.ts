@@ -6,12 +6,13 @@
  * critical is at stake — the AI says continue or stop and what to do, the human decides.
  */
 import { matchesAny } from "./glob";
+import { HOUSE_RULES, normaliseOutcomes, type HouseSettings } from "./house-rules";
 import type { Gate, GateItem, Plan, Profile, Recommendation, Rule, Spec } from "./types";
 
 const verdictOf = (items: GateItem[], rec: Recommendation): Gate["verdict"] =>
   items.some((i) => i.level === "critical") || rec.decision === "stop" ? "red" : "green";
 
-export function onboardingGate(profile: Profile): Gate {
+export function onboardingGate(profile: Profile, extra: GateItem[] = []): Gate {
   const byId = new Map(profile.rules.map((r) => [r.id, r]));
   const items: GateItem[] = [];
   const seen = new Set<string>();
@@ -42,6 +43,7 @@ export function onboardingGate(profile: Profile): Gate {
       suggestion: "Re-run onboarding, or confirm by hand that the repo follows it.",
     });
   }
+  items.push(...houseItems(profile), ...extra);
   items.sort((a, b) => rank[a.level] - rank[b.level]);
   return {
     id: "onboarding",
@@ -53,7 +55,7 @@ export function onboardingGate(profile: Profile): Gate {
   };
 }
 
-export function planGate(taskId: string, plan: Plan, spec: Spec, rules: Rule[]): Gate {
+export function planGate(taskId: string, plan: Plan, spec: Spec, rules: Rule[], house: HouseSettings): Gate {
   const items: GateItem[] = [];
   const critical = rules.filter((r) => r.criticality === "critical");
   const byId = new Map(rules.map((r) => [r.id, r]));
@@ -83,6 +85,11 @@ export function planGate(taskId: string, plan: Plan, spec: Spec, rules: Rule[]):
       detail: ri.impact,
     });
   }
+  // new libraries are shown, so approving the plan is approving them
+  if (house.dependencies.requireApproval)
+    for (const p of plan.packets)
+      for (const d of p.newDependencies.filter((d) => !house.dependencies.approved.includes(d)))
+        items.push({ level: "warning", title: `${p.id} adds the library ${d}`, detail: `Approving this plan approves adding ${d}.`, suggestion: "Stop if the team would rather build it without a new dependency." });
   if (spec.risk === "high")
     items.push({ level: "warning", title: "High-risk change", detail: "The project manager rated this task high risk." });
   if (!items.length)
@@ -106,3 +113,29 @@ const statusWords = {
   conflict: "This clashes with how Arrow or the repo works.",
   unclear: "Couldn't confirm either way.",
 } as const;
+
+/**
+ * How onboarding tuned Arrow's house rules for this company. A normal rule the
+ * company replaces stays green (theirs wins); a critical one they contradict is
+ * red — Arrow's default stands until a person approves the change.
+ */
+function houseItems(profile: Profile): GateItem[] {
+  const items: GateItem[] = [];
+  for (const o of normaliseOutcomes(profile.houseRules)) {
+    const rule = HOUSE_RULES.find((r) => r.id === o.id)!;
+    if (o.outcome === "keep") {
+      items.push({ level: "ok", ruleId: rule.id, title: rule.title, detail: "Arrow's default, kept." });
+      continue;
+    }
+    const critical = o.outcome === "conflict" && rule.criticality === "critical";
+    const what = o.outcome === "dont_grow" ? "The repo can't meet this today — what's over stays, nothing may get worse." : o.outcome === "replace" ? "Your company's version replaces Arrow's." : "Your company's rules contradict this.";
+    items.push({
+      level: critical ? "critical" : "ok",
+      ruleId: rule.id,
+      title: rule.title,
+      detail: `${what}${o.why ? ` ${o.why}` : ""}`,
+      suggestion: critical ? `Continue only if you accept the company's version over "${rule.plain}" Arrow keeps its default until you approve.` : undefined,
+    });
+  }
+  return items;
+}

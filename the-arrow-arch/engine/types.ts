@@ -21,6 +21,8 @@ export type FailureClass =
   | "scope" //        changed files outside what the packet allows
   | "protected" //    touched a path a critical company rule protects
   | "merge" //        passed alone, broke (or conflicted) when combined
+  | "environment" //  install/setup failed — fix the machine, not the code; never retried blindly
+  | "bad_check" //    the packet's checks already pass before any change, so they prove nothing
   | "internal"; //    Arrow itself or the agent process crashed / was orphaned
 
 export type Failure = { class: FailureClass; message: string; report?: string[] };
@@ -48,14 +50,21 @@ type E<T extends string, P> = { type: T; at: string } & P;
 export type ArrowEvent =
   | E<"project.created", { name: string; repoUrl: string; branch?: string; rulesText: string }>
   | E<"repo.cloned", { path: string; branch: string; head: string }>
-  | E<"job.started", { jobId: string; role: Role; subject: string; attempt: number; driver: string }>
+  | E<"job.started", { jobId: string; role: Role; subject: string; attempt: number; driver: string; port?: number }>
+  | E<"job.spawned", { jobId: string; pid: number }> // the process group Arrow must account for
+  | E<"worktree.ready", { taskId: string; packetId: string; path: string; baseline: Record<string, number> }>
+  | E<"knowledge.recorded", { entries: { kind: "fact" | "decision"; text: string; source: string }[] }>
+  | E<"project.frozen", { frozen: boolean; reason?: string }>
+  | E<"ledger.reaped", { items: { kind: "process" | "worktree"; what: string; why: string }[] }>
   | E<"job.finished", {
       jobId: string;
       ok: boolean;
       failure?: Failure;
       durationMs: number;
-      costUsd?: number;
       sessionId?: string;
+      tokens?: { input: number; output: number; cacheRead: number; total: number };
+      cost?: number;
+      costUnit?: "usd" | "bobcoins";
     }>
   | E<"profile.ready", { profile: Profile }>
   | E<"gate.opened", { gate: Gate }>
@@ -86,6 +95,7 @@ export const subject = {
   onboard: "onboard",
   pm: (t: string) => `${t}:pm`,
   architect: (t: string) => `${t}:architect`,
+  prepare: (t: string, p: string) => `${t}:${p}:prepare`,
   work: (t: string, p: string) => `${t}:${p}:work`,
   verify: (t: string, p: string) => `${t}:${p}:verify`,
   merge: (t: string, p: string) => `${t}:${p}:merge`,
@@ -105,12 +115,18 @@ export type JobView = {
   ok?: boolean;
   failure?: Failure;
   durationMs?: number;
-  costUsd?: number;
   sessionId?: string;
+  tokens?: { input: number; output: number; cacheRead: number; total: number };
+  cost?: number;
+  costUnit?: "usd" | "bobcoins";
+  pid?: number;
+  port?: number;
 };
 
 export type PacketStatus =
   | "waiting" //   deps not merged yet, or not its turn
+  | "preparing" // Arrow is making its worktree, installing, running the red-first check
+  | "prepared" //  worktree ready; waiting for a worker slot
   | "working" //   a worker is on it
   | "built" //     worker finished; orchestrator hasn't checked it yet
   | "verifying"
@@ -125,6 +141,8 @@ export type PacketView = {
   status: PacketStatus;
   attempts: number; // worker runs that reached verification (provider outages don't count)
   repairs: number;
+  worktree?: string;
+  baseline?: Record<string, number>; // exit codes at base, before any change
   lastFailure?: Failure;
   report?: string[];
   changedFiles?: string[];
@@ -172,6 +190,9 @@ export type ProjectState = {
   /** newest agent session per subject, kept across resets so a paused step can resume */
   sessions: Record<string, string>;
   parked: Record<string, { reason: string; at: string }>;
+  frozen?: { reason?: string; at: string };
+  knowledge: { id: string; kind: "fact" | "decision"; text: string; source: string; at: string }[];
+  reaped: { at: string; kind: "process" | "worktree"; what: string; why: string }[];
   notes: { at: string; level: "info" | "warn"; message: string; subject?: string }[];
   events: number;
   updatedAt: string;

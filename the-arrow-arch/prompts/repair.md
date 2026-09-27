@@ -13,5 +13,9 @@ Fix the aim, not the code. Hand back the same packet (same `id`) rewritten:
   check pass incomplete work.
 - If the worker lacked a fact, add it to `context` with a file:line pointer.
 - If it broke combined with landed work, point the worker at what changed.
+- If its checks already passed before any change (`bad_check`), aim at least one
+  check at what is actually missing, so it fails today and passes when done.
+- If it went over a house-rule budget (file size, diff size), narrow what the
+  packet does; the rest can be its own task.
 
 Do not implement anything yourself.

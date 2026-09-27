@@ -65,6 +65,17 @@ export function ProfilePanel({ profile }: { profile: Profile }) {
         )}
       </div>
 
+      {(profile.toolchain.runtimes.length > 0 || profile.toolchain.packageManager || profile.envVars.length > 0) && (
+        <div>
+          <h3 className="heading mb-1.5 text-[14px]">What a fresh copy needs</h3>
+          <ul className="space-y-1 text-[14px]">
+            {profile.toolchain.packageManager && <li><span className="text-ink-3">Install:</span> {profile.commands.setup ?? profile.toolchain.packageManager} {profile.toolchain.lockfile && <span className="text-ink-3">(from {profile.toolchain.lockfile})</span>}</li>}
+            {profile.toolchain.runtimes.map((r) => <li key={r.name}><span className="text-ink-3">{r.name}:</span> {r.version}</li>)}
+            {profile.envVars.length > 0 && <li><span className="text-ink-3">Needs these variables (names only):</span> {profile.envVars.map((v) => v.name).join(", ")}</li>}
+          </ul>
+        </div>
+      )}
+
       {profile.adaptations.length > 0 && (
         <div>
           <h3 className="heading mb-1.5 text-[14px]">How Arrow runs in this repo</h3>
@@ -178,6 +189,8 @@ export function TaskList({ pid, state }: { pid: string; state: ProjectState }) {
 
 const packetWords: Record<PacketStatus, [string, string]> = {
   waiting: ["Waiting", "text-ink-3"],
+  preparing: ["Arrow preparing its copy", "text-blue"],
+  prepared: ["Ready for a worker", "text-blue"],
   working: ["Worker on it", "text-blue"],
   built: ["Built, about to be checked", "text-blue"],
   verifying: ["Arrow re-running the checks", "text-blue"],
@@ -246,7 +259,8 @@ export function MetricsStrip({ m }: { m: Metrics }) {
     ["Re-aimed by architect", String(m.repairs)],
     ["Provider outages", String(m.providerFailures)],
     ["Agent time", `${m.agentMinutes} min`],
-    ["Cost", m.costKnown ? `$${m.costUsd.toFixed(2)}` : m.costUsd ? `≥ $${m.costUsd.toFixed(2)}` : "not reported"],
+    ["Tokens", m.tokens ? m.tokens.toLocaleString() : "—"],
+    ["Cost", [m.cost.bobcoins ? `${m.cost.bobcoins} bobcoins` : "", m.cost.usd ? `$${m.cost.usd.toFixed(2)}` : ""].filter(Boolean).join(" + ") || "—"],
   ];
   return (
     <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4 lg:grid-cols-7">

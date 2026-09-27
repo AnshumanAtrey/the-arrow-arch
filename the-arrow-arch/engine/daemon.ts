@@ -2,12 +2,12 @@
  * The background orchestrator process: `bun run orchestrator`.
  * Watches every project's log, runs whatever can move, repeats.
  */
-import { driverFor, LIMITS } from "./config";
+import { LIMITS } from "./config";
 import { inflightCount, reconcile, tick } from "./orchestrator";
+import { readSettings, ROLES } from "./settings";
 import { listProjectIds, writeHeartbeat } from "./store";
 
 const reconciled = new Set<string>();
-const drivers = Object.fromEntries(["onboarder", "pm", "architect", "worker"].map((r) => [r, driverFor(r)]));
 
 async function loop() {
   for (const pid of listProjectIds()) {
@@ -21,9 +21,10 @@ async function loop() {
       console.error(`[arrow] ${pid}: ${(e as Error).message}`);
     }
   }
-  writeHeartbeat({ pid: process.pid, at: new Date().toISOString(), drivers, running: inflightCount() });
+  const s = readSettings();
+  writeHeartbeat({ pid: process.pid, at: new Date().toISOString(), drivers: Object.fromEntries(ROLES.map((r) => [r, s.roles[r].harness])), running: inflightCount() });
 }
 
-console.log(`[arrow] orchestrator up — drivers ${JSON.stringify(drivers)}, ${LIMITS.parallelWorkers} parallel workers`);
+console.log(`[arrow] orchestrator up — ${LIMITS.parallelWorkers} parallel workers; engines come from Settings`);
 await loop();
 setInterval(() => void loop(), LIMITS.tickMs);

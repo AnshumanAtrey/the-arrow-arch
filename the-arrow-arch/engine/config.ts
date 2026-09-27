@@ -9,15 +9,6 @@ export const ROOT = path.resolve(process.env.ARROW_ROOT ?? process.cwd());
 export const DATA_DIR = path.resolve(process.env.ARROW_DATA ?? path.join(ROOT, ".arrow-data"));
 export const PROMPTS_DIR = path.join(ROOT, "prompts");
 
-export type DriverName = "mock" | "claude" | "bob";
-const DRIVERS: DriverName[] = ["mock", "claude", "bob"];
-
-/** Driver for a role: ARROW_DRIVER_<ROLE> wins over ARROW_DRIVER; default mock. */
-export function driverFor(role: string): DriverName {
-  const pick = process.env[`ARROW_DRIVER_${role.toUpperCase()}`] ?? process.env.ARROW_DRIVER ?? "mock";
-  return (DRIVERS as string[]).includes(pick) ? (pick as DriverName) : "mock";
-}
-
 export const LIMITS = {
   parallelWorkers: int(process.env.ARROW_PARALLEL, 3),
   agentTimeoutMs: int(process.env.ARROW_AGENT_TIMEOUT_S, 1800) * 1000,

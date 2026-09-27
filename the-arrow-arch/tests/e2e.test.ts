@@ -4,7 +4,7 @@
  * the orchestrator's own verification -> merge -> landed on a branch.
  */
 import { afterAll, beforeAll, describe, expect, setDefaultTimeout, test } from "bun:test";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -17,6 +17,7 @@ process.env.ARROW_DRIVER = "mock";
 process.env.ARROW_MOCK_DELAY_MS = "1";
 
 const { tick, reconcile } = await import("../engine/orchestrator");
+const { refreshLedger, readLedger } = await import("../engine/ledger-scan");
 const store = await import("../engine/store");
 const { project } = await import("../engine/project");
 type State = ReturnType<typeof project>;
@@ -77,7 +78,7 @@ describe("green path", () => {
     const work = Object.values(s.jobs).filter((j) => j.role === "worker");
     expect(work.length).toBe(3);
     const files = sh(s.repo!.path, "ls-tree", "-r", "--name-only", t.landed!.branch);
-    expect(files).toContain("arrow-demo/t1/README.md");
+    expect(files).toContain("arrow-demo/t1/index.ts");
     // the base branch was never touched, and nothing is left running
     expect(sh(s.repo!.path, "rev-parse", "main")).toBe(s.repo!.head);
     expect(Object.values(s.jobs).every((j) => j.finishedAt)).toBe(true);
@@ -107,6 +108,36 @@ describe("red path", () => {
     expect(pg.items.some((i) => i.level === "critical" && i.ruleId === "R1")).toBe(true);
     store.append(pid, { type: "gate.decided", gateId: pg.id, decision: "stop" });
     expect(project(pid, store.readEvents(pid)).tasks.T1.stage).toBe("halted");
+  });
+});
+
+describe("house rules at onboarding", () => {
+  test("a company rule that contradicts a critical house rule turns the check red", async () => {
+    const pid = start("- Engineers may update existing tests freely when behaviour changes");
+    const s = await until(pid, (s) => Boolean(s.onboardingGateId));
+    const g = s.gates[s.onboardingGateId!];
+    expect(g.verdict).toBe("red");
+    expect(g.items.find((i) => i.ruleId === "H-TESTS")?.level).toBe("critical");
+  });
+});
+
+describe("ledger", () => {
+  test("the orchestrator writes it, and reaps a process a finished agent left in Arrow's folder", async () => {
+    const pid = start("- Components use PascalCase");
+    const s = await until(pid, (s) => Boolean(s.profile));
+    await until(pid, (s) => Object.values(s.jobs).every((j) => j.finishedAt));
+    // something an agent "left running" in Arrow's copy of the repo
+    const orphan = spawn("sleep", ["60"], { cwd: s.repo!.path, detached: true, stdio: "ignore" });
+    orphan.unref();
+    await new Promise((r) => setTimeout(r, 200));
+    const l = await refreshLedger(pid, project(pid, store.readEvents(pid)));
+    expect(l.stale.some((x) => x.kind === "process" && x.pgid === orphan.pid)).toBe(true);
+    await new Promise((r) => setTimeout(r, 300));
+    let alive = true;
+    try { process.kill(orphan.pid!, 0); } catch { alive = false; }
+    expect(alive).toBe(false);
+    expect(readLedger(pid)).not.toBeNull();
+    expect(project(pid, store.readEvents(pid)).reaped.length).toBeGreaterThan(0);
   });
 });
 

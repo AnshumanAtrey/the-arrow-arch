@@ -8,6 +8,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { LIMITS } from "../config";
 import type { ArchitectInput, OnboarderInput, PmInput, RepairInput, WorkerInput } from "../roles";
+import type { HouseOutcome } from "../house-rules";
 import type { Packet, Plan, Profile, Rule, RuleFinding, Spec } from "../types";
 import type { Driver } from "./driver";
 
@@ -45,6 +46,8 @@ function onboard({ repoPath, rulesText }: OnboarderInput): Profile {
   const has = (p: string) => fs.existsSync(path.join(repoPath, p));
   const stack: string[] = [];
   const commands: Profile["commands"] = {};
+  const toolchain: Profile["toolchain"] = { runtimes: [] };
+  const dependencies: Profile["dependencies"] = [];
   if (has("package.json")) {
     const pkg = safeJson(path.join(repoPath, "package.json"));
     const deps = { ...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {}) } as Record<string, string>;
@@ -54,9 +57,21 @@ function onboard({ repoPath, rulesText }: OnboarderInput): Profile {
     const pm = has("bun.lock") || has("bun.lockb") ? "bun" : has("pnpm-lock.yaml") ? "pnpm" : has("yarn.lock") ? "yarn" : "npm";
     const scripts = (pkg.scripts ?? {}) as Record<string, string>;
     for (const k of ["build", "test", "typecheck", "lint"] as const) if (scripts[k]) commands[k] = `${pm} run ${k}`;
+    const lockfile = ["bun.lock", "bun.lockb", "pnpm-lock.yaml", "yarn.lock", "package-lock.json"].find(has);
+    // a plain install into the worktree's own node_modules — no Docker
+    if (Object.keys(deps).length)
+      commands.setup = { bun: "bun install", pnpm: "pnpm install --frozen-lockfile", yarn: "yarn install --frozen-lockfile", npm: lockfile ? "npm ci" : "npm install" }[pm];
+    Object.assign(toolchain, { packageManager: pm, lockfile });
+    const node = readFirst(repoPath, [".nvmrc", ".node-version"]) ?? pkg.engines?.node;
+    if (node) toolchain.runtimes.push({ name: "node", version: String(node).replace(/^v/, ""), source: ".nvmrc / engines" });
+    for (const [name, version] of Object.entries(deps).slice(0, 25)) dependencies.push({ name, version: String(version).replace(/^[\^~]/, "") });
   }
   if (has("pyproject.toml") || has("requirements.txt")) {
     stack.push("Python");
+    // a venv per worktree: the system pip refuses installs (PEP 668, "externally-managed-environment")
+    if (has("requirements.txt")) commands.setup ??= "python3 -m venv .venv && .venv/bin/pip install -q -r requirements.txt";
+    const py = readFirst(repoPath, [".python-version"]);
+    if (py) toolchain.runtimes.push({ name: "python3", version: py, source: ".python-version" });
     if (has("tests") || has("pytest.ini")) commands.test ??= "python -m pytest -q";
   }
   if (has("go.mod")) (stack.push("Go"), (commands.test ??= "go test ./..."));
@@ -84,6 +99,11 @@ function onboard({ repoPath, rulesText }: OnboarderInput): Profile {
     structure,
     rules,
     findings,
+    toolchain,
+    dependencies,
+    envVars: envNames(repoPath),
+    decisions: adrs(repoPath),
+    houseRules: houseOutcomes(repoPath, rulesText),
     adaptations: [
       { setting: "proof command", value: commands.test ?? "none found", why: "Workers are judged by this, re-run by Arrow itself." },
       { setting: "parallel workers", value: String(LIMITS.parallelWorkers), why: "Only packets that touch different files run together." },
@@ -154,12 +174,13 @@ function architect({ taskId, spec, profile }: ArchitectInput): Plan {
   const mk = (id: string, title: string, files: string[], deps: string[] = []): Packet => ({
     id, module: "M1", title, objective: `${title} — for: ${spec.title}`, context: spec.intent, files, deps,
     verification: files.map((f) => `test -s ${f}`), regression: profile.commands.test ? [profile.commands.test] : [], risk: guarded ? "high" : "low",
+    kind: "change", newDependencies: [], env: [],
   });
   const packets = [
-    mk("P1", "Write the first half", [`${dir}/part-1.md`]),
-    mk("P2", "Write the second half", [guarded ? `${guarded.protectedPaths[0].split("*")[0].replace(/\/$/, "")}/arrow-note.md` : `${dir}/part-2.md`]),
+    mk("P1", "Write the first half", [`${dir}/part-1.ts`]),
+    mk("P2", "Write the second half", [guarded ? `${guarded.protectedPaths[0].split("*")[0].replace(/\/$/, "")}/arrow-note.sql` : `${dir}/part-2.ts`]),
   ];
-  packets.push(mk("P3", "Tie both halves together", [`${dir}/README.md`], ["P1", "P2"]));
+  packets.push(mk("P3", "Tie both halves together", [`${dir}/index.ts`], ["P1", "P2"]));
   return {
     summary: `Three packets: two independent ones run side by side, then one that depends on both. (Mock architect.)`,
     modules: [{ id: "M1", title: spec.title, context: spec.intent }],
@@ -180,10 +201,80 @@ function work(cwd: string, { packet, attempt }: WorkerInput) {
     if (/[*?]/.test(f)) continue;
     const abs = path.join(cwd, f);
     fs.mkdirSync(path.dirname(abs), { recursive: true });
-    const body = `# ${packet.title}\n\n${packet.objective}\n\nWritten by the mock worker for ${packet.id} (attempt ${attempt}).\n`;
+    const body = f.endsWith(".sql")
+      ? `-- ${packet.title}: ${packet.objective} (mock worker, ${packet.id}, attempt ${attempt})\n`
+      : `// ${packet.title} (mock worker, ${packet.id}, attempt ${attempt})\nexport const ${packet.id.toLowerCase()} = ${JSON.stringify(packet.objective)};\n`;
     fs.existsSync(abs) ? fs.appendFileSync(abs, `\n${body}`) : fs.writeFileSync(abs, body);
   }
   return { status: "implemented", summary: `Wrote ${packet.files.length} file(s).`, newFacts: [] };
+}
+
+/** Env var NAMES the repo expects (from its example env files) — values are never read. */
+function envNames(repo: string): Profile["envVars"] {
+  const out: Profile["envVars"] = [];
+  for (const f of [".env.example", ".env.sample", ".env.template"]) {
+    const txt = readFirst(repo, [f], true);
+    if (!txt) continue;
+    for (const line of txt.split("\n")) {
+      const m = line.match(/^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=/);
+      if (m && !out.some((v) => v.name === m[1])) out.push({ name: m[1], source: f });
+    }
+  }
+  return out;
+}
+
+/** Decision records the company already keeps (docs/adr, docs/decisions) become Arrow decisions. */
+function adrs(repo: string): Profile["decisions"] {
+  for (const d of ["docs/adr", "docs/decisions", "adr"]) {
+    const dir = path.join(repo, d);
+    if (!fs.existsSync(dir)) continue;
+    return fs.readdirSync(dir).filter((f) => f.endsWith(".md")).slice(0, 30).map((f) => {
+      const title = fs.readFileSync(path.join(dir, f), "utf8").split("\n").find((l) => l.startsWith("#"))?.replace(/^#+\s*/, "") ?? f;
+      return { text: title, why: "", source: `${d}/${f}` };
+    });
+  }
+  return [];
+}
+
+/** The mock's reading of the company's rules against Arrow's house rules. Heuristics, clearly. */
+function houseOutcomes(repo: string, rules: string): HouseOutcome[] {
+  const out: HouseOutcome[] = [];
+  const lines = rules.match(/(\d{3,4})\s*lines/i);
+  if (lines) out.push({ id: "H-FILESIZE", outcome: "replace", why: `Company rule: files up to ${lines[1]} lines.`, settings: { maxLines: Number(lines[1]) } });
+  else {
+    const big = countBigFiles(repo, 500);
+    if (big) out.push({ id: "H-FILESIZE", outcome: "dont_grow", why: `${big} file(s) are already over 500 lines; they may stay, but not grow.` });
+  }
+  const docs = rules.match(/\b(docs\/[\w\/-]+)/i);
+  if (docs && /doc|adr|design/i.test(rules)) out.push({ id: "H-DOCS", outcome: "replace", why: `Company keeps docs in ${docs[1]}.`, settings: { allowPaths: [`${docs[1].replace(/\/$/, "")}/**`] } });
+  if (/\b(update|change|edit|rewrite)\b[^.\n]*\btests?\b[^.\n]*\b(freely|allowed|may|can)\b/i.test(rules))
+    out.push({ id: "H-TESTS", outcome: "conflict", why: "Company rules let tests be changed freely.", settings: { mayEditExisting: true } });
+  const port = rules.match(/\bports?\s+(\d{4,5})/i);
+  if (port) out.push({ id: "H-PORTS", outcome: "replace", why: `Company dev ports start at ${port[1]}.`, settings: { base: Number(port[1]) } });
+  return out;
+}
+
+function countBigFiles(repo: string, max: number): number {
+  let n = 0;
+  const walk = (dir: string, depth: number) => {
+    if (depth > 6) return;
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (e.name.startsWith(".") || e.name === "node_modules") continue;
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) walk(p, depth + 1);
+      else if (/\.(ts|tsx|js|jsx|py|go|rs|java|kt|rb|php|cs|swift)$/.test(e.name) && fs.readFileSync(p, "utf8").split("\n").length > max) n++;
+    }
+  };
+  walk(repo, 0);
+  return n;
+}
+
+function readFirst(repo: string, names: string[], raw = false): string | undefined {
+  for (const n of names) {
+    const p = path.join(repo, n);
+    if (fs.existsSync(p)) return raw ? fs.readFileSync(p, "utf8") : fs.readFileSync(p, "utf8").trim();
+  }
+  return undefined;
 }
 
 function safeJson(file: string): Record<string, any> {

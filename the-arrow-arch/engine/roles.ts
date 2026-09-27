@@ -10,20 +10,33 @@ import { bob } from "./agents/bob";
 import { claude } from "./agents/claude";
 import type { AgentExit, Driver } from "./agents/driver";
 import { mock } from "./agents/mock";
-import { driverFor, LIMITS, PROMPTS_DIR, type DriverName } from "./config";
+import { LIMITS, PROMPTS_DIR } from "./config";
+import { keysFor, readSettings, type Harness } from "./settings";
 import { classifyExit } from "./failures";
+import { HOUSE_RULES, type HouseSettings } from "./house-rules";
 import * as S from "./schemas";
-import type { Failure, Packet, Profile, Role, Rule, Spec } from "./types";
+import type { Failure, Packet, Profile, ProjectState, Role, Rule, Spec } from "./types";
 
-export type OnboarderInput = { repoPath: string; repoUrl: string; rulesText: string };
-export type PmInput = { task: string; profile: Profile };
-export type ArchitectInput = { taskId: string; task: string; spec: Spec; answers: Record<string, string>; profile: Profile };
-export type RepairInput = { taskId: string; packet: Packet; failure: Failure; profile: Profile };
-export type WorkerInput = { packet: Packet; attempt: number; previous?: Failure; commands: Profile["commands"]; rules: Rule[] };
+type Knowledge = ProjectState["knowledge"];
+export type OnboarderInput = { repoPath: string; repoUrl: string; rulesText: string; houseRules: typeof HOUSE_RULES; houseDefaults: HouseSettings };
+export type PmInput = { task: string; profile: Profile; knowledge: Knowledge };
+export type ArchitectInput = { taskId: string; task: string; spec: Spec; answers: Record<string, string>; profile: Profile; house: HouseSettings; knowledge: Knowledge };
+export type RepairInput = { taskId: string; packet: Packet; failure: Failure; profile: Profile; house: HouseSettings; knowledge: Knowledge };
+export type WorkerInput = {
+  packet: Packet;
+  attempt: number;
+  previous?: Failure;
+  commands: Profile["commands"];
+  versions: Profile["dependencies"]; // code against these installed versions, not memory
+  rules: Rule[]; //                     the company's critical rules
+  house: HouseSettings; //              what Arrow will check the work against
+  beside: { id: string; title: string; files: string[] }[]; // packets of this task that may run at the same time
+  decisions: string[];
+};
 
-const DRIVERS: Record<DriverName, Driver> = { mock, claude, bob };
+const DRIVERS: Record<Harness, Driver> = { mock, claude, bob };
 
-type Run<T> = { result?: T; failure?: Failure; exit: AgentExit; driver: DriverName };
+type Run<T> = { result?: T; failure?: Failure; exit: AgentExit; driver: Harness };
 
 async function runAgent<T>(o: {
   role: Exclude<Role, "orchestrator" | "human">;
@@ -37,8 +50,15 @@ async function runAgent<T>(o: {
   feedback?: string;
   resume?: string;
   optional?: boolean; // the worker's report is a courtesy; its checks decide
+  preface?: string; //  live context written by the orchestrator (the worker's ledger brief)
+  env: NodeJS.ProcessEnv;
+  onSpawn?: (pid: number) => void;
 }): Promise<Run<T>> {
-  const driver = driverFor(o.role);
+  const settings = readSettings(); // read per run: a change on the Settings page applies to the next step
+  const cfg = settings.roles[o.role];
+  const driver = cfg.harness;
+  // the engine's own key, from Settings (or already in the environment), and nothing else
+  const keys = Object.fromEntries(keysFor(cfg).flatMap((k) => (settings.keys[k as keyof typeof settings.keys] ? [[k, settings.keys[k as keyof typeof settings.keys]!]] : [])));
   const outFile = path.join(o.cwd, ".arrow", "out", `${o.jobId}.json`);
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.rmSync(outFile, { force: true });
@@ -46,6 +66,7 @@ async function runAgent<T>(o: {
 
   const prompt = [
     fs.readFileSync(path.join(PROMPTS_DIR, o.promptFile), "utf8").trim(),
+    ...(o.preface ? ["", o.preface] : []),
     "",
     "# Inputs",
     "",
@@ -71,7 +92,8 @@ async function runAgent<T>(o: {
 
   const exit = await DRIVERS[driver]({
     role: o.role, jobId: o.jobId, cwd: o.cwd, prompt, outFile, logFile: o.logFile,
-    timeoutMs: LIMITS.agentTimeoutMs, resume: o.resume, input: o.input,
+    timeoutMs: LIMITS.agentTimeoutMs, resume: o.resume, input: o.input, env: { ...o.env, ...keys }, onSpawn: o.onSpawn,
+    cfg, bob: settings.bob,
   });
   const failure = classifyExit(exit);
   if (failure && failure.class !== "internal") return { failure, exit, driver }; // provider / timeout
@@ -95,7 +117,7 @@ async function runAgent<T>(o: {
   return { result: parsed.data, exit, driver };
 }
 
-type Common = { jobId: string; logFile: string; feedback?: string; resume?: string };
+type Common = { jobId: string; logFile: string; feedback?: string; resume?: string; env: NodeJS.ProcessEnv; onSpawn?: (pid: number) => void };
 
 export const onboarder = (c: Common & { input: OnboarderInput }) =>
   runAgent({ ...c, role: "onboarder", promptFile: "onboarder.md", cwd: c.input.repoPath, schema: S.Profile, example: EXAMPLES.profile });
@@ -109,7 +131,7 @@ export const architect = (c: Common & { cwd: string; input: ArchitectInput }) =>
 export const repairer = (c: Common & { cwd: string; input: RepairInput }) =>
   runAgent({ ...c, role: "architect", promptFile: "repair.md", schema: S.Packet, example: EXAMPLES.plan.packets[0] });
 
-export const worker = (c: Common & { cwd: string; input: WorkerInput }) =>
+export const worker = (c: Common & { cwd: string; input: WorkerInput; preface: string }) =>
   runAgent({ ...c, role: "worker", promptFile: "worker.md", schema: S.WorkerReport, example: EXAMPLES.report, optional: true });
 
 const EXAMPLES = {
@@ -127,6 +149,15 @@ const EXAMPLES = {
       { ruleId: "R2", status: "violated", evidence: "apps/admin/components/order-table.tsx is kebab-case.", suggestion: "Rename in a separate clean-up task; not a blocker." },
     ],
     adaptations: [{ setting: "proof command", value: "bun test", why: "The suite runs offline in under a minute." }],
+    toolchain: { packageManager: "bun", lockfile: "bun.lock", runtimes: [{ name: "bun", version: "1.3.6", source: "package.json packageManager" }] },
+    dependencies: [{ name: "hono", version: "4.12.2" }, { name: "next", version: "15.5.20" }],
+    envVars: [{ name: "DATABASE_URL", source: ".env.example" }],
+    decisions: [{ text: "Money is stored as integer paise, never floats.", why: "Rounding errors on refunds", source: "docs/adr/0003-money.md" }],
+    houseRules: [
+      { id: "H-FILESIZE", outcome: "replace", why: "Company rule: files up to 800 lines.", settings: { maxLines: 800 } },
+      { id: "H-DOCS", outcome: "replace", why: "Design docs are required in docs/design/.", settings: { allowPaths: ["docs/design/**"] } },
+      { id: "H-TESTS", outcome: "keep", why: "" },
+    ],
     recommendation: { decision: "continue", reason: "The only mismatch is a naming convention — nothing critical.", suggestions: [] },
   },
   spec: {
@@ -148,6 +179,7 @@ const EXAMPLES = {
         context: "apps/api/src/orders.ts:88 createOrder() shows the transaction pattern to mirror.",
         files: ["apps/api/src/refunds.ts", "apps/api/test/refunds.test.ts"], deps: [],
         verification: ["bun test apps/api/test/refunds.test.ts"], regression: ["bun test"], risk: "high",
+        kind: "change", newDependencies: [], env: [],
       },
     ],
     rulesImpact: [{ ruleId: "R1", impact: "Needs a NEW migration file; no existing migration is edited." }],

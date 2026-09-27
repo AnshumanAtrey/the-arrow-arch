@@ -5,6 +5,7 @@
  */
 import { BUDGETS, LIMITS } from "./config";
 import { overlaps } from "./glob";
+import { effectiveSettings, type HouseSettings } from "./house-rules";
 import { runningJobs } from "./project";
 import { subject } from "./types";
 import type { Failure, JobView, PacketView, ProjectState, TaskView } from "./types";
@@ -16,6 +17,7 @@ export type Action =
   | { kind: "pm"; taskId: string; attempt: number; feedback?: string }
   | { kind: "architect"; taskId: string; attempt: number; feedback?: string }
   | { kind: "open_plan_gate"; taskId: string }
+  | { kind: "prepare"; taskId: string; packetId: string }
   | { kind: "work"; taskId: string; packetId: string; attempt: number; previous?: Failure; resume?: string }
   | { kind: "verify"; taskId: string; packetId: string }
   | { kind: "merge"; taskId: string; packetId: string }
@@ -26,7 +28,7 @@ export type Action =
 type Step = { go: true; attempt: number; feedback?: string; resume?: string } | { go: false; park?: string };
 
 /**
- * One policy for every agent step, driven only by WHY the last run failed.
+ * One policy for every step, driven only by WHY the last run failed.
  * Returns whether to run now, wait, or hand to a human.
  */
 export function stepPolicy(runs: JobView[], now: number): Step {
@@ -49,6 +51,8 @@ export function stepPolicy(runs: JobView[], now: number): Step {
     }
     case "timeout":
       return { go: false, park: "Ran out of time. Its work is kept — continue to pick up where it stopped." };
+    case "environment":
+      return { go: false, park: f.message }; // a missing key or broken install: a person, never a blind retry
     case "bad_output":
       return tailOf("bad_output") > BUDGETS.badOutputRetries
         ? { go: false, park: `It kept handing back an unusable result: ${f.message}` }
@@ -89,11 +93,13 @@ export function decide(s: ProjectState, now: number): Action[] {
     return out;
   }
   if (!s.onboardingGateId) return [{ kind: "open_onboarding_gate" }];
-  if (s.stage !== "ready") return out; // waiting on the human at the onboarding gate
+  if (s.stage !== "ready") return out; // waiting on the human at the onboarding check
 
   // ---- tasks
+  const house = effectiveSettings(s.profile.houseRules, true);
   const running = runningJobs(s);
-  let freeWorkers = LIMITS.parallelWorkers - running.filter((j) => j.role === "worker").length;
+  const slotsUsed = running.filter((j) => j.role === "worker" || j.subject.endsWith(":prepare")).length;
+  const slots = { free: LIMITS.parallelWorkers - slotsUsed };
 
   for (const tid of s.taskOrder) {
     const t = s.tasks[tid];
@@ -108,22 +114,23 @@ export function decide(s: ProjectState, now: number): Action[] {
         if (!t.planGateId) out.push({ kind: "open_plan_gate", taskId: tid });
         break;
       case "building":
-        freeWorkers = build(s, t, now, freeWorkers, out);
+        if (!s.frozen) build(s, t, now, house, slots, out); // a freeze stops new work; nothing lands
         break;
     }
   }
   return out;
 }
 
-/** One task's packets: land, merge one at a time, verify, retry/repair/park, start ready work. */
-function build(s: ProjectState, t: TaskView, now: number, freeWorkers: number, out: Action[]): number {
+const BUSY = ["preparing", "prepared", "working", "verifying", "merging"];
+
+/** One task's packets: land, merge one at a time, verify, retry / re-aim / park, prepare, start work. */
+function build(s: ProjectState, t: TaskView, now: number, house: HouseSettings, slots: { free: number }, out: Action[]) {
   const tid = t.taskId;
   const pks = t.order.map((id) => t.packets[id]);
   if (pks.length && pks.every((p) => p.status === "merged")) {
     out.push({ kind: "land", taskId: tid });
-    return freeWorkers;
+    return;
   }
-  const busy = (p: PacketView) => ["working", "verifying", "merging"].includes(p.status);
 
   // merge queue: strictly one at a time per task branch, in plan order
   if (!pks.some((p) => p.status === "merging")) {
@@ -135,64 +142,82 @@ function build(s: ProjectState, t: TaskView, now: number, freeWorkers: number, o
     }
   }
 
-  const claimed = pks.filter(busy).flatMap((p) => p.packet.files);
+  // which packet holds which files right now; a packet never clashes with itself
+  const claims = new Map(pks.filter((p) => BUSY.includes(p.status)).map((p) => [p.packet.id, p.packet.files]));
+  const takeSlot = (p: PacketView) => {
+    const others = [...claims].filter(([id]) => id !== p.packet.id).flatMap(([, files]) => files);
+    if (slots.free <= 0 || clash(p, others)) return false;
+    claims.set(p.packet.id, p.packet.files);
+    slots.free--;
+    return true;
+  };
+  const startWork = (p: PacketView, attempt: number, extra: Partial<Extract<Action, { kind: "work" }>> = {}) =>
+    out.push({ kind: "work", taskId: tid, packetId: p.packet.id, attempt, ...extra });
+
   for (const p of pks) {
     const pid = p.packet.id;
     const work = subject.work(tid, pid);
+    if (s.parked[work] || s.parked[subject.prepare(tid, pid)]) continue;
+
     if (p.status === "built") {
-      const st = stepPolicy(s.runs[subject.verify(tid, pid)]?.filter((j) => Date.parse(j.startedAt) >= lastWorkEnd(s, work)) ?? [], now);
+      const st = stepPolicy((s.runs[subject.verify(tid, pid)] ?? []).filter((j) => Date.parse(j.startedAt) >= lastEnd(s, work)), now);
       if (st.go) out.push({ kind: "verify", taskId: tid, packetId: pid });
       else if (st.park) out.push({ kind: "park", subject: work, reason: `Checking this packet kept crashing: ${st.park}` });
       continue;
     }
-    if (p.status === "failed") {
-      const cls = p.lastFailure?.class;
-      if (cls === "verification" || cls === "scope" || cls === "merge") {
-        const repairSub = subject.repair(tid, pid);
-        const repairRunning = (s.runs[repairSub] ?? []).some((j) => !j.finishedAt);
-        if (repairRunning) continue;
-        if (cls === "verification" && p.attempts <= BUDGETS.codeRetries) {
-          if (freeWorkers > 0 && !clash(p, claimed)) {
-            out.push({ kind: "work", taskId: tid, packetId: pid, attempt: p.attempts + 1, previous: p.lastFailure, resume: s.sessions[work] });
-            claimed.push(...p.packet.files);
-            freeWorkers--;
-          }
-        } else if (p.repairs < BUDGETS.repairs) {
-          const st = stepPolicy(s.runs[repairSub] ?? [], now);
-          if (st.go) out.push({ kind: "repair", taskId: tid, packetId: pid, attempt: st.attempt });
-          else if (st.park) out.push({ kind: "park", subject: work, reason: `The architect could not re-aim it: ${st.park}` });
-        } else {
-          out.push({ kind: "park", subject: work, reason: `Still failing after a retry and a re-plan. ${p.lastFailure?.message ?? ""}`.trim() });
-        }
-        continue;
-      }
-      if (cls === "protected") {
-        out.push({ kind: "park", subject: work, reason: p.lastFailure!.message });
-        continue;
-      }
-      // provider / timeout / internal on the worker run itself: the generic policy decides
-      const st = stepPolicy(s.runs[work] ?? [], now);
-      if (st.go && freeWorkers > 0 && !clash(p, claimed)) {
-        out.push({ kind: "work", taskId: tid, packetId: pid, attempt: st.attempt, resume: st.resume });
-        claimed.push(...p.packet.files);
-        freeWorkers--;
-      } else if (!st.go && st.park) out.push({ kind: "park", subject: work, reason: st.park });
+    if (p.status === "prepared") {
+      if (takeSlot(p)) startWork(p, p.attempts + 1, { previous: p.lastFailure });
       continue;
     }
-    if (p.status !== "waiting" || s.parked[work]) continue;
-    const depsMerged = p.packet.deps.every((d) => t.packets[d]?.status === "merged");
-    if (!depsMerged || freeWorkers <= 0 || clash(p, claimed)) continue;
-    out.push({ kind: "work", taskId: tid, packetId: pid, attempt: p.attempts + 1, previous: p.lastFailure });
-    claimed.push(...p.packet.files);
-    freeWorkers--;
+    if (p.status === "waiting") {
+      const depsMerged = p.packet.deps.every((d) => t.packets[d]?.status === "merged");
+      const st = stepPolicy(s.runs[subject.prepare(tid, pid)] ?? [], now);
+      if (!depsMerged) continue;
+      if (st.go && takeSlot(p)) out.push({ kind: "prepare", taskId: tid, packetId: pid });
+      else if (!st.go && st.park) out.push({ kind: "park", subject: subject.prepare(tid, pid), reason: st.park });
+      continue;
+    }
+    if (p.status !== "failed") continue;
+
+    const f = p.lastFailure!;
+    if (f.class === "protected" || f.class === "environment") {
+      // critical rule touched, or the machine is broken: a person, never a blind retry
+      out.push({ kind: "park", subject: work, reason: f.message });
+      continue;
+    }
+    const repairSub = subject.repair(tid, pid);
+    if ((s.runs[repairSub] ?? []).some((j) => !j.finishedAt)) continue;
+    const reAim = () => {
+      if (p.repairs >= house.loops.repairs) {
+        out.push({ kind: "park", subject: work, reason: `Still failing after a retry and a re-plan. ${f.message}`.trim() });
+        return;
+      }
+      const st = stepPolicy(s.runs[repairSub] ?? [], now);
+      if (st.go) out.push({ kind: "repair", taskId: tid, packetId: pid, attempt: st.attempt });
+      else if (st.park) out.push({ kind: "park", subject: work, reason: `The architect could not re-aim it: ${st.park}` });
+    };
+
+    if (f.class === "verification") {
+      // the shot missed: one more worker run with the report, then the aim is fixed
+      if (p.attempts <= house.loops.codeRetries) {
+        if (takeSlot(p)) startWork(p, p.attempts + 1, { previous: f, resume: s.sessions[work] });
+      } else reAim();
+    } else if (f.class === "scope" || f.class === "merge" || f.class === "bad_check") {
+      reAim(); // the aim was wrong — a retry of the same packet can't fix it
+    } else {
+      // provider / timeout / internal / bad_output on the worker run itself
+      const st = stepPolicy(s.runs[work] ?? [], now);
+      if (st.go) {
+        if (takeSlot(p)) startWork(p, st.attempt, { resume: st.resume });
+      } else if (st.park) out.push({ kind: "park", subject: work, reason: st.park });
+    }
   }
-  return freeWorkers;
 }
 
 const clash = (p: PacketView, claimed: string[]) => p.packet.files.some((f) => claimed.some((c) => overlaps(f, c)));
 
 /** Verify runs only count if they started after the latest worker run finished. */
-function lastWorkEnd(s: ProjectState, work: string): number {
+function lastEnd(s: ProjectState, work: string): number {
   const last = (s.runs[work] ?? []).at(-1);
   return last?.finishedAt ? Date.parse(last.finishedAt) : 0;
 }

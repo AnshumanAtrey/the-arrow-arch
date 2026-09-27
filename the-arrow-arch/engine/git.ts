@@ -38,6 +38,8 @@ export async function clone(src: string, dest: string, branch?: string) {
   if (r.code !== 0) throw new Error(r.out.trim().slice(-800) || "git clone failed");
   // Arrow's own files (agent result files) never belong in a commit — in any worktree
   fs.appendFileSync(path.join(dest, ".git", "info", "exclude"), "\n# arrow\n.arrow/\n");
+  // nothing is ever pushed from Arrow's copy: fetch still works, push has nowhere to go
+  await ok(dest, "config", "remote.origin.pushurl", "no-push://arrow-never-pushes");
   return { branch: await ok(dest, "rev-parse", "--abbrev-ref", "HEAD"), head: await ok(dest, "rev-parse", "HEAD") };
 }
 
@@ -57,9 +59,9 @@ export async function worktree(repo: string, dir: string, branch: string, from: 
   return dir;
 }
 
-export async function removeWorktree(repo: string, dir: string, branch: string) {
+export async function removeWorktree(repo: string, dir: string, branch?: string) {
   await git(repo, "worktree", "remove", "--force", dir);
-  await git(repo, "branch", "-D", branch);
+  if (branch) await git(repo, "branch", "-D", branch);
 }
 
 /** Workers don't commit; the orchestrator does, so nothing outside the job sneaks in. */
@@ -100,3 +102,46 @@ export async function fastForward(repo: string, branch: string, to: string) {
   if (!(await isAncestor(repo, cur, to))) throw new Error(`${branch} moved; ${to.slice(0, 7)} is not a fast-forward`);
   await ok(repo, "update-ref", `refs/heads/${branch}`, to, cur);
 }
+
+/** Per changed file: lines added and removed (binary files report 0/0). */
+export async function numstat(wt: string, base: string): Promise<{ path: string; added: number; removed: number }[]> {
+  const out = await ok(wt, "diff", "--numstat", `${base}...HEAD`);
+  return out.split("\n").filter(Boolean).map((l) => {
+    const [a, r, ...rest] = l.split("\t");
+    return { path: rest.join("\t"), added: Number(a) || 0, removed: Number(r) || 0 };
+  });
+}
+
+/** Files this branch created (not modified). */
+export async function addedFiles(wt: string, base: string): Promise<Set<string>> {
+  const out = await ok(wt, "diff", "--name-only", "--diff-filter=A", `${base}...HEAD`);
+  return new Set(out.split("\n").map((l) => l.trim()).filter(Boolean));
+}
+
+/** The "+" lines of one file's diff. */
+export async function addedLines(wt: string, base: string, file: string): Promise<string[]> {
+  const d = await ok(wt, "diff", "--unified=0", `${base}...HEAD`, "--", file);
+  return d.split("\n").filter((l) => l.startsWith("+") && !l.startsWith("+++")).map((l) => l.slice(1));
+}
+
+/** A file's content at a ref, or "" if it didn't exist there. */
+export async function showAt(wt: string, ref: string, file: string): Promise<string> {
+  const r = await git(wt, "show", `${ref}:${file}`);
+  return r.code === 0 ? r.out : "";
+}
+
+/** The commit a branch forked from another. */
+export const mergeBase = (wt: string, a: string, b = "HEAD") => ok(wt, "merge-base", a, b);
+
+/** Every worktree git knows about for this repo. */
+export async function listWorktrees(repo: string): Promise<{ path: string; branch?: string }[]> {
+  const out = await ok(repo, "worktree", "list", "--porcelain");
+  const list: { path: string; branch?: string }[] = [];
+  for (const block of out.split("\n\n")) {
+    const p = block.match(/^worktree (.+)$/m)?.[1];
+    if (p) list.push({ path: p, branch: block.match(/^branch refs\/heads\/(.+)$/m)?.[1] });
+  }
+  return list;
+}
+
+export const pruneWorktrees = (repo: string) => git(repo, "worktree", "prune");

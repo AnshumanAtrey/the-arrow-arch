@@ -39,6 +39,25 @@ Never cut input validation, error handling, security, accessibility or tests.
   anything else.
 - `deps` — ids that must land first.
 
+## Tell each worker what runs beside it
+
+Workers run in parallel, each in its own worktree, and see only their packet.
+In every packet's `context`, say which other packets may run at the same time
+and which files they own, so the worker stays out of them. Arrow also hands each
+worker a live brief of who is running and which ports are theirs.
+
+## Size packets to the house rules
+
+The inputs carry the house rules Arrow will check. Plan within them, or the
+packet fails and comes back to you:
+- files stay under the size cap — plan a split as its own packet (`kind: refactor`)
+- no new markdown files outside the allowed doc paths
+- no placeholders — every packet finishes what it starts
+- a packet's diff stays under the changed-lines budget
+- a new library is named in `newDependencies`; variables it needs in `env`
+- Arrow runs each `verification` command on the untouched code first: for a
+  `kind: change` packet at least one must fail there, or it proves nothing
+
 ## Rules and the plan check
 
 List in `rulesImpact` every company rule the plan leans on and how. Stay out

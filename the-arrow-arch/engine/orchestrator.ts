@@ -1,27 +1,27 @@
 /**
  * The orchestrator: state manager + loop manager, running in the background.
  * Each tick it folds the log into state, asks decide() what should happen, and
- * carries that out. It never plans and never writes product code — it runs the
- * agents that do, checks their work itself, and keeps every loop bounded.
+ * carries that out; every few seconds it rebuilds the ledger from what really
+ * runs and reaps what's stale. It never plans and never writes product code.
  */
-import fs from "node:fs";
-import path from "node:path";
-import { driverFor } from "./config";
 import { decide, type Action } from "./decide";
 import { onboardingGate, planGate } from "./gate";
 import * as git from "./git";
-import { matchesAny } from "./glob";
+import { DEFAULTS, effectiveSettings, HOUSE_RULES } from "./house-rules";
+import { fromRun, job } from "./jobs";
+import { refreshLedger } from "./ledger-scan";
+import { runPacketStep } from "./packet-steps";
+import { run, scrubbedEnv } from "./proc";
 import { project } from "./project";
 import * as roles from "./roles";
-import { append, newJobId, paths, readEvents } from "./store";
+import { append, paths, readEvents } from "./store";
 import { subject } from "./types";
-import type { Failure, Plan, ProjectState, Role } from "./types";
-import { verifyPacket } from "./verify";
-
-type JobOutcome = { ok: boolean; failure?: Failure; costUsd?: number; sessionId?: string };
+import type { GateItem, Plan, ProjectState } from "./types";
 
 const inflight = new Set<string>(); // dispatched this process, job.started may not be on disk yet
 export const inflightCount = () => inflight.size;
+const lastLedger = new Map<string, number>();
+const LEDGER_EVERY_MS = 5000;
 
 export async function tick(pid: string): Promise<number> {
   const s = project(pid, readEvents(pid));
@@ -35,10 +35,20 @@ export async function tick(pid: string): Promise<number> {
       .catch((e) => append(pid, { type: "note", level: "warn", message: `Orchestrator error on ${a.kind}: ${(e as Error).message}` }))
       .finally(() => inflight.delete(key));
   }
+  if (s.repo && Date.now() - (lastLedger.get(pid) ?? 0) > LEDGER_EVERY_MS && !inflight.has(`ledger:${pid}`)) {
+    lastLedger.set(pid, Date.now());
+    inflight.add(`ledger:${pid}`);
+    refreshLedger(pid, s)
+      .catch((e) => append(pid, { type: "note", level: "warn", message: `Ledger refresh failed: ${(e as Error).message}` }))
+      .finally(() => inflight.delete(`ledger:${pid}`));
+  }
   return started;
 }
 
-/** After a crash or restart: anything "running" on disk but not in this process is orphaned. */
+/**
+ * After a crash or restart: a job "running" on disk but not in this process is
+ * orphaned. Close it out; the next ledger refresh reaps whatever it left running.
+ */
 export function reconcile(pid: string) {
   const s = project(pid, readEvents(pid));
   for (const j of Object.values(s.jobs)) {
@@ -53,34 +63,10 @@ export function reconcile(pid: string) {
   }
 }
 
-async function job(
-  pid: string,
-  meta: { role: Role; subject: string; attempt: number },
-  fn: (jobId: string, logFile: string) => Promise<JobOutcome>,
-) {
-  const jobId = newJobId();
-  const driver = meta.role === "orchestrator" ? "arrow" : driverFor(meta.role);
-  append(pid, { type: "job.started", jobId, ...meta, driver });
-  const t0 = Date.now();
-  let r: JobOutcome;
-  try {
-    r = await fn(jobId, path.join(paths(pid).logs, `${jobId}.log`));
-  } catch (e) {
-    r = { ok: false, failure: { class: "internal", message: (e as Error).message } };
-  }
-  append(pid, { type: "job.finished", jobId, ok: r.ok, failure: r.failure, durationMs: Date.now() - t0, costUsd: r.costUsd, sessionId: r.sessionId });
-}
-
-const fromRun = (r: { failure?: Failure; exit: { costUsd?: number; sessionId?: string } }): JobOutcome => ({
-  ok: !r.failure,
-  failure: r.failure,
-  costUsd: r.exit.costUsd,
-  sessionId: r.exit.sessionId,
-});
-
 async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
   const P = paths(pid);
   const repo = s.repo?.path ?? P.repo;
+  const knowledge = s.knowledge;
 
   switch (a.kind) {
     case "clone":
@@ -91,20 +77,27 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
       });
 
     case "onboard":
-      return job(pid, { role: "onboarder", subject: subject.onboard, attempt: a.attempt }, async (jobId, logFile) => {
-        const r = await roles.onboarder({ jobId, logFile, feedback: a.feedback, input: { repoPath: repo, repoUrl: s.repoUrl, rulesText: s.rulesText } });
-        if (r.result) append(pid, { type: "profile.ready", profile: r.result });
+      return job(pid, { role: "onboarder", subject: subject.onboard, attempt: a.attempt }, async (ctx) => {
+        const r = await roles.onboarder({
+          ...ctx, env: scrubbedEnv(), feedback: a.feedback,
+          input: { repoPath: repo, repoUrl: s.repoUrl, rulesText: s.rulesText, houseRules: HOUSE_RULES, houseDefaults: DEFAULTS },
+        });
+        if (r.result) {
+          append(pid, { type: "profile.ready", profile: r.result });
+          if (r.result.decisions.length)
+            append(pid, { type: "knowledge.recorded", entries: r.result.decisions.map((d) => ({ kind: "decision" as const, text: d.why ? `${d.text} (${d.why})` : d.text, source: d.source || "onboarding" })) });
+        }
         return fromRun(r);
       });
 
     case "open_onboarding_gate":
-      append(pid, { type: "gate.opened", gate: onboardingGate(s.profile!) });
+      append(pid, { type: "gate.opened", gate: onboardingGate(s.profile!, await toolchainItems(s)) });
       return;
 
     case "pm": {
       const t = s.tasks[a.taskId];
-      return job(pid, { role: "pm", subject: subject.pm(a.taskId), attempt: a.attempt }, async (jobId, logFile) => {
-        const r = await roles.pm({ jobId, logFile, cwd: repo, feedback: a.feedback, input: { task: t.text, profile: s.profile! } });
+      return job(pid, { role: "pm", subject: subject.pm(a.taskId), attempt: a.attempt }, async (ctx) => {
+        const r = await roles.pm({ ...ctx, env: scrubbedEnv(), cwd: repo, feedback: a.feedback, input: { task: t.text, profile: s.profile!, knowledge } });
         if (r.result) append(pid, { type: "spec.ready", taskId: a.taskId, spec: r.result });
         return fromRun(r);
       });
@@ -112,10 +105,11 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
 
     case "architect": {
       const t = s.tasks[a.taskId];
-      return job(pid, { role: "architect", subject: subject.architect(a.taskId), attempt: a.attempt }, async (jobId, logFile) => {
+      const house = effectiveSettings(s.profile!.houseRules, true);
+      return job(pid, { role: "architect", subject: subject.architect(a.taskId), attempt: a.attempt }, async (ctx) => {
         const r = await roles.architect({
-          jobId, logFile, cwd: repo, feedback: a.feedback,
-          input: { taskId: a.taskId, task: t.text, spec: t.spec!, answers: t.answers ?? {}, profile: s.profile! },
+          ...ctx, env: scrubbedEnv(), cwd: repo, feedback: a.feedback,
+          input: { taskId: a.taskId, task: t.text, spec: t.spec!, answers: t.answers ?? {}, profile: s.profile!, house, knowledge },
         });
         if (!r.result) return fromRun(r);
         const problem = planProblem(r.result);
@@ -130,107 +124,32 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
 
     case "open_plan_gate": {
       const t = s.tasks[a.taskId];
-      append(pid, { type: "gate.opened", gate: planGate(a.taskId, t.plan!, t.spec!, s.profile!.rules) });
-      return;
-    }
-
-    case "work": {
-      const t = s.tasks[a.taskId];
-      const pk = t.packets[a.packetId].packet;
-      return job(pid, { role: "worker", subject: subject.work(a.taskId, a.packetId), attempt: a.attempt }, async (jobId, logFile) => {
-        const wt = await packetWorktree(pid, s, a.taskId, a.packetId);
-        const r = await roles.worker({
-          jobId, logFile, cwd: wt, resume: a.resume,
-          input: { packet: pk, attempt: a.attempt, previous: a.previous, commands: s.profile!.commands, rules: s.profile!.rules.filter((x) => x.criticality === "critical") },
-        });
-        return fromRun(r);
-      });
-    }
-
-    case "verify": {
-      const t = s.tasks[a.taskId];
-      const pv = t.packets[a.packetId];
-      return job(pid, { role: "orchestrator", subject: subject.verify(a.taskId, a.packetId), attempt: pv.attempts }, async () => {
-        const wt = await packetWorktree(pid, s, a.taskId, a.packetId);
-        const v = await verifyPacket({ wt, base: t.branch!, packet: pv.packet, profile: s.profile!, attempt: pv.attempts, approvedProtected: approvedProtected(s, a.taskId, a.packetId) });
-        append(pid, v.ok
-          ? { type: "packet.verified", taskId: a.taskId, packetId: a.packetId, report: v.report, changedFiles: v.changedFiles }
-          : { type: "packet.failed", taskId: a.taskId, packetId: a.packetId, failure: v.failure });
-        return { ok: true };
-      });
-    }
-
-    case "merge": {
-      const t = s.tasks[a.taskId];
-      const pv = t.packets[a.packetId];
-      return job(pid, { role: "orchestrator", subject: subject.merge(a.taskId, a.packetId), attempt: 1 }, async () => {
-        const wt = await packetWorktree(pid, s, a.taskId, a.packetId);
-        const rb = await git.rebase(wt, t.branch!);
-        if (!rb.ok) {
-          append(pid, { type: "packet.failed", taskId: a.taskId, packetId: a.packetId, failure: { class: "merge", message: "It conflicts with work that already landed on this task's branch.", report: rb.out.trim().split("\n").slice(-20) } });
-          return { ok: true };
-        }
-        // the first time this packet's code runs together with everyone else's
-        const v = await verifyPacket({ wt, base: t.branch!, packet: pv.packet, profile: s.profile!, attempt: pv.attempts, approvedProtected: approvedProtected(s, a.taskId, a.packetId) });
-        if (!v.ok) {
-          append(pid, { type: "packet.failed", taskId: a.taskId, packetId: a.packetId, failure: { ...v.failure, class: "merge", message: `Passes alone, fails combined with landed work: ${v.failure.message}` } });
-          return { ok: true };
-        }
-        const tip = await git.head(wt);
-        await git.fastForward(repo, t.branch!, tip);
-        append(pid, { type: "packet.merged", taskId: a.taskId, packetId: a.packetId, head: tip });
-        await git.removeWorktree(repo, worktreeDir(pid, a.taskId, a.packetId), packetBranch(a.taskId, a.packetId));
-        return { ok: true };
-      });
-    }
-
-    case "repair": {
-      const t = s.tasks[a.taskId];
-      const pv = t.packets[a.packetId];
-      return job(pid, { role: "architect", subject: subject.repair(a.taskId, a.packetId), attempt: a.attempt }, async (jobId, logFile) => {
-        const r = await roles.repairer({ jobId, logFile, cwd: repo, input: { taskId: a.taskId, packet: pv.packet, failure: pv.lastFailure!, profile: s.profile! } });
-        if (!r.result) return fromRun(r);
-        if (r.result.id !== a.packetId)
-          return { ...fromRun(r), ok: false, failure: { class: "bad_output", message: `The re-aimed packet must keep id ${a.packetId}.` } };
-        append(pid, { type: "packet.repaired", taskId: a.taskId, packetId: a.packetId, packet: r.result, note: pv.lastFailure?.message ?? "" });
-        return fromRun(r);
-      });
-    }
-
-    case "land": {
-      const t = s.tasks[a.taskId];
-      const tip = await git.head(repo, `refs/heads/${t.branch}`);
-      append(pid, { type: "task.landed", taskId: a.taskId, branch: t.branch!, head: tip });
-      append(pid, { type: "note", level: "info", subject: a.taskId, message: `${a.taskId} landed on ${t.branch} (${tip.slice(0, 7)}). Nothing was pushed.` });
+      const house = effectiveSettings(s.profile!.houseRules, true);
+      append(pid, { type: "gate.opened", gate: planGate(a.taskId, t.plan!, t.spec!, s.profile!.rules, house) });
       return;
     }
 
     case "park":
       append(pid, { type: "step.parked", subject: a.subject, reason: a.reason });
       return;
+
+    default:
+      return runPacketStep(pid, s, a);
   }
 }
 
-// ------------------------------------------------------------ helpers
-
-const packetBranch = (t: string, p: string) => `arrow/${t.toLowerCase()}--${p.toLowerCase()}`;
-const worktreeDir = (pid: string, t: string, p: string) => path.join(paths(pid).worktrees, `${t}--${p}`);
-
-async function packetWorktree(pid: string, s: ProjectState, t: string, p: string) {
-  const dir = worktreeDir(pid, t, p);
-  if (fs.existsSync(path.join(dir, ".git"))) return dir;
-  const repo = s.repo!.path;
-  return git.worktree(repo, dir, packetBranch(t, p), await git.head(repo, `refs/heads/${s.tasks[t].branch}`));
-}
-
-/** Files a human saw at an approved plan check — protected, but approved for that packet. */
-function approvedProtected(s: ProjectState, t: string, p: string): string[] {
-  const task = s.tasks[t];
-  if (!task.planGateId || s.gates[task.planGateId]?.decision !== "approve") return [];
-  const original = task.plan?.packets.find((x) => x.id === p);
-  if (!original) return [];
-  const protectedGlobs = s.profile!.rules.filter((r) => r.criticality === "critical").flatMap((r) => r.protectedPaths);
-  return original.files.filter((f) => matchesAny(f, protectedGlobs));
+/** Does this machine have the runtimes the repo says it needs? Majors only; a mismatch is a note, not a stop. */
+async function toolchainItems(s: ProjectState): Promise<GateItem[]> {
+  const items: GateItem[] = [];
+  for (const rt of s.profile!.toolchain.runtimes) {
+    if (!/^[a-z0-9._-]+$/i.test(rt.name)) continue;
+    const r = await run(rt.name, ["--version"], { timeoutMs: 10_000 });
+    const have = r.code === 0 ? r.out.match(/\d+(\.\d+)*/)?.[0] : undefined;
+    const want = rt.version.match(/\d+/)?.[0];
+    if (!have) items.push({ level: "warning", title: `${rt.name} is not installed here`, detail: `The repo expects ${rt.name} ${rt.version} (${rt.source || "from the repo"}).`, suggestion: `Install ${rt.name} ${rt.version} before running tasks.` });
+    else if (want && have.split(".")[0] !== want) items.push({ level: "warning", title: `${rt.name} version differs`, detail: `The repo expects ${rt.version}; this machine has ${have}.`, suggestion: `Switch to ${rt.name} ${rt.version} if installs or builds fail.` });
+  }
+  return items;
 }
 
 /** Checks a model can get wrong but code can prove: unique ids, real deps, no cycles. */
@@ -239,7 +158,7 @@ export function planProblem(plan: Plan): string | undefined {
   const dup = ids.find((id, i) => ids.indexOf(id) !== i);
   if (dup) return `Packet id ${dup} is used twice.`;
   for (const p of plan.packets) {
-    if (!/^[A-Za-z0-9-]+$/.test(p.id)) return `Packet id "${p.id}" may only use letters, digits and dashes.`;
+    if (!/^[A-Za-z0-9-]+$/.test(p.id) || p.id.includes("--")) return `Packet id "${p.id}" may only use letters, digits and single dashes.`;
     const missing = p.deps.find((d) => !ids.includes(d));
     if (missing) return `${p.id} depends on ${missing}, which is not in the plan.`;
   }

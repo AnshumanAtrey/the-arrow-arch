@@ -3,6 +3,8 @@
 import { useParams, useRouter } from "next/navigation";
 import { NeedsYou } from "@/components/decisions";
 import { FlightPath } from "@/components/flight-path";
+import { HousePanel } from "@/components/house-panel";
+import { LedgerPanel } from "@/components/ledger-panel";
 import { Activity, MetricsStrip, ProfilePanel, Section, TaskForm, TaskList } from "@/components/panels";
 import { usePoll, type Payload } from "@/lib/client";
 import { flightOf } from "@/lib/flight";
@@ -13,7 +15,7 @@ export default function ProjectPage() {
   const { data, error, reload } = usePoll<Payload>(`/api/projects/${id}`);
   if (error && !data) return <p className="text-red">{error}</p>;
   if (!data) return <p className="text-ink-3">Loading…</p>;
-  const { state: s, metrics } = data;
+  const { state: s, metrics, ledger, house } = data;
 
   // the flight path follows the newest task still in the air, else the newest one
   const live = [...s.taskOrder].reverse().map((t) => s.tasks[t]);
@@ -33,6 +35,11 @@ export default function ProjectPage() {
         <FlightPath flight={flight} />
       </div>
 
+      {s.frozen && (
+        <p className="mt-6 rounded-md bg-blue-soft px-4 py-3 text-[14px]">
+          Code freeze is on{s.frozen.reason ? `: ${s.frozen.reason}` : ""}. No worker starts and nothing lands until you lift it.
+        </p>
+      )}
       {s.stage === "stopped" && (
         <p className="mt-6 rounded-md bg-red-soft px-4 py-3 text-[14px]">
           You stopped this repo at the rules check. Fix what it flagged, then onboard it again.
@@ -51,6 +58,9 @@ export default function ProjectPage() {
               <TaskList pid={id} state={s} />
             </div>
           </Section>
+          <Section title="Right now" aside="the shared ledger">
+            <LedgerPanel ledger={ledger} state={s} />
+          </Section>
           <Section title="Activity" aside="every step, from the log">
             <Activity pid={id} state={s} />
           </Section>
@@ -63,6 +73,11 @@ export default function ProjectPage() {
               <p className="text-[14px] text-ink-3">{s.repo ? "The onboarder is reading the repo." : "Copying the repository."}</p>
             )}
           </Section>
+          {house && (
+            <Section title="House rules" aside="Arrow's defaults, tuned by onboarding">
+              <HousePanel pid={id} state={s} house={house} onDone={reload} />
+            </Section>
+          )}
         </div>
       </div>
 

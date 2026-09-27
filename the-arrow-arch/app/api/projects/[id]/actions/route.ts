@@ -17,6 +17,7 @@ const Action = z.discriminatedUnion("type", [
   z.object({ type: z.literal("answer"), taskId: id, answers: z.record(z.string(), z.string().trim().min(1).max(2000)) }),
   z.object({ type: z.literal("retry"), subject: id }),
   z.object({ type: z.literal("halt"), taskId: id, reason: z.string().max(2000).optional() }),
+  z.object({ type: z.literal("freeze"), frozen: z.boolean(), reason: z.string().max(500).optional() }),
 ]);
 
 const bad = (error: string, status = 409) => NextResponse.json({ error }, { status });
@@ -40,6 +41,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       if (g.decision) return bad(`This check was already ${g.decision === "approve" ? "approved" : "stopped"}.`);
       // stopping a plan halts its task; stopping onboarding stops the project (see project.ts)
       append(pid, { type: "gate.decided", gateId: a.gateId, decision: a.decision, note: a.note?.trim() || undefined });
+      // a person's reason is a decision the agents must follow from now on
+      if (a.note?.trim())
+        append(pid, { type: "knowledge.recorded", entries: [{ kind: "decision", text: a.note.trim(), source: `you, at the ${g.kind === "plan" ? `plan check for ${g.subject}` : "rules check"}` }] });
       break;
     }
     case "submit_task": {
@@ -54,6 +58,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       const missing = t.spec!.questions.filter((q) => !a.answers[q.id]);
       if (missing.length) return bad(`Answer every question (missing ${missing.map((q) => q.id).join(", ")}).`, 400);
       append(pid, { type: "questions.answered", taskId: a.taskId, answers: a.answers });
+      append(pid, {
+        type: "knowledge.recorded",
+        entries: t.spec!.questions.map((q) => ({ kind: "decision" as const, text: `${q.question} — ${a.answers[q.id]}`, source: `you, answering ${a.taskId}` })),
+      });
       break;
     }
     case "retry": {
@@ -66,6 +74,11 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       if (!t) return bad("No such task.", 404);
       if (t.stage === "landed" || t.stage === "halted") return bad("This task has already finished.");
       append(pid, { type: "task.halted", taskId: a.taskId, reason: a.reason?.trim() || "You stopped this task." });
+      break;
+    }
+    case "freeze": {
+      if (Boolean(s.frozen) === a.frozen) return bad(a.frozen ? "Already frozen." : "Not frozen.");
+      append(pid, { type: "project.frozen", frozen: a.frozen, reason: a.reason?.trim() || undefined });
       break;
     }
   }

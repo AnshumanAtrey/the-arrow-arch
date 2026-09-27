@@ -22,6 +22,8 @@ export function project(pid: string, events: ArrowEvent[]): ProjectState {
     runs: {},
     sessions: {},
     parked: {},
+    knowledge: [],
+    reaped: [],
     notes: [],
     events: events.length,
     updatedAt: events.at(-1)?.at ?? "",
@@ -49,22 +51,26 @@ export function project(pid: string, events: ArrowEvent[]): ProjectState {
         break;
       case "job.started": {
         const j: JobView = {
-          jobId: e.jobId, role: e.role, subject: e.subject, attempt: e.attempt, driver: e.driver, startedAt: e.at,
+          jobId: e.jobId, role: e.role, subject: e.subject, attempt: e.attempt, driver: e.driver, startedAt: e.at, port: e.port,
         };
         s.jobs[e.jobId] = j;
         (s.runs[e.subject] ??= []).push(j);
         const hit = packetOf(e.subject);
         if (hit) {
           const kind = e.subject.split(":")[2];
-          hit[1].status = kind === "work" ? "working" : kind === "verify" ? "verifying" : kind === "merge" ? "merging" : hit[1].status;
+          const next = { prepare: "preparing", work: "working", verify: "verifying", merge: "merging" } as const;
+          hit[1].status = next[kind as keyof typeof next] ?? hit[1].status;
         }
         break;
       }
+      case "job.spawned":
+        if (s.jobs[e.jobId]) s.jobs[e.jobId].pid = e.pid;
+        break;
       case "job.finished": {
         const j = s.jobs[e.jobId];
         if (!j) break;
         Object.assign(j, {
-          finishedAt: e.at, ok: e.ok, failure: e.failure, durationMs: e.durationMs, costUsd: e.costUsd, sessionId: e.sessionId,
+          finishedAt: e.at, ok: e.ok, failure: e.failure, durationMs: e.durationMs, sessionId: e.sessionId, tokens: e.tokens, cost: e.cost, costUnit: e.costUnit,
         });
         if (e.sessionId) s.sessions[j.subject] = e.sessionId;
         const hit = packetOf(j.subject);
@@ -76,9 +82,11 @@ export function project(pid: string, events: ArrowEvent[]): ProjectState {
             pk.status = "failed";
             pk.lastFailure = e.failure;
           }
-        } else if (hit && !e.ok && (j.subject.endsWith(":verify") || j.subject.endsWith(":merge"))) {
-          // the check itself crashed (not the code failing it) — let the loop manager rerun it
-          hit[1].status = j.subject.endsWith(":verify") ? "built" : "verified";
+        } else if (hit && !e.ok) {
+          // the step itself crashed (not the code failing a check) — the loop manager reruns it
+          const back = { prepare: "waiting", verify: "built", merge: "verified" } as const;
+          const kind = j.subject.split(":")[2] as keyof typeof back;
+          if (back[kind]) hit[1].status = back[kind];
         }
         break;
       }
@@ -120,6 +128,11 @@ export function project(pid: string, events: ArrowEvent[]): ProjectState {
         );
         break;
       }
+      case "worktree.ready": {
+        const pk = s.tasks[e.taskId]?.packets[e.packetId];
+        if (pk) Object.assign(pk, { status: "prepared", worktree: e.path, baseline: e.baseline });
+        break;
+      }
       case "packet.verified": {
         const pk = s.tasks[e.taskId]?.packets[e.packetId];
         if (pk) Object.assign(pk, { status: "verified", report: e.report, changedFiles: e.changedFiles, lastFailure: undefined });
@@ -133,7 +146,9 @@ export function project(pid: string, events: ArrowEvent[]): ProjectState {
       case "packet.repaired": {
         const pk = s.tasks[e.taskId]?.packets[e.packetId];
         if (!pk) break;
-        Object.assign(pk, { packet: e.packet, status: "waiting", attempts: 0, repairs: pk.repairs + 1, parkedReason: undefined });
+        // a new aim gets a clean shot: fresh worktree, fresh red-first check
+        Object.assign(pk, { packet: e.packet, status: "waiting", attempts: 0, repairs: pk.repairs + 1, parkedReason: undefined, worktree: undefined, baseline: undefined });
+        resetRuns(subject.prepare(e.taskId, e.packetId));
         resetRuns(subject.work(e.taskId, e.packetId));
         resetRuns(subject.merge(e.taskId, e.packetId));
         break;
@@ -154,8 +169,12 @@ export function project(pid: string, events: ArrowEvent[]): ProjectState {
         const hit = packetOf(e.subject);
         if (hit && hit[1].status === "parked") {
           const kind = e.subject.split(":")[2];
-          Object.assign(hit[1], { status: kind === "merge" ? "verified" : "waiting", attempts: 0, parkedReason: undefined });
-          resetRuns(subject.work(hit[0].taskId, hit[1].packet.id));
+          const pk = hit[1];
+          // a retried worker keeps its worktree and the work in it; only a failed prepare starts over
+          const status = kind === "merge" ? "verified" : kind === "verify" ? "built" : kind === "work" && pk.baseline ? "prepared" : "waiting";
+          Object.assign(pk, { status, attempts: 0, parkedReason: undefined });
+          resetRuns(subject.work(hit[0].taskId, pk.packet.id));
+          resetRuns(subject.prepare(hit[0].taskId, pk.packet.id));
         }
         break;
       }
@@ -164,6 +183,16 @@ export function project(pid: string, events: ArrowEvent[]): ProjectState {
         break;
       case "task.halted":
         if (s.tasks[e.taskId]) s.tasks[e.taskId].haltedReason = e.reason;
+        break;
+      case "knowledge.recorded":
+        for (const k of e.entries) s.knowledge.push({ id: `K${s.knowledge.length + 1}`, ...k, at: e.at });
+        break;
+      case "project.frozen":
+        s.frozen = e.frozen ? { reason: e.reason, at: e.at } : undefined;
+        break;
+      case "ledger.reaped":
+        for (const it of e.items) s.reaped.push({ at: e.at, ...it });
+        if (s.reaped.length > 50) s.reaped.splice(0, s.reaped.length - 50);
         break;
       case "note":
         s.notes.push({ at: e.at, level: e.level, message: e.message, subject: e.subject });

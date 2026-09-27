@@ -28,10 +28,29 @@ you write one result file.
    `ok`, `violated`, `conflict` (the rule clashes with how the repo or Arrow
    works) or `unclear`. Give the evidence you actually saw (a path, a count, a
    command's output) and one concrete suggestion when it isn't `ok`.
-7. **Adaptations.** How Arrow should run in this repo: which command proves a
+7. **Toolchain and versions.** The package manager and lockfile; the runtime
+   versions the repo pins (.nvmrc, engines, .python-version); the installed
+   version of each key library (from the lockfile). Workers code against these,
+   not against memory. `commands.setup` is a plain install into the worktree
+   (`npm ci`, `bun install`, a venv + pip) — no Docker, no global installs.
+8. **Environment variables.** The NAMES the repo expects (from .env.example and
+   the code). Never read or copy a value.
+9. **Decisions.** Decision records the company already keeps (docs/adr, design
+   docs) as `decisions` — one line each, with where it came from.
+10. **House rules.** The inputs list Arrow's house rules and their defaults. For
+   each, compare with the company's rules and the repo as it is, and return one
+   outcome in `houseRules`:
+   - `keep` — the company says nothing about it.
+   - `replace` — the company has its own version; put it in `settings`
+     (e.g. files up to 800 lines → `{ "maxLines": 800 }`).
+   - `dont_grow` — the repo can't meet the default today (e.g. 40 files are
+     already over 500 lines). What's over may stay; nothing may get worse.
+   - `conflict` — the company contradicts the rule. Say why. On a critical rule
+     a person decides, and Arrow's default stands until they do.
+11. **Adaptations.** How Arrow should run in this repo: which command proves a
    change, whether tasks can run in parallel safely, anything a worker must
    always do first.
-8. **Recommendation.** `continue` or `stop`, with the reason in one plain
+12. **Recommendation.** `continue` or `stop`, with the reason in one plain
    sentence and what to do about it. Say `stop` only when a critical rule is at
    stake — the human will see your call next to every finding.
 

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { stepPolicy } from "../engine/decide";
 import { classifyExit } from "../engine/failures";
 import { onboardingGate, planGate } from "../engine/gate";
+import { DEFAULTS } from "../engine/house-rules";
 import { matches, overlaps } from "../engine/glob";
 import { planProblem } from "../engine/orchestrator";
 import { project } from "../engine/project";
@@ -57,6 +58,7 @@ describe("loop manager policy", () => {
 
 const profile = (over: Partial<Profile> = {}): Profile => ({
   summary: "s", stack: [], commands: {}, structure: [], adaptations: [],
+  toolchain: { runtimes: [] }, dependencies: [], envVars: [], decisions: [], houseRules: [],
   rules: [
     { id: "R1", text: "Never edit db/migrations", source: "x", category: "security", criticality: "critical", protectedPaths: ["db/migrations/**"] },
     { id: "R2", text: "Use PascalCase components", source: "x", category: "naming", criticality: "normal", protectedPaths: [] },
@@ -86,16 +88,16 @@ describe("rules gate", () => {
   const spec: Spec = { title: "t", intent: "i", methodology: { mode: "one_shot", why: "w" }, acceptance: [{ id: "A1", statement: "s", check: "c" }], outOfScope: [], risk: "low", questions: [], rulesTouched: [] };
   const plan = (files: string[]): Plan => ({
     summary: "s", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] },
-    packets: [{ id: "P1", module: "M1", title: "t", objective: "o", context: "", files, deps: [], verification: ["true"], regression: [], risk: "low" }],
+    packets: [{ id: "P1", module: "M1", title: "t", objective: "o", context: "", files, deps: [], verification: ["true"], regression: [], risk: "low", kind: "change", newDependencies: [], env: [] }],
   });
   test("a packet that may touch a protected path turns the plan red — computed, not judged", () => {
-    expect(planGate("T1", plan(["src/a.ts"]), spec, profile().rules).verdict).toBe("green");
-    expect(planGate("T1", plan(["db/migrations/002.sql"]), spec, profile().rules).verdict).toBe("red");
+    expect(planGate("T1", plan(["src/a.ts"]), spec, profile().rules, DEFAULTS).verdict).toBe("green");
+    expect(planGate("T1", plan(["db/migrations/002.sql"]), spec, profile().rules, DEFAULTS).verdict).toBe("red");
   });
 });
 
 describe("plan sanity", () => {
-  const pk = (id: string, deps: string[] = []) => ({ id, module: "M1", title: "t", objective: "o", context: "", files: ["a"], deps, verification: ["true"], regression: [], risk: "low" as const });
+  const pk = (id: string, deps: string[] = []) => ({ id, module: "M1", title: "t", objective: "o", context: "", files: ["a"], deps, verification: ["true"], regression: [], risk: "low" as const, kind: "change" as const, newDependencies: [], env: [] });
   const plan = (packets: ReturnType<typeof pk>[]): Plan => ({ summary: "s", modules: [], packets, rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] } });
   test("catches duplicate ids, missing deps and cycles", () => {
     expect(planProblem(plan([pk("P1"), pk("P1")]))).toContain("twice");
@@ -110,7 +112,7 @@ describe("projection", () => {
     const ev = (e: object) => ({ at, ...e }) as ArrowEvent;
     const plan: Plan = {
       summary: "s", modules: [], rulesImpact: [], advice: { decision: "continue", reason: "r", suggestions: [] },
-      packets: [{ id: "P1", module: "M1", title: "t", objective: "o", context: "", files: ["a"], deps: [], verification: ["true"], regression: [], risk: "low" }],
+      packets: [{ id: "P1", module: "M1", title: "t", objective: "o", context: "", files: ["a"], deps: [], verification: ["true"], regression: [], risk: "low", kind: "change", newDependencies: [], env: [] }],
     };
     const s = project("p", [
       ev({ type: "project.created", name: "p", repoUrl: "/x", rulesText: "" }),
