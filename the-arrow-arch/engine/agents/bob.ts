@@ -22,12 +22,30 @@ export const bob: Driver = async (r) => {
   return { ...exit, ...stats(out) };
 };
 
-/** The last JSON object Bob printed: {status, stats: {task_id, input_tokens, ...}, last_message}. */
-export function stats(out: string): Partial<AgentExit> {
-  const start = out.lastIndexOf('{"type"');
-  const text = start >= 0 ? out.slice(start) : out.slice(out.indexOf("{"));
+/** The last JSON object Bob printed, on one line or pretty-printed. */
+function lastJson(out: string): Record<string, any> | undefined {
+  const text = out.trim();
   try {
-    const j = JSON.parse(text.trim());
+    return JSON.parse(text);
+  } catch {
+    /* logs before the result — find the last object that parses */
+  }
+  for (let i = text.lastIndexOf("{"); i >= 0; i = text.lastIndexOf("{", i - 1)) {
+    if (i > 0 && text[i - 1] !== "\n") continue; // objects start at a line start
+    try {
+      return JSON.parse(text.slice(i));
+    } catch {
+      /* keep looking */
+    }
+  }
+  return undefined;
+}
+
+/** Bob's result: {status, stats: {task_id, input_tokens, ...}, last_message}. */
+export function stats(out: string): Partial<AgentExit> {
+  try {
+    const j = lastJson(out);
+    if (!j) return {};
     const st = j.stats ?? {};
     const n = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
     const cost = typeof st.session_costs === "number" ? st.session_costs : Array.isArray(st.session_costs) ? st.session_costs.reduce((a: number, c: { cost?: number }) => a + n(c?.cost), 0) : undefined;

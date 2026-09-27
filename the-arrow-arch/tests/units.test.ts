@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { stats as bobStats } from "../engine/agents/bob";
 import { stepPolicy } from "../engine/decide";
 import { classifyExit } from "../engine/failures";
 import { onboardingGate, planGate } from "../engine/gate";
@@ -125,5 +126,19 @@ describe("projection", () => {
     ]);
     expect(s.tasks.T1.packets.P1.attempts).toBe(1);
     expect(s.tasks.T1.packets.P1.status).toBe("built");
+  });
+});
+
+describe("Bob Shell output", () => {
+  const result = { type: "result", timestamp: "t", status: "success", stats: { task_id: "task-42", total_tokens: 1500, input_tokens: 1200, output_tokens: 300, cache_read_tokens: 800, duration_ms: 9000, session_costs: 0.7, tool_calls: 4 }, last_message: "done" };
+  test("reads tokens, bobcoins and the task id from one-line JSON after log lines", () => {
+    const s = bobStats(`starting...\nreading files\n${JSON.stringify(result)}\n`);
+    expect(s).toMatchObject({ sessionId: "task-42", cost: 0.7, costUnit: "bobcoins", usage: { input: 1200, output: 300, cacheRead: 800, total: 1500 } });
+  });
+  test("reads pretty-printed JSON too", () => {
+    expect(bobStats(JSON.stringify(result, null, 2)).sessionId).toBe("task-42");
+  });
+  test("no JSON means no numbers, not a crash", () => {
+    expect(bobStats("Error: Bob API key is required.")).toEqual({});
   });
 });

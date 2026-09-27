@@ -19,7 +19,8 @@ import { subject } from "./types";
 import type { GateItem, Plan, ProjectState } from "./types";
 
 const inflight = new Set<string>(); // dispatched this process, job.started may not be on disk yet
-export const inflightCount = () => inflight.size;
+/** Steps in progress — the ledger refresh is housekeeping, not a step. */
+export const inflightCount = () => [...inflight].filter((k) => !k.startsWith("ledger:")).length;
 const lastLedger = new Map<string, number>();
 const LEDGER_EVERY_MS = 5000;
 

@@ -34,7 +34,7 @@ export function labelOf(sub: string): string {
   const [a, b, c] = sub.split(":");
   const names: Record<string, string> = {
     clone: "copying the repository", onboard: "onboarding", pm: "project manager", architect: "architect",
-    work: "worker", verify: "checking the work", merge: "merging", repair: "architect re-aiming the packet",
+    prepare: "preparing its copy", work: "worker", verify: "checking the work", merge: "merging", repair: "architect re-aiming the packet",
   };
   if (!b) return names[a] ?? a;
   if (!c) return `${a}, ${names[b] ?? b}`;
