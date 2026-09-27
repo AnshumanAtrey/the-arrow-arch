@@ -190,5 +190,8 @@ describe("acceptance checks", () => {
     expect(await isCommand("manual: open index.html with wifi off")).toBe(false);
     expect(await isCommand("open index.html")).toBe(false);
     expect(await isCommand("each packet's verification commands pass")).toBe(false);
+    expect(await isCommand("Open index.html directly in a browser and confirm it works")).toBe(false); // macOS: `open` would launch a browser
+    expect(await isCommand("Tab/arrow/enter through a full round")).toBe(false);
+    expect(await isCommand("./scripts/check.sh")).toBe(true);
   });
 });

@@ -9,7 +9,9 @@ You do not plan files or write code.
 - **title** — the task in under ten words.
 - **intent** — what should be true for the person when this is done.
 - **acceptance** — how the human will judge the result, each with a `check`:
-  the command or observation that proves it. Write them the way the person
+  a shell command that proves it (Arrow runs it on the finished task before it
+  lands — e.g. `npm test -- win-detection`), or, when only a person can judge
+  it, a check that starts with `manual:` (Arrow lists it for you, never runs it). Write them the way the person
   will actually look at it ("a ₹1,000 order refunded ₹300 shows ₹700 paid"), not
   "the page renders". A task can pass every build and still be wrong if the
   acceptance is about the wrong thing.

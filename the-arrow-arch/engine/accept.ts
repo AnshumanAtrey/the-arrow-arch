@@ -14,14 +14,28 @@ export type Acceptance = { ok: boolean; report: string[]; failures: string[] };
 // commands that open windows or wait for a person — never run as an acceptance check
 const INTERACTIVE = new Set(["open", "xdg-open", "start", "code", "vim", "vi", "nano", "less", "more", "man"]);
 
-/** Is this check something Arrow can run, or something a person looks at? */
+/**
+ * Is this check something Arrow can run, or something a person looks at? Only an
+ * unmistakable command is run: its first word is a real executable, spelled
+ * exactly (macOS finds "Open" as `open`, which would launch a browser), in
+ * lowercase, or an explicit ./path — never prose, never a GUI command.
+ */
 export async function isCommand(check: string): Promise<boolean> {
   const c = check.trim();
   if (!c || /\bmanual\b/i.test(c.split(":")[0]) || /^(manually|by hand|visually)\b/i.test(c)) return false;
   const first = c.split(/\s+/)[0];
-  if (!/^[\w./-]+$/.test(first) || INTERACTIVE.has(first)) return false;
-  if (first.startsWith("./") || first.includes("/")) return true;
-  return (await run("/bin/sh", ["-c", `command -v ${first}`], { timeoutMs: 5000 })).code === 0;
+  if (!/^[\w./-]+$/.test(first) || INTERACTIVE.has(first.toLowerCase()) || /^[A-Z]/.test(first)) return false;
+  if (first.startsWith("./") || first.startsWith("/")) return true;
+  if (first.includes("/")) return false; // "Tab/arrow/enter" is prose, not a path
+  const found = (await run("/bin/sh", ["-c", `command -v ${first}`], { timeoutMs: 5000 })).out.trim();
+  if (found === first) return true; // a shell builtin (test, [, echo), spelled exactly
+  if (!found.startsWith("/")) return false;
+  // exact spelling: the directory must hold a file with exactly this name
+  try {
+    return fs.readdirSync(path.dirname(found)).includes(first);
+  } catch {
+    return false;
+  }
 }
 
 /** How to install what the finished task declares — plain installs, no Docker. */
