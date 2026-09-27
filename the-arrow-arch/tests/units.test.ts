@@ -363,5 +363,7 @@ describe("acceptance checks", () => {
     expect(await isCommand("Open index.html directly in a browser and confirm it works")).toBe(false); // macOS: `open` would launch a browser
     expect(await isCommand("Tab/arrow/enter through a full round")).toBe(false);
     expect(await isCommand("./scripts/check.sh")).toBe(true);
+    expect(await isCommand(`! grep -E "scores\\.X\\+\\+" app.js`)).toBe(true); // negated: must not match
+    expect(await isCommand("! Open the page and check nothing breaks")).toBe(false);
   });
 });

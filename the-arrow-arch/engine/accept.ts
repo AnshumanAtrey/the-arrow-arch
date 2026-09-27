@@ -22,7 +22,7 @@ const INTERACTIVE = new Set(["open", "xdg-open", "start", "code", "vim", "vi", "
  * lowercase, or an explicit ./path — never prose, never a GUI command.
  */
 export async function isCommand(check: string): Promise<boolean> {
-  const c = check.trim();
+  const c = check.trim().replace(/^!\s+/, ""); // "! grep -q x f" is a command that must fail; judge what it runs
   if (!c || /\bmanual\b/i.test(c.split(":")[0]) || /^(manually|by hand|visually)\b/i.test(c)) return false;
   const first = c.split(/\s+/)[0];
   if (!/^[\w./-]+$/.test(first) || INTERACTIVE.has(first.toLowerCase()) || /^[A-Z]/.test(first)) return false;
