@@ -48,9 +48,11 @@ export default function TaskPage() {
       {t.landed && (
         <div className="mt-6 rounded-lg border border-rule border-l-[5px] border-l-green bg-panel px-5 py-4">
           <h2 className="heading text-[18px]">Landed on <code className="font-mono">{t.landed.branch}</code></h2>
-          <p className="mt-1 text-[14px] text-ink-2">Every packet was proven by Arrow and merged one at a time. Nothing was pushed — review it, then open a pull request when you&apos;re happy.</p>
+          <p className="mt-1 text-[14px] text-ink-2">
+            Every packet was proven by Arrow and merged one at a time. <code className="font-mono">arrow/main</code> holds every landed task in order, so the next task builds on this one. Nothing was pushed — review it, then open a pull request when you&apos;re happy.
+          </p>
           <pre className="mt-3 overflow-auto rounded-md bg-paper p-3 font-mono text-[12px] text-ink-2">
-            {`cd ${s.repo?.path}\ngit log --oneline ${s.repo?.branch}..${t.landed.branch}\ngit diff ${s.repo?.branch}...${t.landed.branch}`}
+            {`cd ${s.repo?.path}\ngit log --oneline ${s.repo?.branch}..arrow/main   # everything Arrow landed\ngit diff ${s.repo?.branch}...${t.landed.branch}      # up to and including this task`}
           </pre>
         </div>
       )}

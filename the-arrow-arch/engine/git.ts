@@ -161,3 +161,20 @@ export async function listWorktrees(repo: string): Promise<{ path: string; branc
 }
 
 export const pruneWorktrees = (repo: string) => git(repo, "worktree", "prune");
+
+/** Arrow's own integration branch: every landed task, in order. Lives only in Arrow's copy. */
+export const INTEGRATION = "arrow/main";
+
+/** Make sure Arrow's copy is on arrow/main (created from where it is now), so planners see what landed. */
+export async function ensureIntegration(repo: string) {
+  const cur = (await git(repo, "rev-parse", "--abbrev-ref", "HEAD")).out.trim();
+  if (cur === INTEGRATION) return;
+  await ensureBranch(repo, INTEGRATION, "HEAD");
+  await ok(repo, "checkout", "--quiet", INTEGRATION);
+}
+
+/** A landed task moves arrow/main forward, so the next task starts on top of it. */
+export async function advanceIntegration(repo: string, branch: string): Promise<boolean> {
+  await ensureIntegration(repo);
+  return (await git(repo, "merge", "--ff-only", "--quiet", branch)).code === 0;
+}

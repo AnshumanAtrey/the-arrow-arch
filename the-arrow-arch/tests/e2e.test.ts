@@ -82,6 +82,17 @@ describe("green path", () => {
     // the base branch was never touched, and nothing is left running
     expect(sh(s.repo!.path, "rev-parse", "main")).toBe(s.repo!.head);
     expect(Object.values(s.jobs).every((j) => j.finishedAt)).toBe(true);
+
+    // a second task starts on top of the first: tasks stack on arrow/main
+    store.append(pid, { type: "task.submitted", taskId: "T2", text: "Add a second small helper for the team." });
+    s = await until(pid, (s) => Boolean(s.tasks.T2?.planGateId));
+    store.append(pid, { type: "gate.decided", gateId: s.tasks.T2.planGateId!, decision: "approve" });
+    s = await until(pid, (s) => s.tasks.T2.stage === "landed");
+    const t2 = sh(s.repo!.path, "ls-tree", "-r", "--name-only", "arrow/t2");
+    expect(t2).toContain("arrow-demo/t1/index.ts");
+    expect(t2).toContain("arrow-demo/t2/index.ts");
+    expect(sh(s.repo!.path, "rev-parse", "arrow/main")).toBe(sh(s.repo!.path, "rev-parse", "arrow/t2"));
+    expect(sh(s.repo!.path, "rev-parse", "main")).toBe(s.repo!.head);
   });
 });
 

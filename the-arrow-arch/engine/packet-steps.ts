@@ -38,8 +38,14 @@ export async function runPacketStep(pid: string, s: ProjectState, a: PacketActio
 
   if (a.kind === "land") {
     const tip = await git.head(repo, `refs/heads/${t.branch}`);
+    const stacked = await git.advanceIntegration(repo, t.branch!);
     append(pid, { type: "task.landed", taskId: a.taskId, branch: t.branch!, head: tip });
-    append(pid, { type: "note", level: "info", subject: a.taskId, message: `${a.taskId} landed on ${t.branch} (${tip.slice(0, 7)}). Nothing was pushed.` });
+    append(pid, {
+      type: "note", level: stacked ? "info" : "warn", subject: a.taskId,
+      message: stacked
+        ? `${a.taskId} landed on ${t.branch} (${tip.slice(0, 7)}); ${git.INTEGRATION} now includes it. Nothing was pushed.`
+        : `${a.taskId} landed on ${t.branch} (${tip.slice(0, 7)}), but ${git.INTEGRATION} moved meanwhile, so it stays on its own branch.`,
+    });
     return;
   }
 

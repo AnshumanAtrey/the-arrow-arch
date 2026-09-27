@@ -114,6 +114,7 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
       const t = s.tasks[a.taskId];
       const house = effectiveSettings(s.profile!.houseRules, true);
       return job(pid, { role: "architect", subject: subject.architect(a.taskId), attempt: a.attempt }, async (ctx) => {
+        await git.ensureIntegration(repo); // the architect reads the repo as it is after every landed task
         const r = await roles.architect({
           ...ctx, env: scrubbedEnv(), cwd: repo, feedback: a.feedback,
           input: { taskId: a.taskId, task: t.text, spec: t.spec!, answers: t.answers ?? {}, profile: s.profile!, house, knowledge },
@@ -122,6 +123,7 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
         const problem = planProblem(r.result);
         if (problem) return { ...fromRun(r), ok: false, failure: { class: "bad_output", message: problem } };
         const branch = `arrow/${a.taskId.toLowerCase()}`;
+        await git.ensureIntegration(repo); // tasks stack: this one starts on top of everything that landed
         const base = await git.head(repo);
         await git.ensureBranch(repo, branch, base);
         append(pid, { type: "plan.ready", taskId: a.taskId, plan: r.result, branch, base });
