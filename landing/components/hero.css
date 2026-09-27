@@ -1,0 +1,981 @@
+/* Hero v2: a compact headline and a single, bounded product scene. */
+.launch-header {
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid #e9eaec;
+  backdrop-filter: blur(12px);
+}
+.launch-header .header-inner {
+  height: 72px;
+  max-width: 1240px;
+  padding: 0 28px;
+  gap: 30px;
+}
+.launch-header .brand {
+  font-size: 13px;
+  letter-spacing: -0.035em;
+  gap: 9px;
+}
+.launch-header .brand > img {
+  width: 28px;
+  height: 28px;
+}
+.launch-header .nav {
+  gap: 28px;
+  margin: auto;
+}
+.launch-header .nav a {
+  font-size: 13px;
+  color: #54565b;
+}
+.launch-header .header-cta {
+  background: #17191c;
+  color: #fff;
+  min-height: 36px;
+  padding: 9px 14px;
+  gap: 22px;
+  font-size: 11px;
+  border-radius: 6px;
+  box-shadow: 0 2px 3px #00000012;
+}
+.launch-header .header-cta:hover {
+  background: #303236;
+  box-shadow: 0 4px 12px #00000015;
+}
+.launch-header .header-cta .icon {
+  width: 16px;
+  height: 16px;
+}
+.launch-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  padding: 115px 28px 0;
+  background: #fff;
+  border-bottom: 1px solid #e7e8eb;
+}
+.launch-inner {
+  max-width: 1184px;
+  margin: auto;
+  position: relative;
+}
+.launch-grid {
+  position: absolute;
+  inset: 72px 0 0;
+  z-index: -2;
+  background-image:
+    linear-gradient(#ededf0 1px, transparent 1px),
+    linear-gradient(90deg, #ededf0 1px, transparent 1px);
+  background-size: 80px 80px;
+  background-position: center top;
+  mask-image: linear-gradient(
+    90deg,
+    #0005,
+    transparent 29%,
+    transparent 71%,
+    #0005
+  );
+}
+.launch-rails {
+  position: absolute;
+  top: 72px;
+  bottom: 0;
+  width: min(1184px, calc(100% - 56px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: -1;
+  border-left: 1px solid #eaebed;
+  border-right: 1px solid #eaebed;
+  pointer-events: none;
+}
+.launch-rails > span {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border: 1px solid #dcdfe3;
+  background: #fff;
+  top: 36px;
+  left: -3px;
+}
+.launch-rails > span:last-child {
+  left: auto;
+  right: -3px;
+}
+.launch-copy {
+  text-align: center;
+  padding: 0 20px 31px;
+  position: relative;
+}
+.launch-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: #fff;
+  border: 1px solid #e7e8ea;
+  border-radius: 30px;
+  padding: 4px 10px 4px 4px;
+  box-shadow: 0 2px 3px #00000003;
+  font-size: 11px;
+  color: #565a62;
+  line-height: 20px;
+}
+.launch-badge-mark {
+  display: grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: #fff1e8;
+  color: #bf4400;
+}
+.launch-badge-mark .icon {
+  width: 14px;
+  height: 14px;
+}
+.launch-badge-arrow {
+  margin-left: 3px;
+  color: #7b7e83;
+}
+.launch-copy h1 {
+  font-size: clamp(44px, 4.6vw, 64px);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  line-height: 1.13;
+  margin: 19px 0 14px;
+}
+.launch-line {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding: 0 2px 7px;
+  margin: 0 -2px;
+}
+.launch-line > span {
+  display: block;
+}
+.launch-description {
+  font-size: 16px;
+  line-height: 1.65;
+  letter-spacing: -0.023em;
+  color: #656971;
+  margin: auto;
+  max-width: 600px;
+}
+.launch-description strong {
+  font-weight: 500;
+  color: #34383f;
+}
+.launch-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 23px;
+}
+.launch-actions .button {
+  border-radius: 7px;
+  min-height: 43px;
+  padding: 11px 19px;
+  gap: 26px;
+  font-size: 12px;
+  box-shadow:
+    inset 0 1px 0 #ffffff4a,
+    0 2px 5px #e6520020;
+}
+.launch-actions .button .icon {
+  width: 17px;
+  height: 17px;
+}
+.launch-repo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 11px 15px;
+  border: 1px solid #e4e5e7;
+  border-radius: 7px;
+  min-height: 43px;
+  background: #fff;
+  font-size: 12px;
+  color: #44484f;
+  box-shadow: 0 2px 2px #00000003;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+}
+.launch-repo:hover {
+  background: #fafafa;
+  border-color: #c5c7cb;
+  transform: translateY(-1px);
+}
+.launch-repo > .icon {
+  width: 15px;
+  height: 15px;
+  color: #747880;
+}
+.launch-repo > span {
+  margin-left: 6px;
+}
+.launch-powered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 8px;
+  letter-spacing: 0.045em;
+  color: #697078;
+  margin-top: 18px;
+}
+.launch-powered strong {
+  font-family: "Inter Variable", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: #4e535c;
+  letter-spacing: -0.01em;
+}
+.launch-powered-rule {
+  display: block;
+  width: 22px;
+  height: 1px;
+  background: #dbdde1;
+}
+.launch-console {
+  position: relative;
+  border: 1px solid #dfe1e5;
+  border-radius: 10px;
+  background: white;
+  box-shadow:
+    0 20px 65px -30px #17232b24,
+    0 3px 10px #17232b04;
+}
+.launch-corner {
+  position: absolute;
+  color: #adb0b6;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 15px;
+  font-weight: 300;
+  top: -10px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+}
+.corner-tl {
+  left: -9px;
+}
+.corner-tr {
+  right: -9px;
+}
+.launch-console-bar {
+  height: 43px;
+  border-bottom: 1px solid #e9eaed;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  background: #fcfcfd;
+  border-radius: 10px 10px 0 0;
+  gap: 15px;
+}
+.launch-console-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: 0.025em;
+  color: #535862;
+}
+.console-divider {
+  color: #a9adb4;
+  margin: 0 4px;
+}
+.console-project {
+  color: #656b74;
+  font-size: 9px;
+}
+.launch-example {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  color: #686f79;
+}
+.launch-example > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ec650e;
+}
+.launch-scene {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  min-height: 320px;
+}
+.launch-artwork {
+  position: relative;
+  overflow: hidden;
+  min-height: 320px;
+  background: #fff;
+  border-radius: 0;
+}
+.launch-artwork > img {
+  position: absolute;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 54%;
+  inset: 0;
+  display: block;
+}
+.launch-artwork:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow:
+    inset 0 12px 18px 0 #ffffff,
+    inset 0 -12px 18px 0 #ffffff;
+}
+.launch-scene-label {
+  position: absolute;
+  z-index: 1;
+  left: 22px;
+  top: 16px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 8px;
+  letter-spacing: 0.07em;
+  color: #666f7a;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.scene-number {
+  color: #b3480c;
+  border: 1px solid #f7dac6;
+  background: #fffaf6;
+  padding: 3px 5px;
+  border-radius: 3px;
+  font-size: 8px;
+}
+.launch-art-caption {
+  position: absolute;
+  bottom: 15px;
+  left: 22px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  color: #626a75;
+  background: #ffffffdc;
+  padding: 3px 5px;
+  border-radius: 3px;
+}
+.launch-art-caption > span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #d66a21;
+}
+.launch-proof {
+  border-left: 1px solid #e8e9ec;
+  padding: 25px 23px 20px;
+  background: linear-gradient(135deg, #fff, #fdfdfd);
+  position: relative;
+}
+.launch-proof-kicker {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: 0.045em;
+  color: #b7460a;
+}
+.launch-proof-kicker .icon {
+  width: 15px;
+  height: 15px;
+}
+.launch-proof-kicker > span {
+  margin-left: auto;
+  color: #7a7e85;
+  font-size: 9px;
+}
+.launch-proof h2 {
+  font-size: 22px;
+  line-height: 1.22;
+  letter-spacing: -0.035em;
+  margin: 17px 0 10px;
+  font-weight: 600;
+  max-width: 230px;
+  min-height: 56px;
+}
+.launch-proof p {
+  font-size: 11px;
+  line-height: 1.65;
+  color: #666e79;
+  min-height: 55px;
+}
+.launch-proof ul {
+  padding: 0;
+  margin: 17px 0 20px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.launch-proof li {
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #535c66;
+  line-height: 1.35;
+}
+.launch-proof li .icon {
+  color: #b6470a;
+  width: 13px;
+  height: 13px;
+}
+.launch-artifact {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-top: 13px;
+  border-top: 1px solid #e7e9ec;
+}
+.launch-artifact > span {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 7px;
+  letter-spacing: 0.04em;
+  color: #66717b;
+}
+.launch-artifact code {
+  font-size: 9px;
+  color: #3e4750;
+  white-space: nowrap;
+  letter-spacing: -0.03em;
+}
+.launch-artifact > .icon {
+  width: 13px;
+  height: 13px;
+  margin-left: auto;
+  color: #ac470d;
+}
+.launch-stages {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border-top: 1px solid #e8e9ec;
+  overflow: hidden;
+  border-radius: 0 0 10px 10px;
+  background: #fafafb;
+}
+.launch-stages button {
+  border: 0;
+  border-right: 1px solid #e8e9ec;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 20px;
+  font-size: 11px;
+  color: #69717b;
+  position: relative;
+  transition:
+    background 0.2s,
+    color 0.2s;
+  text-align: left;
+}
+.launch-stages button:last-child {
+  border-right: 0;
+}
+.launch-stages button:hover {
+  background: #f4f5f6;
+  color: #252c34;
+}
+.launch-stages button.is-active {
+  background: #fff5ed;
+  color: #9c3700;
+}
+.launch-stages button.is-active:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: #ff5a00;
+}
+.launch-stages button:focus-visible {
+  outline-offset: -4px;
+  z-index: 2;
+}
+.launch-stage-number {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 8px;
+  color: #656b74;
+}
+.launch-stages .icon {
+  width: 16px;
+  height: 16px;
+}
+.launch-stage-arrow {
+  margin-left: auto;
+  font-size: 12px;
+  opacity: 0;
+}
+.is-active .launch-stage-arrow {
+  opacity: 1;
+}
+.launch-assurances {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  padding: 22px 24px 25px;
+}
+.launch-assurances > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: #666e79;
+}
+.launch-assurances .icon {
+  width: 14px;
+  height: 14px;
+  color: #69717c;
+}
+.launch-assurances i {
+  height: 12px;
+  width: 1px;
+  background: #e2e4e7;
+}
+.launch-assurances > a {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  color: #666e79;
+}
+.launch-assurances > a:hover {
+  color: #b4490d;
+}
+@media (min-width: 1400px) {
+  .launch-proof {
+    padding: 26px;
+  }
+  .launch-scene {
+    grid-template-columns: minmax(0, 1fr) 310px;
+  }
+}
+@media (max-width: 1000px) {
+  .launch-header .header-inner {
+    gap: 20px;
+  }
+  .launch-header .nav {
+    gap: 20px;
+  }
+  .launch-scene {
+    grid-template-columns: minmax(0, 1fr) 275px;
+  }
+  .launch-artwork > img {
+    object-fit: contain;
+  }
+  .launch-proof {
+    padding: 22px 19px;
+  }
+  .launch-copy h1 {
+    font-size: 54px;
+  }
+  .launch-stages button {
+    padding: 0 14px;
+    gap: 8px;
+  }
+  .launch-stage-number {
+    display: none;
+  }
+  .launch-assurances {
+    gap: 17px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .launch-assurances > a {
+    font-size: 7px;
+  }
+  .launch-assurances > span {
+    font-size: 9px;
+  }
+}
+@media (max-width: 780px) {
+  .launch-header .header-inner {
+    height: 64px;
+    padding: 0 20px;
+    gap: 16px;
+  }
+  .launch-header .brand {
+    font-size: 11px;
+  }
+  .launch-header .brand > img {
+    width: 25px;
+    height: 25px;
+  }
+  .launch-header .header-cta {
+    padding: 8px 11px;
+    min-height: 34px;
+    gap: 15px;
+    font-size: 10px;
+    margin-left: auto;
+  }
+  .launch-header .nav.open {
+    top: 64px;
+    padding: 25px 22px;
+    margin: 0;
+    gap: 24px;
+  }
+  .launch-header .menu-button {
+    width: 24px;
+  }
+  .launch-hero {
+    padding: 97px 20px 0;
+  }
+  .launch-rails {
+    width: calc(100% - 40px);
+    top: 64px;
+  }
+  .launch-grid {
+    top: 64px;
+    background-size: 64px 64px;
+  }
+  .launch-copy {
+    padding: 0 5px 25px;
+  }
+  .launch-badge {
+    font-size: 9px;
+    gap: 6px;
+    padding-right: 8px;
+  }
+  .launch-badge-mark {
+    width: 20px;
+    height: 20px;
+  }
+  .launch-badge-mark .icon {
+    width: 12px;
+    height: 12px;
+  }
+  .launch-copy h1 {
+    font-size: clamp(38px, 6.6vw, 50px);
+    margin: 18px 0 13px;
+    letter-spacing: -0.045em;
+  }
+  .launch-description {
+    font-size: 14px;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+  .launch-actions {
+    margin-top: 20px;
+  }
+  .launch-powered {
+    margin-top: 17px;
+  }
+  .launch-scene {
+    grid-template-columns: 1fr;
+  }
+  .launch-artwork {
+    height: 260px;
+    min-height: 0;
+  }
+  .launch-artwork > img {
+    object-fit: cover;
+    object-position: center 54%;
+  }
+  .launch-proof {
+    border-left: 0;
+    border-top: 1px solid #e8e9ec;
+    padding: 19px 23px;
+  }
+  .launch-proof > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 28px;
+  }
+  .launch-proof-kicker {
+    grid-column: 1;
+  }
+  .launch-proof h2 {
+    grid-column: 1;
+    max-width: 260px;
+    font-size: 21px;
+    min-height: 0;
+    margin: 12px 0 7px;
+  }
+  .launch-proof p {
+    grid-column: 1;
+    min-height: 0;
+    font-size: 11px;
+  }
+  .launch-proof ul {
+    grid-column: 2;
+    grid-row: 2/4;
+    margin: 13px 0 8px;
+    align-self: start;
+    gap: 13px;
+  }
+  .launch-artifact {
+    grid-column: 1/-1;
+    margin-top: 15px;
+  }
+  .launch-artifact code {
+    font-size: 10px;
+  }
+  .launch-artifact > span {
+    font-size: 8px;
+  }
+  .launch-stages button {
+    padding: 13px 6px;
+    min-height: 63px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    font-size: 9px;
+  }
+  .launch-stage-arrow {
+    display: none;
+  }
+  .launch-stages .icon {
+    width: 16px;
+    height: 16px;
+  }
+  .launch-assurances {
+    padding: 18px 0 20px;
+    justify-content: space-around;
+    gap: 8px;
+  }
+  .launch-assurances > span {
+    font-size: 8px;
+    gap: 5px;
+  }
+  .launch-assurances .icon {
+    width: 13px;
+    height: 13px;
+  }
+  .launch-assurances i {
+    display: none;
+  }
+  .launch-assurances > a {
+    display: none;
+  }
+  .launch-console-bar {
+    padding: 0 13px;
+    height: 39px;
+  }
+  .launch-console-name {
+    font-size: 8px;
+    gap: 6px;
+  }
+  .console-divider {
+    margin: 0 1px;
+  }
+  .console-project {
+    font-size: 8px;
+  }
+  .launch-example {
+    font-size: 7px;
+    gap: 5px;
+  }
+  .launch-console-name > img {
+    width: 13px;
+    height: 13px;
+  }
+}
+@media (max-width: 520px) {
+  .launch-line {
+    display: block;
+    width: max-content;
+    margin: 0 auto;
+    padding-bottom: 3px;
+  }
+  .launch-copy h1 {
+    font-size: clamp(42px, 11.5vw, 54px);
+    line-height: 1.02;
+    margin: 20px 0 16px;
+  }
+  .launch-copy {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .launch-description {
+    font-size: 13px;
+    max-width: 315px;
+    line-height: 1.65;
+  }
+  .desktop-break {
+    display: none;
+  }
+  .launch-actions .button {
+    font-size: 11px;
+    gap: 18px;
+    padding: 11px 16px;
+    min-height: 42px;
+  }
+  .launch-repo {
+    font-size: 11px;
+    padding: 11px 13px;
+    gap: 7px;
+    min-height: 42px;
+  }
+  .launch-repo > span {
+    display: none;
+  }
+  .launch-powered {
+    font-size: 7px;
+    gap: 7px;
+  }
+  .launch-powered strong {
+    font-size: 9px;
+  }
+  .launch-powered-rule {
+    width: 15px;
+  }
+  .console-project,
+  .console-divider {
+    display: none;
+  }
+  .launch-example {
+    font-size: 6px;
+  }
+  .launch-artwork {
+    height: 192px;
+  }
+  .launch-artwork > img {
+    object-fit: contain;
+  }
+  .launch-scene-label {
+    left: 12px;
+    top: 10px;
+    font-size: 6px;
+    gap: 8px;
+  }
+  .scene-number {
+    font-size: 6px;
+    padding: 2px 4px;
+  }
+  .launch-art-caption {
+    left: 10px;
+    bottom: 8px;
+    font-size: 7px;
+    gap: 5px;
+  }
+  .launch-proof {
+    padding: 17px 15px;
+  }
+  .launch-proof > div {
+    column-gap: 16px;
+    grid-template-columns: 1.05fr 1fr;
+  }
+  .launch-proof-kicker {
+    font-size: 8px;
+  }
+  .launch-proof-kicker .icon {
+    width: 13px;
+    height: 13px;
+  }
+  .launch-proof-kicker > span {
+    display: none;
+  }
+  .launch-proof h2 {
+    font-size: 18px;
+    line-height: 1.2;
+    margin-top: 11px;
+  }
+  .launch-proof p {
+    font-size: 9px;
+    line-height: 1.6;
+  }
+  .launch-proof li {
+    font-size: 8px;
+    line-height: 1.4;
+    gap: 5px;
+  }
+  .launch-proof li .icon {
+    width: 11px;
+    height: 11px;
+  }
+  .launch-proof ul {
+    gap: 12px;
+  }
+  .launch-artifact {
+    padding-top: 11px;
+    margin-top: 13px;
+  }
+  .launch-artifact code {
+    font-size: 9px;
+  }
+  .launch-stages button {
+    font-size: 8px;
+    min-height: 59px;
+  }
+  .launch-assurances > span {
+    font-size: 7px;
+    gap: 4px;
+  }
+  .launch-assurances .icon {
+    width: 11px;
+    height: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .launch-line > span,
+  .launch-reveal,
+  .launch-console {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+/* Keep the complete story close to the first viewport. */
+@media (min-width: 781px) {
+  .launch-hero {
+    padding-top: 98px;
+  }
+  .launch-copy {
+    padding-bottom: 25px;
+  }
+  .launch-copy h1 {
+    font-size: clamp(44px, 4.6vw, 64px);
+    margin-top: 15px;
+    margin-bottom: 10px;
+  }
+  .launch-actions {
+    margin-top: 19px;
+  }
+  .launch-powered {
+    margin-top: 15px;
+  }
+}
+@media (max-width: 520px) {
+  .launch-hero {
+    padding-top: 86px;
+  }
+  .launch-copy h1 {
+    margin-top: 15px;
+    margin-bottom: 12px;
+  }
+  .launch-actions {
+    margin-top: 16px;
+  }
+  .launch-powered {
+    margin-top: 14px;
+  }
+}
