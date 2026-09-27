@@ -7,7 +7,10 @@ import { DEFAULTS } from "../engine/house-rules";
 import { matches, overlaps } from "../engine/glob";
 import { planProblem } from "../engine/orchestrator";
 import { project } from "../engine/project";
+import * as S from "../engine/schemas";
+import { allowedValues } from "../engine/schema-hints";
 import type { ArrowEvent, JobView, Plan, Profile, Spec } from "../engine/types";
+import { z } from "zod";
 
 const at = "2026-09-27T00:00:00.000Z";
 
@@ -95,6 +98,25 @@ describe("rules gate", () => {
     expect(planGate("T1", plan(["src/a.ts"]), spec, profile().rules, DEFAULTS).verdict).toBe("green");
     expect(planGate("T1", plan(["db/migrations/002.sql"]), spec, profile().rules, DEFAULTS).verdict).toBe("red");
   });
+  test("a critical rule the plan reports as respected is a note, not a stop", () => {
+    const p = plan(["src/a.ts"]);
+    p.rulesImpact = [{ ruleId: "R1", impact: "Untouched: no migration is created, read or committed.", conflict: false }];
+    const g = planGate("T1", p, spec, profile().rules, DEFAULTS);
+    expect(g.verdict).toBe("green");
+    expect(g.items.find((i) => i.ruleId === "R1")?.level).toBe("ok");
+  });
+  test("a critical rule the plan bends is the human's call", () => {
+    const p = plan(["src/a.ts"]);
+    p.rulesImpact = [{ ruleId: "R1", impact: "The column has to change in the applied migration.", conflict: true }];
+    const g = planGate("T1", p, spec, profile().rules, DEFAULTS);
+    expect(g.verdict).toBe("red");
+    expect(g.items.find((i) => i.ruleId === "R1")?.level).toBe("critical");
+  });
+  test("the architect's own advice to stop still turns the plan red", () => {
+    const p = plan(["src/a.ts"]);
+    p.advice = { decision: "stop", reason: "This cannot be done safely.", suggestions: [] };
+    expect(planGate("T1", p, spec, profile().rules, DEFAULTS).verdict).toBe("red");
+  });
 });
 
 describe("plan sanity", () => {
@@ -140,5 +162,22 @@ describe("Bob Shell output", () => {
   });
   test("no JSON means no numbers, not a crash", () => {
     expect(bobStats("Error: Bob API key is required.")).toEqual({});
+  });
+});
+
+describe("schema hints", () => {
+  test("closed sets reach the prompt, read off the schema itself", () => {
+    const hints = allowedValues(S.Profile);
+    expect(hints).toContain("rules[].category: structure | naming | code | testing | security | process | other");
+    expect(hints).toContain("recommendation.decision: continue | stop");
+    expect(allowedValues(S.Plan)).toContain("packets[].kind: change | refactor");
+  });
+  test("a set used in two places is listed for both", () => {
+    expect(allowedValues(S.Plan).filter((h) => h.startsWith("advice.decision:"))).toEqual(["advice.decision: continue | stop"]);
+    expect(allowedValues(S.WorkerReport)).toContain("status: implemented | blocked");
+  });
+  test("every role's schema converts, and a hint never costs a run", () => {
+    for (const s of [S.Profile, S.Spec, S.Plan, S.Packet, S.WorkerReport]) expect(() => allowedValues(s)).not.toThrow();
+    expect(allowedValues(z.object({ a: z.string() }))).toEqual([]); // nothing closed, nothing to say
   });
 });

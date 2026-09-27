@@ -5,7 +5,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { dependencyCheck, diffBudgetCheck, docsCheck, fileSizeCheck, newDependencies, placeholderCheck, secretCheck, type FileFacts } from "./checks";
+import { dependencyCheck, diffBudgetCheck, docsCheck, fileSizeCheck, looksLikeTest, newDependencies, placeholderCheck, secretCheck, testWeakenedCheck, type FileFacts } from "./checks";
 import { LIMITS } from "./config";
 import * as git from "./git";
 import { matchesAny } from "./glob";
@@ -15,7 +15,6 @@ import type { Failure, Packet, Profile } from "./types";
 
 export type VerifyResult = { ok: true; report: string[]; changedFiles: string[] } | { ok: false; failure: Failure; changedFiles: string[] };
 
-const looksLikeTest = (f: string) => /(^|\/)(tests?|__tests__|spec)\//.test(f) || /\.(test|spec)\.[a-z]+$/.test(path.basename(f)) || /^test_.*\.py$/.test(path.basename(f));
 const MANIFEST = /(^|\/)(package\.json|requirements[^/]*\.txt|pyproject\.toml|go\.mod|Cargo\.toml|bun\.lockb?|package-lock\.json|pnpm-lock\.yaml|yarn\.lock)$/;
 
 const LOCKFILES: Record<string, string[]> = {
@@ -82,9 +81,10 @@ export async function verifyPacket(opts: {
   // 3. honesty of the work: tests not weakened, no stubs left behind
   if (!house.tests.mayEditExisting)
     for (const f of files.filter(looksLikeTest)) {
-      if (!(await git.existedAt(wt, fork, f))) continue;
-      const removed = await git.removedLines(wt, fork, f);
-      if (removed.length) return fail({ class: "verification", message: `Weakened an existing test: ${f} lost ${removed.length} line(s).`, report: removed.slice(0, 20) });
+      if (!(await git.existedAt(wt, fork, f))) continue; // this packet created it
+      const abs = path.join(wt, f);
+      const check = testWeakenedCheck(f, await git.showAt(wt, fork, f), fs.existsSync(abs) ? readOrEmpty(abs) : null);
+      if (check) return fail(check);
     }
   const stub = placeholderCheck(facts, house.placeholders);
   if (stub) return fail(stub);

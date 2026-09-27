@@ -18,9 +18,13 @@ process.env.ARROW_MOCK_DELAY_MS = "1";
 
 const { tick, reconcile } = await import("../engine/orchestrator");
 const { refreshLedger, readLedger } = await import("../engine/ledger-scan");
+const { verifyPacket } = await import("../engine/verify");
+const { DEFAULTS } = await import("../engine/house-rules");
 const store = await import("../engine/store");
 const { project } = await import("../engine/project");
 type State = ReturnType<typeof project>;
+type Packet = import("../engine/types").Packet;
+type Profile = import("../engine/types").Profile;
 
 const repo = path.join(tmp, "sample");
 const sh = (cwd: string, ...args: string[]) => execFileSync("git", ["-C", cwd, ...args], { encoding: "utf8" }).trim();
@@ -174,5 +178,79 @@ describe("state manager", () => {
     const s = await until(pid, (s) => Boolean(s.profile));
     expect(s.jobs.ghost.failure?.class).toBe("internal");
     expect(s.profile).toBeDefined();
+  });
+});
+
+describe("test integrity", () => {
+  // the proof, against real git — the failure that got here was a one-line import
+  // swap in a setup file, which the old line-counting check read as a weakened test.
+  const packet: Packet = {
+    id: "P1", module: "M1", title: "update the test setup", objective: "o", context: "",
+    files: ["src/test/setup.ts", "src/test/a.test.ts"], deps: [], verification: ["true"],
+    regression: [], risk: "low", kind: "change", newDependencies: [], env: [],
+  };
+  const profile: Profile = {
+    summary: "s", stack: [], commands: {}, structure: [], rules: [], findings: [], adaptations: [],
+    toolchain: { runtimes: [] }, dependencies: [], envVars: [], decisions: [], houseRules: [],
+    recommendation: { decision: "continue", reason: "r", suggestions: [] },
+  };
+
+  /** A repo with a test suite, and the worktree a packet works in. */
+  function fixture() {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "arrow-tests-"));
+    const origin = path.join(dir, "repo");
+    const wt = path.join(dir, "work");
+    const put = (rel: string, body: string) => {
+      fs.mkdirSync(path.dirname(path.join(origin, rel)), { recursive: true });
+      fs.writeFileSync(path.join(origin, rel), body);
+    };
+    put("src/test/setup.ts", "import '@testing-library/jest-dom'\n");
+    put("src/test/a.test.ts", "it('adds', () => {\n  expect(1 + 1).toBe(2)\n  expect(2 + 2).toBe(4)\n})\n");
+    execFileSync("git", ["init", "-q", "-b", "main", origin]);
+    sh(origin, "add", "-A");
+    sh(origin, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "init");
+    sh(origin, "branch", "arrow/t1");
+    sh(origin, "worktree", "add", "-q", "-b", "arrow/t1--p1", wt, "arrow/t1");
+    return { dir, wt, base: "arrow/t1" };
+  }
+
+  const verify = (fix: ReturnType<typeof fixture>) =>
+    verifyPacket({ wt: fix.wt, base: fix.base, packet, profile, house: DEFAULTS, attempt: 1, baseline: {}, env: process.env });
+
+  test("rewriting a bare import in a setup file is not weakening a test", async () => {
+    const fix = fixture();
+    fs.writeFileSync(path.join(fix.wt, "src/test/setup.ts"), "import '@testing-library/jest-dom/vitest'\n");
+    fs.writeFileSync(path.join(fix.wt, "src/test/a.test.ts"), "it('adds', () => {\n  expect(1 + 1).toBe(2)\n  expect(2 + 2).toBe(4)\n  expect(3 + 3).toBe(6)\n})\n");
+    try {
+      expect(await verify(fix)).toMatchObject({ ok: true });
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  test("deleting an assertion still fails the packet", async () => {
+    const fix = fixture();
+    fs.writeFileSync(path.join(fix.wt, "src/test/setup.ts"), "import '@testing-library/jest-dom/vitest'\n");
+    fs.writeFileSync(path.join(fix.wt, "src/test/a.test.ts"), "it('adds', () => {\n  expect(1 + 1).toBe(2)\n})\n");
+    try {
+      const r = await verify(fix);
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.failure).toMatchObject({ class: "verification" });
+      if (!r.ok) expect(r.failure.message).toContain("Weakened");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  test("deleting an existing test file still fails the packet", async () => {
+    const fix = fixture();
+    fs.rmSync(path.join(fix.wt, "src/test/a.test.ts"));
+    try {
+      const r = await verify(fix);
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.failure.message).toContain("deleted");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
   });
 });

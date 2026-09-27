@@ -105,12 +105,6 @@ export async function existedAt(wt: string, ref: string, file: string) {
   return (await git(wt, "cat-file", "-e", `${ref}:${file}`)).code === 0;
 }
 
-/** Lines a change removed from a file (ignoring blank ones) — used to catch weakened tests. */
-export async function removedLines(wt: string, base: string, file: string): Promise<string[]> {
-  const d = await ok(wt, "diff", "--unified=0", `${base}...HEAD`, "--", file);
-  return d.split("\n").filter((l) => l.startsWith("-") && !l.startsWith("---") && l.slice(1).trim());
-}
-
 export async function rebase(wt: string, onto: string): Promise<{ ok: boolean; out: string }> {
   const r = await git(wt, "-c", "user.name=arrow", "-c", "user.email=arrow@localhost", "rebase", "--quiet", onto);
   if (r.code !== 0) await git(wt, "rebase", "--abort");
