@@ -12,6 +12,7 @@ import { fromRun, job } from "./jobs";
 import { freeSlot, ledgerBrief, portRange } from "./ledger";
 import { readLedger, refreshLedger } from "./ledger-scan";
 import { acceptTask } from "./accept";
+import { runnableCommands } from "./commands";
 import { planProblem } from "./plan-check";
 import { preparePacket } from "./prepare";
 import { scrubbedEnv } from "./proc";
@@ -33,7 +34,9 @@ const houseOf = (s: ProjectState) =>
 const commandEnv = (s: ProjectState, extra: string[] = [], port?: number) =>
   scrubbedEnv([...s.profile!.envVars.map((v) => v.name), ...extra], port ? { PORT: String(port) } : {});
 
-export async function runPacketStep(pid: string, s: ProjectState, a: PacketAction): Promise<void> {
+export async function runPacketStep(pid: string, recorded: ProjectState, a: PacketAction): Promise<void> {
+  // every step below runs the profile's commands as typed, so only the ones that are real shell
+  const s = recorded.profile ? { ...recorded, profile: { ...recorded.profile, commands: await runnableCommands(recorded.profile.commands) } } : recorded;
   const repo = s.repo!.path;
   const t = s.tasks[a.taskId];
   const house = houseOf(s);

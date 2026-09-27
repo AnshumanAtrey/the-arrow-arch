@@ -14,6 +14,9 @@ you write one result file.
 3. **Commands.** The exact commands to install (`setup`), build, test,
    typecheck and lint. Run the cheap ones. A command you did not run is a
    guess; leave it out rather than guess. Prefer checks that run offline.
+   Each is run exactly as typed, from the repo root: no notes in it. If there
+   is no repo-wide command (a monorepo where each package has its own), leave
+   it out and say how it works per package in `adaptations`.
 4. **Structure.** The top-level folders and what lives in each.
 5. **Rules.** Turn the company's rules (the `rulesText` input, plus any rules the
    repo itself states — CONTRIBUTING, lint config, CODEOWNERS) into a list.

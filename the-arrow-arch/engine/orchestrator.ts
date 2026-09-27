@@ -13,6 +13,7 @@ import { DEFAULTS, effectiveSettings, HOUSE_RULES } from "./house-rules";
 import { fromRun, job } from "./jobs";
 import { refreshLedger } from "./ledger-scan";
 import { runPacketStep } from "./packet-steps";
+import { runnableCommands } from "./commands";
 import { planProblem } from "./plan-check";
 import { run, scrubbedEnv } from "./proc";
 import { project } from "./project";
@@ -92,6 +93,11 @@ async function execute(pid: string, s: ProjectState, a: Action): Promise<void> {
           const tc = r.result.toolchain;
           if (tc.lockfile && !fs.existsSync(path.join(repo, tc.lockfile))) tc.lockfile = undefined;
           tc.runtimes = tc.runtimes.map((rt) => ({ ...rt, name: executableOf(rt.name) }));
+          // a command with a note attached isn't one Arrow can run: leave it out, and say so
+          const commands = await runnableCommands(r.result.commands);
+          for (const [k, v] of Object.entries(r.result.commands))
+            if (v && !commands[k as keyof typeof commands]) r.result.adaptations.push({ setting: `${k} command`, value: "left out", why: `Not runnable as typed, so Arrow doesn't run it: ${v}` });
+          r.result.commands = commands;
           append(pid, { type: "profile.ready", profile: r.result });
           if (r.result.decisions.length)
             append(pid, { type: "knowledge.recorded", entries: r.result.decisions.map((d) => ({ kind: "decision" as const, text: d.why ? `${d.text} (${d.why})` : d.text, source: d.source || "onboarding" })) });

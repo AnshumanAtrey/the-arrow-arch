@@ -14,6 +14,7 @@ import { nowLine, readTranscript } from "../engine/transcript";
 import { ledgerBrief } from "../engine/ledger";
 import { acceptanceCounts } from "../lib/tree";
 import { fromThisSite } from "../lib/same-site";
+import { runnableCommands } from "../engine/commands";
 import type { ArrowEvent, JobView, Plan, Profile, Spec } from "../engine/types";
 import { z } from "zod";
 
@@ -329,6 +330,17 @@ describe("actions come from Arrow's own pages", () => {
     expect(fromThisSite(req())).toBe(true);
     expect(fromThisSite(req("http://localhost:7778"))).toBe(false);
     expect(fromThisSite(req("null"))).toBe(false); // a sandboxed page
+  });
+});
+
+describe("profile commands", () => {
+  test("a command is kept only if it is shell as typed; a description of one is left out", async () => {
+    expect(await runnableCommands({
+      setup: "pip install -r requirements.txt (run inside a specific actor's folder, e.g. repos/holehe-email-osint/)",
+      build: "docker build . (inside the actor folder; not run, requires Docker daemon)",
+      test: "cd repos/a && python3 -m pytest -q && echo ok",
+      lint: "",
+    })).toEqual({ test: "cd repos/a && python3 -m pytest -q && echo ok" });
   });
 });
 
