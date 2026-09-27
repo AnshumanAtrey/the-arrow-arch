@@ -122,6 +122,20 @@ describe("red path", () => {
   });
 });
 
+describe("a plain folder", () => {
+  test("a folder that isn't a git repo is onboarded from a snapshot; the folder is left untouched", async () => {
+    const dir = path.join(tmp, "plain");
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, "PRD.md"), "# A game\nTwo players take turns.\n");
+    const pid = store.newProjectId(dir);
+    store.append(pid, { type: "project.created", name: "plain", repoUrl: dir, rulesText: "" });
+    const s = await until(pid, (s) => Boolean(s.onboardingGateId));
+    expect(sh(s.repo!.path, "ls-files")).toContain("PRD.md");
+    expect(fs.existsSync(path.join(dir, ".git"))).toBe(false);
+    expect(fs.readdirSync(dir)).toEqual(["PRD.md"]);
+  });
+});
+
 describe("house rules at onboarding", () => {
   test("a company rule that contradicts a critical house rule turns the check red", async () => {
     const pid = start("- Engineers may update existing tests freely when behaviour changes");

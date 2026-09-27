@@ -57,7 +57,7 @@ export const HOUSE_RULES: HouseRule[] = [
   { id: "H-DEPS", key: "dependencies", category: "C07", criticality: "normal", title: "New dependencies need approval", plain: "A packet that adds a library must say so, and you see it at the plan check." },
   { id: "H-PLACEHOLDERS", key: "placeholders", category: "C04", criticality: "normal", title: "No TODO placeholders instead of work", plain: "Added lines may not leave TODO / FIXME / not-implemented stubs." },
   { id: "H-DIFF", key: "diff", category: "C12", criticality: "normal", title: "Each packet stays reviewable (400 changed lines)", plain: "A bigger change goes back to the architect to be split." },
-  { id: "H-PROOF", key: "proof", category: "C03", criticality: "normal", title: "Typecheck and lint join every packet's proof", plain: "The repo's own typecheck and lint run on every packet; failures that were already there are not blamed." },
+  { id: "H-PROOF", key: "proof", category: "C03", criticality: "normal", title: "Typecheck and lint join every packet's proof", plain: "When the repo has a typecheck or lint command, it runs on every packet; failures that were already there are not blamed. A repo without them runs each packet's own checks — that is fine." },
   { id: "H-LOOPS", key: "loops", category: "C05", criticality: "normal", title: "One retry, one re-plan, then you", plain: "No agent keeps patching; after the budget a person looks." },
   { id: "H-PORTS", key: "ports", category: "C09", criticality: "normal", title: "Each worker gets its own port range", plain: "Parallel workers never fight over a local port." },
 ];

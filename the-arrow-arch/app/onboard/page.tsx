@@ -73,7 +73,7 @@ export default function Onboard() {
       <div className="mt-8 space-y-6">
         <label className="block">
           <span className="heading text-[15px]">Repository</span>
-          <span className="block text-[13px] text-ink-3">A GitHub URL, or the absolute path to a git repo on this machine. Arrow never pushes.</span>
+          <span className="block text-[13px] text-ink-3">A GitHub URL, or the absolute path to a folder on this machine — a git repo or just a folder. Arrow works on its own copy and never pushes.</span>
           <input
             required
             value={repoUrl}

@@ -32,15 +32,15 @@ export async function excludeUntracked(wt: string) {
 
 const GITHUB = /^(https:\/\/github\.com\/|git@github\.com:)[\w.-]+\/[\w.-]+?(\.git)?\/?$/;
 
-/** Accept a GitHub URL or an absolute path to a local git repo. Anything else is refused. */
+/** Accept a GitHub URL or an absolute path to a local folder (a git repo or not). Anything else is refused. */
 export function checkRepoSource(src: string): { ok: true; value: string } | { ok: false; error: string } {
-  const v = src.trim();
-  if (GITHUB.test(v)) return { ok: true, value: v.replace(/\/$/, "") };
+  const v = src.trim().replace(/\/+$/, "") || src.trim();
+  if (GITHUB.test(v)) return { ok: true, value: v };
   if (path.isAbsolute(v)) {
-    if (fs.existsSync(path.join(v, ".git"))) return { ok: true, value: v };
-    return { ok: false, error: "That folder isn't a git repository." };
+    if (fs.existsSync(v) && fs.statSync(v).isDirectory()) return { ok: true, value: v };
+    return { ok: false, error: "That folder doesn't exist." };
   }
-  return { ok: false, error: "Use a GitHub URL (https://github.com/owner/repo) or an absolute path to a local repo." };
+  return { ok: false, error: "Use a GitHub URL (https://github.com/owner/repo) or the absolute path to a folder on this machine." };
 }
 
 export const checkBranch = (b: string) => /^[\w./-]{1,100}$/.test(b) && !b.includes("..") && !b.startsWith("-");
@@ -48,9 +48,17 @@ export const checkBranch = (b: string) => /^[\w./-]{1,100}$/.test(b) && !b.inclu
 export async function clone(src: string, dest: string, branch?: string) {
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   if (fs.existsSync(dest)) fs.rmSync(dest, { recursive: true, force: true }); // a half-finished earlier clone
-  const args = ["clone", "--quiet", ...(branch ? ["--branch", branch] : []), "--", src, dest];
-  const r = await run("git", args, { timeoutMs: 600_000 });
-  if (r.code !== 0) throw new Error(r.out.trim().slice(-800) || "git clone failed");
+  if (path.isAbsolute(src) && !fs.existsSync(path.join(src, ".git"))) {
+    // a plain folder: Arrow works on a snapshot in its own git repo; the folder itself is never touched
+    fs.cpSync(src, dest, { recursive: true, filter: (p) => !/(^|\/)(node_modules|\.git)(\/|$)/.test(path.relative(src, p)) });
+    await ok(dest, "init", "--quiet", "-b", branch || "main");
+    await ok(dest, "add", "-A");
+    await ok(dest, "-c", "user.name=arrow", "-c", "user.email=arrow@localhost", "commit", "--quiet", "--allow-empty", "-m", `Snapshot of ${path.basename(src)} for Arrow`);
+  } else {
+    const args = ["clone", "--quiet", ...(branch ? ["--branch", branch] : []), "--", src, dest];
+    const r = await run("git", args, { timeoutMs: 600_000 });
+    if (r.code !== 0) throw new Error(r.out.trim().slice(-800) || "git clone failed");
+  }
   // Arrow's own files and install/build noise never belong in a commit — in any worktree.
   // (exclude only affects untracked files, so anything the repo tracks stays tracked)
   fs.appendFileSync(path.join(dest, ".git", "info", "exclude"), `\n# arrow\n${NOISE.join("\n")}\n`);

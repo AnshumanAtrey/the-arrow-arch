@@ -18,6 +18,19 @@ export type VerifyResult = { ok: true; report: string[]; changedFiles: string[] 
 const looksLikeTest = (f: string) => /(^|\/)(tests?|__tests__|spec)\//.test(f) || /\.(test|spec)\.[a-z]+$/.test(path.basename(f)) || /^test_.*\.py$/.test(path.basename(f));
 const MANIFEST = /(^|\/)(package\.json|requirements[^/]*\.txt|pyproject\.toml|go\.mod|Cargo\.toml|bun\.lockb?|package-lock\.json|pnpm-lock\.yaml|yarn\.lock)$/;
 
+const LOCKFILES: Record<string, string[]> = {
+  "package.json": ["package-lock.json", "npm-shrinkwrap.json", "bun.lock", "bun.lockb", "pnpm-lock.yaml", "yarn.lock"],
+  "pyproject.toml": ["poetry.lock", "uv.lock"],
+  "Cargo.toml": ["Cargo.lock"],
+  "go.mod": ["go.sum"],
+};
+const lockfilesFor = (f: string) => {
+  const base = path.basename(f);
+  const dir = path.dirname(f) === "." ? "" : `${path.dirname(f)}/`;
+  return (LOCKFILES[base] ?? []).map((l) => `${dir}${l}`);
+};
+const isLockfile = (f: string) => Object.values(LOCKFILES).flat().includes(path.basename(f));
+
 /** The proof commands every packet runs, from the profile, per the house rules. */
 export const proofCommands = (profile: Profile, house: HouseSettings) =>
   house.proof.always.map((k) => profile.commands[k]).filter((c): c is string => Boolean(c));
@@ -51,11 +64,13 @@ export async function verifyPacket(opts: {
   const secret = secretCheck(facts);
   if (secret) return fail(secret);
 
-  // 2. the shape of the change
-  const outside = files.filter((f) => !matchesAny(f, packet.files));
+  // 2. the shape of the change. A packet that may change a manifest may change its lockfile too.
+  const allowed = [...packet.files, ...packet.files.flatMap(lockfilesFor)];
+  const outside = files.filter((f) => !matchesAny(f, allowed));
   if (outside.length) return fail({ class: "scope", message: `Changed files outside this packet's list: ${outside.join(", ")}.` });
   for (const check of [docsCheck(facts, house.docs), fileSizeCheck(facts, house.fileSize)]) if (check) return fail(check);
-  const numstat = await git.numstat(wt, fork);
+  // lockfiles and generated files don't count towards what a person has to review
+  const numstat = (await git.numstat(wt, fork)).filter((f) => !isLockfile(f.path) && !matchesAny(f.path, house.fileSize.exempt.filter((g) => !g.endsWith(".json"))));
   const budget = diffBudgetCheck(numstat.reduce((n, f) => n + f.added + f.removed, 0), house.diff);
   if (budget) return fail(budget);
   const addedDeps: string[] = [];

@@ -55,12 +55,18 @@ you write one result file.
      already over 500 lines). What's over may stay; nothing may get worse.
    - `conflict` — the company contradicts the rule. Say why. On a critical rule
      a person decides, and Arrow's default stands until they do.
+   A rule the repo simply can't use yet (no lint command in a new repo) is
+   `keep` — it applies once the repo has what it needs. Only the company's own
+   words can create a `conflict`, and each rule's `criticality` is given in the
+   inputs: use it, don't raise it.
 11. **Adaptations.** How Arrow should run in this repo: which command proves a
    change, whether tasks can run in parallel safely, anything a worker must
    always do first.
 12. **Recommendation.** `continue` or `stop`, with the reason in one plain
    sentence and what to do about it. Say `stop` only when a critical rule is at
-   stake — the human will see your call next to every finding.
+   stake — the human will see your call next to every finding. A new or empty
+   repo is never a reason to stop: `continue`, and say in `adaptations` what the
+   first task has to set up.
 
 ## How to work
 
