@@ -17,7 +17,7 @@ export const HouseSettings = z.object({
     exempt: z.array(z.string()),
   }),
   docs: z.object({ allowPaths: z.array(z.string()) }), // where new .md files may be added
-  tests: z.object({ mayEditExisting: z.boolean() }),
+  tests: z.object({ mayEditExisting: z.boolean(), requireApprovalForNewSkips: z.boolean().default(true) }),
   dependencies: z.object({ requireApproval: z.boolean(), approved: z.array(z.string()) }),
   placeholders: z.object({ allowedPattern: z.string() }), // e.g. "TODO\\([A-Z]+-\\d+\\)"; "" = none allowed
   diff: z.object({ maxChangedLines: z.number().int().positive() }),
@@ -34,7 +34,7 @@ export const DEFAULTS: HouseSettings = {
     exempt: ["**/*.lock", "**/*-lock.json", "**/*.lockb", "**/*.snap", "**/*.svg", "**/*.min.*", "**/migrations/**", "**/generated/**", "**/fixtures/**", "**/*.csv", "**/*.json"],
   },
   docs: { allowPaths: [] },
-  tests: { mayEditExisting: false },
+  tests: { mayEditExisting: false, requireApprovalForNewSkips: true },
   dependencies: { requireApproval: true, approved: [] },
   placeholders: { allowedPattern: "" },
   diff: { maxChangedLines: 400 },

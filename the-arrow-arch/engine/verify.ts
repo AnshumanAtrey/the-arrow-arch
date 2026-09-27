@@ -5,7 +5,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { dependencyCheck, diffBudgetCheck, docsCheck, fileSizeCheck, looksLikeTest, newDependencies, placeholderCheck, secretCheck, testWeakenedCheck, type FileFacts } from "./checks";
+import { dependencyCheck, diffBudgetCheck, docsCheck, fileSizeCheck, looksLikeTest, newDependencies, placeholderCheck, secretCheck, testDisabledCheck, testWeakenedCheck, type FileFacts } from "./checks";
 import { LIMITS } from "./config";
 import * as git from "./git";
 import { matchesAny } from "./glob";
@@ -78,14 +78,21 @@ export async function verifyPacket(opts: {
   const deps = dependencyCheck(addedDeps, packet.newDependencies, house.dependencies);
   if (deps) return fail(deps);
 
-  // 3. honesty of the work: tests not weakened, no stubs left behind
-  if (!house.tests.mayEditExisting)
-    for (const f of files.filter(looksLikeTest)) {
-      if (!(await git.existedAt(wt, fork, f))) continue; // this packet created it
-      const abs = path.join(wt, f);
-      const check = testWeakenedCheck(f, await git.showAt(wt, fork, f), fs.existsSync(abs) ? readOrEmpty(abs) : null);
-      if (check) return fail(check);
+  // 3. honesty of the work: tests not weakened or switched off, no stubs left behind
+  for (const f of files.filter(looksLikeTest)) {
+    if (!(await git.existedAt(wt, fork, f))) continue; // this packet created it
+    const abs = path.join(wt, f);
+    const after = fs.existsSync(abs) ? readOrEmpty(abs) : null;
+    const before = await git.showAt(wt, fork, f);
+    if (!house.tests.mayEditExisting) {
+      const weakened = testWeakenedCheck(f, before, after);
+      if (weakened) return fail(weakened);
     }
+    if (house.tests.requireApprovalForNewSkips) {
+      const disabled = testDisabledCheck(f, before, after);
+      if (disabled) return fail(disabled);
+    }
+  }
   const stub = placeholderCheck(facts, house.placeholders);
   if (stub) return fail(stub);
 

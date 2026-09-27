@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { dependencyCheck, diffBudgetCheck, docsCheck, fileSizeCheck, looksLikeTest, newDependencies, placeholderCheck, secretCheck, testWeakenedCheck, assertions, type FileFacts } from "../engine/checks";
+import { dependencyCheck, diffBudgetCheck, docsCheck, fileSizeCheck, looksLikeTest, newDependencies, placeholderCheck, secretCheck, testDisabledCheck, testWeakenedCheck, assertions, disables, type FileFacts } from "../engine/checks";
 import { decide } from "../engine/decide";
 import { DEFAULTS, effectiveSettings } from "../engine/house-rules";
 import { buildLedger, freeSlot, ledgerBrief, type OsSnapshot } from "../engine/ledger";
@@ -83,6 +83,51 @@ describe("test integrity (H-TESTS)", () => {
     expect(assertions("fn t() { assert_eq!(x, 1); }\n")).toBe(1);
     expect(assertions("expect(a).to.equal(1);\na.should.equal(2);\n")).toBe(2);
     expect(assertions("export const hi = 1;\nimport x from 'y';\n")).toBe(0);
+  });
+
+  // the real one: a worker made a Python file pass by hanging a skipif off the
+  // two tests that needed DVC data. Assertion count saw nothing — 16 to 16 —
+  // and the packet was reported verified while the assertion that mattered had
+  // become unreachable.
+  const chewsyBefore = "class TestPackagedModel:\n    def test_fresh_process_loads_predicts_and_matches_registry(self):\n        assert MODEL_PATH.exists(), \"missing\"\n    def test_model_is_dvc_tracked_for_fresh_clones(self):\n        assert MODEL_PATH.exists(), \"missing\"\n";
+  const chewsyAfter = "import pytest\nclass TestPackagedModel:\n    @pytest.mark.skipif(not MODEL_PATH.exists(), reason=\"DVC data not pulled\")\n    def test_fresh_process_loads_predicts_and_matches_registry(self):\n        assert MODEL_PATH.exists(), \"missing\"\n    @pytest.mark.skipif(not MODEL_PATH.exists(), reason=\"DVC data not pulled\")\n    def test_model_is_dvc_tracked_for_fresh_clones(self):\n        assert MODEL_PATH.exists(), \"missing\"\n";
+  test("a new skip that keeps the assertion count level is still caught", () => {
+    expect(assertions(chewsyBefore)).toBe(assertions(chewsyAfter)); // the sibling check sees nothing
+    expect(disables(chewsyAfter)).toBe(2);
+    const d = testDisabledCheck("tests/test_packaged_model.py", chewsyBefore, chewsyAfter);
+    expect(d?.class).toBe("protected"); // parks for a person, no retry spent
+    expect(d?.message).toContain("tests/test_packaged_model.py");
+    expect(d?.message).toContain("2");
+    expect(d?.report?.join("\n")).toContain("skipif"); // the report names what was added
+  });
+  test("adding a test, with no skip, is always fine", () => {
+    expect(testDisabledCheck("src/a.test.ts", "expect(1).toBe(1)\n", "expect(1).toBe(1)\n\nit('b', () => {\n  expect(2).toBe(2)\n})\n")).toBeUndefined();
+    expect(disables("it('b', () => {\n  expect(2).toBe(2)\n})\n")).toBe(0);
+  });
+  test("a file this packet created has nothing to switch off", () => {
+    expect(testDisabledCheck("tests/test_x.py", null, chewsyAfter)).toBeUndefined();
+    expect(testDisabledCheck("tests/test_x.py", chewsyBefore, null)).toBeUndefined(); // deletion is the other check's
+  });
+  test("commenting a skip out is not adding one", () => {
+    expect(disables("# pytest.mark.skipif(not x, reason='why')\n")).toBe(0);
+    expect(disables("// it.skip('a', () => {})\n")).toBe(0);
+    expect(testDisabledCheck("src/a.test.ts", "// it.skip('a', () => {})\n", "it.skip('a', () => {})\n")?.class).toBe("protected");
+    expect(testDisabledCheck("src/a.test.ts", "it.skip('a', () => {})\n", "it.skip('a', () => {})\n\n// it.skip('b', () => {})\n")).toBeUndefined();
+  });
+  test("focusing one test counts: it stops the rest from running", () => {
+    expect(disables("it.only('a', () => {})\n")).toBe(1);
+    expect(disables("describe.only('suite', () => {})\n")).toBe(1);
+    expect(disables("fdescribe('suite', () => {})\n")).toBe(1);
+    expect(testDisabledCheck("src/a.test.ts", "it('a', () => {})\n", "it.only('a', () => {})\n")?.class).toBe("protected");
+  });
+  test("the markers Arrow meets are counted across languages", () => {
+    expect(disables("def test_x():\n    pytest.skip('no data')\n")).toBe(1);
+    expect(disables("pytest.importorskip('torch')\n")).toBe(1);
+    expect(disables("@pytest.mark.xfail(reason='known')\ndef test_x():\n    assert x\n")).toBe(1);
+    expect(disables("func TestX(t *testing.T) {\n\tt.Skip(\"needs network\")\n}\n")).toBe(1);
+    expect(disables("#[ignore]\nfn t() { assert_eq!(x, 1); }\n")).toBe(1);
+    expect(disables("xit('a', () => {})\nxtest('b', () => {})\n")).toBe(2);
+    expect(disables("const x = 'skip the queue';\n")).toBe(0);
   });
 });
 

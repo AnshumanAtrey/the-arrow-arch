@@ -81,13 +81,53 @@ export function testWeakenedCheck(file: string, before: string | null, after: st
   return fail("verification", `Weakened an existing test: ${file} has ${now} assertion(s), down from ${was}.`, [`-${was - now}: ${file}`]);
 }
 
-/** Assertion-shaped code in a file. Whole-line comments are skipped, so commenting one out doesn't count as keeping it. */
-export const assertions = (text: string): number =>
-  (text
+/** Code only. Whole-line comments are skipped, so commenting a marker out is not keeping it; a Rust attribute (`#[...]`) is not a comment. */
+const codeLines = (text: string): string =>
+  text
     .split("\n")
-    .filter((l) => !/^\s*(\/\/|#|\*|\/\*)/.test(l))
-    .join("\n")
-    .match(ASSERTION) ?? []).length;
+    .filter((l) => !/^\s*(\/\/|#(?!\[)|\*|\/\*)/.test(l))
+    .join("\n");
+
+/** Assertion-shaped code in a file. */
+export const assertions = (text: string): number => (codeLines(text).match(ASSERTION) ?? []).length;
+
+/** The way a language switches a test off, across the ones Arrow meets: JS/TS, Python, Go, Rust. */
+const DISABLE =
+  /\bpytest\.mark\.(?:skip|skipif|xfail)\b|\bpytest\.(?:skip|importorskip)\s*\(|\b(?:it|test|describe)\.(?:skip|only)\s*\(|\b(?:xit|xtest|xdescribe|fit|fdescribe)\s*\(|\bt\.Skip\w*\s*\(|#\[ignore\b/g;
+
+/**
+ * Markers that switch a test off. Focus counts with skip: focusing one test
+ * silently stops the rest from running, which proves as little as a skip.
+ */
+export const disables = (text: string): number => (codeLines(text).match(DISABLE) ?? []).length;
+
+/** For the report a person reads: the lines that carry a marker. */
+const disableLines = (text: string): string[] =>
+  codeLines(text)
+    .split("\n")
+    .filter((l) => l.match(DISABLE)?.length)
+    .map((l) => l.trim().slice(0, 120));
+
+/**
+ * H-TESTS — a test that switches itself off is a decision a person makes.
+ * Counting assertions can't see it: the packet that added two
+ * `pytest.mark.skipif` decorators kept all 16 assertions while making the one
+ * that mattered unreachable, and was reported verified.
+ * Classed `protected`, not `verification`: a skip is often legitimate (the data
+ * really isn't there), so this parks for a person instead of spending a retry on
+ * a worker that cannot win. `before` is null for a file this packet created;
+ * `after` is null when it was deleted — a deletion testWeakenedCheck already owns.
+ */
+export function testDisabledCheck(file: string, before: string | null, after: string | null): Failure | undefined {
+  if (before === null || after === null) return undefined;
+  const was = disables(before);
+  const now = disables(after);
+  if (now <= was) return undefined;
+  return fail("protected", `${file} gained ${now - was} way(s) to switch a test off (${was} -> ${now}). A skipped or focused test proves nothing; a person decides whether this one should.`, [
+    `+${now - was}: ${file}`,
+    ...[...new Set(disableLines(after))].slice(0, 19),
+  ]);
+}
 
 export { looksLikeTest };
 

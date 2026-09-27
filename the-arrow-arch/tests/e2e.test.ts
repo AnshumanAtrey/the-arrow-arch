@@ -270,4 +270,20 @@ describe("test integrity", () => {
       fs.rmSync(fix.dir, { recursive: true, force: true });
     }
   });
+
+  // the chewsy packet: two tests kept every assertion, and gained a skipif that
+  // made the assertion that mattered unreachable. No assertion was lost, so the
+  // count saw nothing — this parks the packet for a person instead.
+  test("hanging a skip off an existing test parks the packet for a person", async () => {
+    const fix = fixture();
+    fs.writeFileSync(path.join(fix.wt, "src/test/a.test.ts"), "it.skip('adds', () => {\n  expect(1 + 1).toBe(2)\n  expect(2 + 2).toBe(4)\n})\n");
+    try {
+      const r = await verify(fix);
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.failure).toMatchObject({ class: "protected" });
+      if (!r.ok) expect(r.failure.message).toContain("switch a test off");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
 });
