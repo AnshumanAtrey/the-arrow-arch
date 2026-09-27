@@ -317,3 +317,101 @@ describe("test integrity", () => {
     }
   });
 });
+
+describe("proof depends on the change", () => {
+  // red-first shows a check failed before; only undoing the work shows the check
+  // was about the work. The packet that got here was a test-only diff — an import
+  // and two skipif decorators — with every check green and no behaviour verified.
+  const profile: Profile = {
+    summary: "s", stack: [], commands: {}, structure: [], rules: [], findings: [], adaptations: [],
+    toolchain: { runtimes: [] }, dependencies: [], envVars: [], decisions: [], houseRules: [],
+    recommendation: { decision: "continue", reason: "r", suggestions: [] },
+  };
+
+  const packet = (over: Partial<Packet> = {}): Packet => ({
+    id: "P1", module: "M1", title: "greet takes a greeting", objective: "o", context: "",
+    files: ["src/greet.js", "src/extra.js", "src/test/greet.test.js"], deps: [],
+    verification: ["bun src/test/greet.test.js"], regression: [], risk: "low",
+    kind: "change", newDependencies: [], env: [], ...over,
+  });
+
+  /** A repo whose greet() takes one argument, and the worktree a packet works in. */
+  function fixture() {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "arrow-depends-"));
+    const origin = path.join(dir, "repo");
+    const wt = path.join(dir, "work");
+    fs.mkdirSync(path.join(origin, "src/test"), { recursive: true });
+    fs.writeFileSync(path.join(origin, "src/greet.js"), "module.exports = { greet: (name) => 'hi ' + name };\n");
+    execFileSync("git", ["init", "-q", "-b", "main", origin]);
+    sh(origin, "add", "-A");
+    sh(origin, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "init");
+    sh(origin, "branch", "arrow/t1");
+    sh(origin, "worktree", "add", "-q", "-b", "arrow/t1--p1", wt, "arrow/t1");
+    fs.mkdirSync(path.join(wt, "src/test"), { recursive: true }); // git tracks no empty directory
+    return { dir, wt, base: "arrow/t1" };
+  }
+
+  const verify = (fix: ReturnType<typeof fixture>, p: Packet) =>
+    verifyPacket({ wt: fix.wt, base: fix.base, packet: p, profile, house: DEFAULTS, attempt: 1, baseline: {}, env: process.env });
+
+  test("a check that fails with the work undone is verified", async () => {
+    const fix = fixture();
+    try {
+      fs.writeFileSync(path.join(fix.wt, "src/greet.js"), "module.exports = { greet: (name, greeting = 'hi') => greeting + ' ' + name };\n");
+      fs.writeFileSync(path.join(fix.wt, "src/test/greet.test.js"), "const { greet } = require('../greet.js');\nif (greet('a', 'yo') !== 'yo a') throw new Error('the greeting was ignored');\n");
+      const r = await verify(fix, packet());
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.report.join("\n")).toContain("depend on it");
+      // the work is back where the worker left it
+      expect(fs.readFileSync(path.join(fix.wt, "src/greet.js"), "utf8")).toContain("greeting = 'hi'");
+      expect(sh(fix.wt, "status", "--porcelain")).toBe("");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  test("a check that passes with the production change undone fails the packet", async () => {
+    const fix = fixture();
+    try {
+      // a new file no check runs, plus a test that only exercises the default path
+      fs.writeFileSync(path.join(fix.wt, "src/extra.js"), "module.exports = { unused: true };\n");
+      fs.writeFileSync(path.join(fix.wt, "src/test/greet.test.js"), "const { greet } = require('../greet.js');\nif (greet('a') !== 'hi a') throw new Error('wrong greeting');\n");
+      const r = await verify(fix, packet());
+      expect(r.ok).toBe(false);
+      if (!r.ok) {
+        expect(r.failure.class).toBe("verification");
+        expect(r.failure.message).toContain("production change undone");
+      }
+      // including the file the revert deleted: the worker's tree is untouched
+      expect(fs.readFileSync(path.join(fix.wt, "src/extra.js"), "utf8")).toContain("unused");
+      expect(sh(fix.wt, "status", "--porcelain")).toBe("");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  test("a test-only packet is kept, and the report says it is not verified by behaviour", async () => {
+    const fix = fixture();
+    try {
+      fs.writeFileSync(path.join(fix.wt, "src/test/greet.test.js"), "const { greet } = require('../greet.js');\nif (greet('a') !== 'hi a') throw new Error('wrong greeting');\n");
+      const r = await verify(fix, packet({ files: ["src/test/greet.test.js"] }));
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.report.join("\n")).toContain("not verified by behaviour");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+
+  test("a refactor is not judged by it — its checks are meant to hold with the work undone", async () => {
+    const fix = fixture();
+    try {
+      fs.writeFileSync(path.join(fix.wt, "src/greet.js"), "module.exports = { greet: (name) => `hi ${name}` };\n");
+      fs.writeFileSync(path.join(fix.wt, "src/test/greet.test.js"), "const { greet } = require('../greet.js');\nif (greet('a') !== 'hi a') throw new Error('wrong greeting');\n");
+      const r = await verify(fix, packet({ kind: "refactor" }));
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.report.join("\n")).toContain("refactor");
+    } finally {
+      fs.rmSync(fix.dir, { recursive: true, force: true });
+    }
+  });
+});

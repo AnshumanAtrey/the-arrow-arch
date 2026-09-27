@@ -1,11 +1,13 @@
 /**
  * The orchestrator's own proof. A worker saying "done" changes nothing: this
  * commits its work, reads what actually changed, applies the house rules, and
- * re-runs the packet's commands itself. The first failing check decides.
+ * re-runs the packet's commands itself. The first failing check decides. Once
+ * they all pass it undoes the packet's production change and runs them again —
+ * a check that passes with the work undone proves nothing about it.
  */
 import fs from "node:fs";
 import path from "node:path";
-import { dependencyCheck, diffBudgetCheck, docsCheck, fileSizeCheck, looksLikeTest, newDependencies, placeholderCheck, secretCheck, testDisabledCheck, testWeakenedCheck, type FileFacts } from "./checks";
+import { dependencyCheck, diffBudgetCheck, docsCheck, fileSizeCheck, looksLikeTest, newDependencies, placeholderCheck, productionFiles, secretCheck, testDisabledCheck, testWeakenedCheck, type FileFacts } from "./checks";
 import { LIMITS } from "./config";
 import * as git from "./git";
 import { matchesAny } from "./glob";
@@ -130,6 +132,44 @@ export async function verifyPacket(opts: {
     const r = await run(cmd);
     const was = opts.baseline[cmd];
     report.push(r.code === 0 ? `PASS  ${cmd}` : `NOTE  ${cmd}  (regression${was !== undefined && was !== 0 ? ", already failing before" : ", newly failing"} — reported, not blocking)`);
+  }
+
+  // 5. the other half of red-first. prepare.ts shows a check failed before; that
+  // cannot show the check was about *this* work. So put the packet's production
+  // files back the way they were at the fork, run its checks again, and restore
+  // them: a check that passes with the work undone was never about the work.
+  // That is the shape of a packet that only edits tests until they go green.
+  // Cost: one extra run of the packet's checks, and only for packets that would
+  // have passed anyway. Regression checks are not re-run — they are not proof.
+  const production = productionFiles(files);
+  if (!production.length)
+    // a test-only packet is a real thing to be, just not a behavioural proof: it
+    // changed no behaviour for a check to be about, and the report says so.
+    report.push("NOTE  no production file changed — tests only, so this packet is not verified by behaviour.");
+  else if (packet.kind === "refactor")
+    // a refactor is *meant* to preserve behaviour: its checks should stay green
+    // with the work undone, so running the proof here would invert its meaning
+    // and reject correct work. Leave refactors out; do not "fix" this.
+    report.push("NOTE  refactor — behaviour is meant to stay the same, so its checks are not a behaviour proof.");
+  else {
+    // an inert production change (a comment, dead code) fails here, and should:
+    // its checks are about nothing it did. A packet that means to change nothing
+    // is a refactor, and the kind is in the plan a person approved.
+    const passing: string[] = [];
+    try {
+      await git.restoreFiles(wt, fork, production);
+      for (const cmd of packet.verification) if ((await run(cmd)).code === 0) passing.push(cmd);
+    } finally {
+      // never leave the worker's tree reverted, whatever the check just did
+      await git.restoreFiles(wt, "HEAD", production);
+    }
+    if (passing.length === packet.verification.length)
+      return fail({
+        class: "verification",
+        message: "Every check passes with this packet's production change undone, so none of them prove it. Aim a check at what the change does, or plan the packet as a refactor if behaviour is meant to stay the same.",
+        report: [...report, `FAIL  ${passing.join(", ")}  (passes with the production change undone)`],
+      });
+    report.push("PASS  the checks fail with the production change undone, so they depend on it");
   }
   return { ok: true, report, changedFiles: files };
 }

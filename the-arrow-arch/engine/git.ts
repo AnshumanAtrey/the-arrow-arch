@@ -148,6 +148,24 @@ export async function showAt(wt: string, ref: string, file: string): Promise<str
   return r.code === 0 ? r.out : "";
 }
 
+/**
+ * Put the named paths back the way they were at `ref` — their content then, or
+ * gone if they weren't there. Both the tree and the index move, so a caller can
+ * set paths to one ref and back to another and leave the worktree as it was.
+ * Used by verify.ts to undo a packet's production change in place and see
+ * whether its checks notice.
+ */
+export async function restoreFiles(wt: string, ref: string, files: string[]): Promise<void> {
+  const present: string[] = [];
+  const absent: string[] = [];
+  for (const f of files) ((await existedAt(wt, ref, f)) ? present : absent).push(f);
+  if (present.length) await ok(wt, "checkout", ref, "--", ...present);
+  for (const f of absent) {
+    fs.rmSync(path.join(wt, f), { force: true }); // tracked here now, gone at ref
+    await git(wt, "rm", "--cached", "-q", "--", f);
+  }
+}
+
 /** The commit a branch forked from another. */
 export const mergeBase = (wt: string, a: string, b = "HEAD") => ok(wt, "merge-base", a, b);
 
