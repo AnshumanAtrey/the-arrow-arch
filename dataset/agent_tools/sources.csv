@@ -1,0 +1,26 @@
+source_id,vendor,document_title,source_url,scope_note
+AIDER_CMDS,Aider,In-chat commands,https://aider.chat/docs/usage/commands.html,Aider command names and descriptions
+AIDER_GIT,Aider,Git integration,https://aider.chat/docs/git.html,"Aider diff, undo, commit and Git integration"
+AIDER_MODES,Aider,Chat modes,https://aider.chat/docs/usage/modes.html,"Aider code, ask, architect and help modes"
+AIDER_TEST,Aider,Linting and testing,https://aider.chat/docs/usage/lint-test.html,"Aider test, lint and run behavior"
+CLAUDE_CLI,Anthropic,Claude Code CLI reference,https://code.claude.com/docs/en/cli-reference,"CLI subcommands, flags, and interactive command links"
+CLAUDE_PERMS,Anthropic,Claude Code permissions,https://code.claude.com/docs/en/permissions,Tool names and permission behavior
+CLAUDE_SLASH,Anthropic,Claude Code slash commands,https://code.claude.com/docs/en/slash-commands,Built-in slash commands and custom skills
+CLINE_TOOLS,Cline,All Cline tools,https://github.com/cline/cline/blob/main/docs/tools-reference/all-cline-tools.mdx,Cline-maintained built-in tool reference; current ClineCore names
+CURSOR_MCP,Cursor,Model Context Protocol,https://docs.cursor.com/context/model-context-protocol,"MCP capabilities, transports, configuration"
+CURSOR_MODES,Cursor,Agent modes,https://docs.cursor.com/en/agent/modes,"Agent, Ask, and custom modes"
+CURSOR_TOOLS,Cursor,Agent tools,https://docs.cursor.com/en/agent/tools,"Built-in Agent search, edit, run, and MCP categories"
+GH_CLI,GitHub Copilot,Copilot CLI command reference,https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference,CLI built-ins and slash commands
+GH_CUSTOM,GitHub Copilot,Custom agents configuration,https://docs.github.com/en/copilot/reference/custom-agents-configuration,Tool aliases and MCP-configured tools
+GH_SEARCH,GitHub Copilot,Loading tools on demand with tool search,https://docs.github.com/en/copilot/concepts/agents/copilot-cli/tool-search,Built-in CLI tools and deferred MCP tools
+GEMINI_TOOLS,Google,Gemini CLI tools reference,https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/tools.md,"Official Gemini CLI tool names, categories and operations"
+AGY_CLI,Google Antigravity,CLI reference,https://www.antigravity.google/docs/cli/reference/,"CLI commands, conversation, context and tool controls"
+AGY_FEATURES,Google Antigravity,Feature overview,https://antigravity.google/docs/features,"Browser agent, terminal and version-control features"
+AGY_IDE,Google Antigravity,IDE overview,https://www.antigravity.google/docs/ide/overview/,IDE agent/editor/browser surfaces
+AGY_SDK,Google Antigravity,Tools and skills,https://www.antigravity.google/docs/sdk/tools/,Official SDK built-in tools and identifiers
+AGY_SLASH,Google Antigravity,Slash commands overview,https://www.antigravity.google/docs/slash-commands,Cross-surface command reference
+OAI_CLI,OpenAI,Codex developer commands,https://learn.chatgpt.com/docs/developer-commands,Codex CLI and desktop command reference
+OAI_MCP,OpenAI,Docs MCP,https://developers.openai.com/learn/docs-mcp,OpenAI documentation MCP capabilities and setup
+OAI_PATCH,OpenAI,Apply Patch,https://developers.openai.com/api/docs/guides/tools-apply-patch,Official structured patch tool reference
+OAI_TOOLS,OpenAI,Using tools,https://developers.openai.com/api/docs/guides/tools,Official API agent tools overview
+OPENCODE_TOOLS,OpenCode,Tools,https://opencode.ai/docs/tools/,"Official OpenCode tool names, parameters and permissions"

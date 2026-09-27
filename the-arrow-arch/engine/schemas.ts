@@ -1,0 +1,112 @@
+/**
+ * The shapes every agent hands back, as zod schemas. The TypeScript types are
+ * derived from these, so what the orchestrator validates and what the code
+ * compiles against can never drift apart.
+ */
+import { z } from "zod";
+
+const str = z.string().trim().min(1);
+const list = <T extends z.ZodTypeAny>(t: T) => z.array(t).default([]);
+
+export const Recommendation = z.object({
+  decision: z.enum(["continue", "stop"]),
+  reason: str,
+  suggestions: list(z.string()),
+});
+
+export const Rule = z.object({
+  id: str,
+  text: str,
+  source: z.string().default("company rules"),
+  category: z.enum(["structure", "naming", "code", "testing", "security", "process", "other"]).default("other"),
+  criticality: z.enum(["critical", "normal"]),
+  // globs a change may never touch while this rule stands, e.g. "db/migrations/**"
+  protectedPaths: list(z.string()),
+});
+
+export const RuleFinding = z.object({
+  ruleId: str,
+  status: z.enum(["ok", "violated", "conflict", "unclear"]),
+  evidence: z.string().default(""),
+  suggestion: z.string().default(""),
+});
+
+export const Profile = z.object({
+  summary: str,
+  stack: list(z.string()),
+  commands: z
+    .object({
+      setup: z.string().optional(),
+      build: z.string().optional(),
+      test: z.string().optional(),
+      typecheck: z.string().optional(),
+      lint: z.string().optional(),
+    })
+    .default({}),
+  structure: list(z.object({ path: str, purpose: str })),
+  rules: list(Rule),
+  findings: list(RuleFinding),
+  // how Arrow itself is tuned for this repo: test command, parallelism, branch naming...
+  adaptations: list(z.object({ setting: str, value: str, why: z.string().default("") })),
+  recommendation: Recommendation,
+});
+
+export const Question = z.object({
+  id: str,
+  question: str, // plain words + one real example; a non-engineer must be able to answer
+  options: list(z.string()),
+});
+
+export const Spec = z.object({
+  title: str,
+  intent: str,
+  methodology: z.object({
+    mode: z.enum(["one_shot", "phased", "iterative"]),
+    why: str,
+  }),
+  acceptance: z
+    .array(z.object({ id: str, statement: str, check: str }))
+    .min(1, "a spec needs at least one acceptance check"),
+  outOfScope: list(z.string()),
+  risk: z.enum(["low", "medium", "high"]),
+  questions: list(Question),
+  rulesTouched: list(z.string()),
+});
+
+export const Packet = z.object({
+  id: str,
+  module: z.string().default("M1"),
+  title: str,
+  objective: str,
+  context: z.string().default(""),
+  files: z.array(str).min(1, "a packet must list the files it may change"),
+  deps: list(z.string()),
+  verification: z.array(str).min(1, "a packet must list commands that prove it"),
+  regression: list(z.string()),
+  risk: z.enum(["low", "medium", "high"]).default("low"),
+});
+
+export const Plan = z.object({
+  summary: str,
+  modules: list(z.object({ id: str, title: str, context: z.string().default("") })),
+  packets: z.array(Packet).min(1, "a plan needs at least one packet"),
+  rulesImpact: list(z.object({ ruleId: str, impact: str })),
+  advice: Recommendation,
+});
+
+export const WorkerReport = z.object({
+  status: z.enum(["implemented", "blocked"]),
+  summary: z.string().default(""),
+  blockedReason: z.string().optional(),
+  newFacts: list(z.string()),
+});
+
+export type Recommendation = z.infer<typeof Recommendation>;
+export type Rule = z.infer<typeof Rule>;
+export type RuleFinding = z.infer<typeof RuleFinding>;
+export type Profile = z.infer<typeof Profile>;
+export type Question = z.infer<typeof Question>;
+export type Spec = z.infer<typeof Spec>;
+export type Packet = z.infer<typeof Packet>;
+export type Plan = z.infer<typeof Plan>;
+export type WorkerReport = z.infer<typeof WorkerReport>;

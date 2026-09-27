@@ -1,0 +1,3768 @@
+{
+  "collected_at": "2026-09-27",
+  "questions": [
+    {
+      "question_id": 75608323,
+      "title": "How do I solve &quot;error: externally-managed-environment&quot; every time I use pip 3?",
+      "body": "When I run on a Linux machine (using Debian or Ubuntu or a derived Linux distribution), I get this error: What does this error mean? How do I avoid it? Why doesn't work like it did before I upgraded my system using ?",
+      "tags": [
+        "python",
+        "pip",
+        "debian",
+        "failed-installation"
+      ],
+      "owner": {
+        "account_id": 23480036,
+        "reputation": 10653,
+        "user_id": 17532318,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/d37672946ecec10b2814be93daa910ef?s=256&d=identicon&r=PG",
+        "display_name": "Apoliticalboy",
+        "link": "https://stackoverflow.com/users/17532318/apoliticalboy"
+      },
+      "score": 1057,
+      "answer_count": 38,
+      "is_answered": true,
+      "creation_date": 1677700339,
+      "view_count": 2267943,
+      "link": "https://stackoverflow.com/questions/75608323/how-do-i-solve-error-externally-managed-environment-every-time-i-use-pip-3",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75956209,
+      "title": "Error &quot;&#39;DataFrame&#39; object has no attribute &#39;append&#39;&quot;",
+      "body": "I am trying to append a dictionary to a DataFrame object, but I get the following error: AttributeError: 'DataFrame' object has no attribute 'append' As far as I know, DataFrame does have the method \"append\". Code snippet: I was expecting the dictionary to be added as a new row. How can I fix it?",
+      "tags": [
+        "python",
+        "pandas",
+        "dataframe",
+        "concatenation",
+        "attributeerror"
+      ],
+      "owner": {
+        "account_id": 18651684,
+        "reputation": 3511,
+        "user_id": 13595011,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a-/AOh14Gja1Bf3zfNP7LY4HSFgp6beG2pul2AVcXIsoLC52g=k-s256",
+        "display_name": "Maksimjeet Chowdhary",
+        "link": "https://stackoverflow.com/users/13595011/maksimjeet-chowdhary"
+      },
+      "score": 333,
+      "answer_count": 4,
+      "is_answered": true,
+      "creation_date": 1680851159,
+      "view_count": 756499,
+      "link": "https://stackoverflow.com/questions/75956209/error-dataframe-object-has-no-attribute-append",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71591971,
+      "title": "How can I fix the &quot;zsh: command not found: python&quot; error? (macOS Monterey 12.3, Python&amp;nbsp;3.10, Atom IDE, and atom-python-run 0.9.7)",
+      "body": "Since I got the macOS v12.3 (Monterey) update (not sure it's related though), I have been getting this error when I try to run my Python code in the terminal: I am using Python 3.10.3, Atom IDE, and run the code in the terminal via atom-python-run package (which used to work perfectly fine). The settings for the packag",
+      "tags": [
+        "python",
+        "macos",
+        "terminal",
+        "atom-editor",
+        "macos-monterey"
+      ],
+      "owner": {
+        "account_id": 24663681,
+        "reputation": 4904,
+        "user_id": 18559642,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/13cdab4eb9d9fb5b1c7dece549f96046?s=256&d=identicon&r=PG",
+        "display_name": "Kirill Ignatyev",
+        "link": "https://stackoverflow.com/users/18559642/kirill-ignatyev"
+      },
+      "score": 277,
+      "answer_count": 22,
+      "is_answered": true,
+      "creation_date": 1648058522,
+      "view_count": 747679,
+      "link": "https://stackoverflow.com/questions/71591971/how-can-i-fix-the-zsh-command-not-found-python-error-macos-monterey-12-3",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 77364550,
+      "title": "AttributeError: module &#39;pkgutil&#39; has no attribute &#39;ImpImporter&#39;. Did you mean: &#39;zipimporter&#39;?",
+      "body": "Earlier I installed some packages like Matplotlib , NumPy , pip (version 23.3.1), wheel (version 0.41.2), etc., and did some programming with those. I used the command to find the list of packages that I have installed, and I am using Python 3.12.0 (by employing code ). I need to use pyspedas to analyse some data. I am",
+      "tags": [
+        "python",
+        "python-3.x",
+        "numpy",
+        "pip"
+      ],
+      "owner": {
+        "account_id": 6714573,
+        "reputation": 2785,
+        "user_id": 6323020,
+        "user_type": "registered",
+        "accept_rate": 50,
+        "profile_image": "https://www.gravatar.com/avatar/ca1065f7cc55d81ea1ea374b14113ac4?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "sreeraj t",
+        "link": "https://stackoverflow.com/users/6323020/sreeraj-t"
+      },
+      "score": 250,
+      "answer_count": 9,
+      "is_answered": true,
+      "creation_date": 1698301344,
+      "view_count": 448995,
+      "link": "https://stackoverflow.com/questions/77364550/attributeerror-module-pkgutil-has-no-attribute-impimporter-did-you-mean",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72441758,
+      "title": "TypeError: Descriptors cannot not be created directly",
+      "body": "I tried to install Ray , but it gave an error: I tried to solve the problem and downgraded protobuf : But still the problem persists in Ray, TensorFlow , and Keras . My application isn't working any more. How can I fix it?",
+      "tags": [
+        "python",
+        "tensorflow",
+        "ray"
+      ],
+      "owner": {
+        "account_id": 22989345,
+        "reputation": 2301,
+        "user_id": 17115086,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/16c137f7793988efb97ab410f7aec4f6?s=256&d=identicon&r=PG",
+        "display_name": "hasu33",
+        "link": "https://stackoverflow.com/users/17115086/hasu33"
+      },
+      "score": 225,
+      "answer_count": 17,
+      "is_answered": true,
+      "creation_date": 1653965255,
+      "view_count": 390037,
+      "link": "https://stackoverflow.com/questions/72441758/typeerror-descriptors-cannot-not-be-created-directly",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 77213053,
+      "title": "Why did Flask start failing with &quot;ImportError: cannot import name &#39;url_quote&#39; from &#39;werkzeug.urls&#39;&quot;?",
+      "body": "Environment: I run my Flask backend code in docker container, with BASE Image: But when I run the pytest with version , it raised an Error, with logs: My codes works well when I directly run it with shown below I guess it should be the pytest versions issue, because it used to work well without changing any related cod",
+      "tags": [
+        "python",
+        "flask",
+        "pytest",
+        "werkzeug"
+      ],
+      "owner": {
+        "account_id": 20745029,
+        "reputation": 2743,
+        "user_id": 15233792,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/2ol6b.jpg?s=256",
+        "display_name": "stevezkw",
+        "link": "https://stackoverflow.com/users/15233792/stevezkw"
+      },
+      "score": 204,
+      "answer_count": 6,
+      "is_answered": true,
+      "creation_date": 1696215720,
+      "view_count": 218194,
+      "link": "https://stackoverflow.com/questions/77213053/why-did-flask-start-failing-with-importerror-cannot-import-name-url-quote-fr",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73830524,
+      "title": "AttributeError: module &#39;lib&#39; has no attribute &#39;X509_V_FLAG_CB_ISSUER_CHECK&#39;",
+      "body": "Recently I had to reinstall Python due to a corrupt executable. This made one of our Python scripts bomb with the following error: AttributeError: module 'lib' has no attribute 'X509_V_FLAG_CB_ISSUER_CHECK' The line of code that caused it to bomb was: I tried pip uninstalling and pip upgrading the google-api-python-cli",
+      "tags": [
+        "python",
+        "google-analytics-api"
+      ],
+      "owner": {
+        "account_id": 6468208,
+        "reputation": 7227,
+        "user_id": 5009293,
+        "user_type": "registered",
+        "accept_rate": 76,
+        "profile_image": "https://graph.facebook.com/995762863775266/picture?type=large",
+        "display_name": "Doug Coats",
+        "link": "https://stackoverflow.com/users/5009293/doug-coats"
+      },
+      "score": 198,
+      "answer_count": 21,
+      "is_answered": true,
+      "creation_date": 1663949925,
+      "view_count": 373360,
+      "link": "https://stackoverflow.com/questions/73830524/attributeerror-module-lib-has-no-attribute-x509-v-flag-cb-issuer-check",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71668256,
+      "title": "Deprecation notice: ReactDOM.render is no longer supported in React 18",
+      "body": "I get this error every time I create a new React app: Warning: ReactDOM.render is no longer supported in React 18. Use createRoot instead. Until you switch to the new API, your app will behave as if it's running React 17. Learn more: https://reactjs.org/link/switch-to-createroot How can I fix it? I created my React app",
+      "tags": [
+        "javascript",
+        "reactjs"
+      ],
+      "owner": {
+        "account_id": 19578498,
+        "reputation": 3002,
+        "user_id": 14328086,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a-/AOh14GgbV9ZP-Qk0rX8p02YuK0iORgyNk7sRai6ZJTGp=k-s256",
+        "display_name": "SnNaCk",
+        "link": "https://stackoverflow.com/users/14328086/snnack"
+      },
+      "score": 269,
+      "answer_count": 15,
+      "is_answered": true,
+      "creation_date": 1648584706,
+      "view_count": 490203,
+      "link": "https://stackoverflow.com/questions/71668256/deprecation-notice-reactdom-render-is-no-longer-supported-in-react-18",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75337953,
+      "title": "What causes NextJS Warning: &quot;Extra attributes from the server: data-new-gr-c-s-check-loaded... &quot;",
+      "body": "I am getting the following warning from my Next.js application: Warning: Extra attributes from the server: data-new-gr-c-s-check-loaded,data-gr-ext-installed,cz-shortcut-listen,data-lt-installed I don't know why it happens. What is the explanation for this?",
+      "tags": [
+        "javascript",
+        "reactjs",
+        "ecmascript-6",
+        "next.js"
+      ],
+      "owner": {
+        "account_id": 24463113,
+        "reputation": 2949,
+        "user_id": 18383895,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/19e509568577ac469f7d669e3f75797e?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Md Sajedul Islam",
+        "link": "https://stackoverflow.com/users/18383895/md-sajedul-islam"
+      },
+      "score": 253,
+      "answer_count": 21,
+      "is_answered": true,
+      "creation_date": 1675438687,
+      "view_count": 207083,
+      "link": "https://stackoverflow.com/questions/75337953/what-causes-nextjs-warning-extra-attributes-from-the-server-data-new-gr-c-s-c",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72494154,
+      "title": "&quot;A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received&quot;, What does that mean?",
+      "body": "I'm working on a React application and I use some npm modules, one of which I had to build myself. (my NPM package: https://www.npmjs.com/package/modale-react-rm ). It is a simple modal that opens and closes with a . After importing my package, I have an error in my console that appears suddenly after a few seconds wit",
+      "tags": [
+        "javascript",
+        "google-chrome-extension"
+      ],
+      "owner": {
+        "account_id": 23675167,
+        "reputation": 2580,
+        "user_id": 17701489,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a-/AOh14Ghw1XhfB14tJ-OXsrcnwfovPJFizB1kzAHvHJEr=k-s256",
+        "display_name": "Romin Manogil",
+        "link": "https://stackoverflow.com/users/17701489/romin-manogil"
+      },
+      "score": 246,
+      "answer_count": 16,
+      "is_answered": true,
+      "creation_date": 1654283276,
+      "view_count": 598289,
+      "link": "https://stackoverflow.com/questions/72494154/a-listener-indicated-an-asynchronous-response-by-returning-true-but-the-messag",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 70709987,
+      "title": "How to load environment variables from .env file using Vite",
+      "body": "I want to load environment variables from the file using Vite I used the object as mentioned in Docs file: when trying to access this variable via the -> it returns undefined. so, how can I access them?",
+      "tags": [
+        "javascript",
+        "environment-variables",
+        "vite",
+        "env-file"
+      ],
+      "owner": {
+        "account_id": 15185881,
+        "reputation": 2259,
+        "user_id": 10957860,
+        "user_type": "registered",
+        "profile_image": "https://graph.facebook.com/1090419987832165/picture?type=large",
+        "display_name": "Mohamed Fadl",
+        "link": "https://stackoverflow.com/users/10957860/mohamed-fadl"
+      },
+      "score": 191,
+      "answer_count": 18,
+      "is_answered": true,
+      "creation_date": 1642160140,
+      "view_count": 396900,
+      "link": "https://stackoverflow.com/questions/70709987/how-to-load-environment-variables-from-env-file-using-vite",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71788254,
+      "title": "React 18 TypeScript children FC",
+      "body": "I upgraded to React 18 and things compiled fine. Today it seems every single component that uses children is throwing an error. Before children props were automatically included in the interface. Now it seems I have to manually add . What is the correct typescript type for react children? Is this part of the React 18 u",
+      "tags": [
+        "javascript",
+        "reactjs",
+        "typescript"
+      ],
+      "owner": {
+        "account_id": 2234503,
+        "reputation": 13752,
+        "user_id": 1971279,
+        "user_type": "registered",
+        "accept_rate": 65,
+        "profile_image": "https://i.sstatic.net/6X8xA.jpg?s=256",
+        "display_name": "Michael Joseph Aubry",
+        "link": "https://stackoverflow.com/users/1971279/michael-joseph-aubry"
+      },
+      "score": 185,
+      "answer_count": 10,
+      "is_answered": true,
+      "creation_date": 1649361650,
+      "view_count": 181172,
+      "link": "https://stackoverflow.com/questions/71788254/react-18-typescript-children-fc",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72238175,
+      "title": "Why useEffect running twice and how to handle it well in React?",
+      "body": "I have a counter and a in an to log every change in my state, but the is getting called two times on mount. I am using React 18. Here is a CodeSandbox of my project and the code below:",
+      "tags": [
+        "javascript",
+        "reactjs",
+        "next.js",
+        "react-hooks"
+      ],
+      "owner": {
+        "account_id": 20816383,
+        "reputation": 1840,
+        "user_id": 15289077,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/XlonU.jpg?s=256",
+        "display_name": "hossein fti",
+        "link": "https://stackoverflow.com/users/15289077/hossein-fti"
+      },
+      "score": 174,
+      "answer_count": 6,
+      "is_answered": true,
+      "creation_date": 1652513176,
+      "view_count": 124157,
+      "link": "https://stackoverflow.com/questions/72238175/why-useeffect-running-twice-and-how-to-handle-it-well-in-react",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 76435306,
+      "title": "babel-preset-react-app, is importing the &quot;@babel/plugin-proposal-private-property-in-object&quot; package without declaring it in its dependencies",
+      "body": "My issue is that I've tried to create a new React project and after a lot of issues with vulnerabilities, I managed to solve some of them, one of the main instructions was adding this line: into my package.json file. Once I've done that, I had to delete my node_modules folder folder and reuse and now I am getting a Bab",
+      "tags": [
+        "javascript",
+        "node.js",
+        "reactjs",
+        "babeljs",
+        "ejs"
+      ],
+      "owner": {
+        "account_id": 28782870,
+        "reputation": 1971,
+        "user_id": 22044096,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a/AAcHTtdvQ1O57A2UyrGLAVuzCB_oxhnhj9_KxMHnw_Sv=k-s256",
+        "display_name": "Omri Ben Lulu",
+        "link": "https://stackoverflow.com/users/22044096/omri-ben-lulu"
+      },
+      "score": 160,
+      "answer_count": 24,
+      "is_answered": true,
+      "creation_date": 1686254204,
+      "view_count": 282388,
+      "link": "https://stackoverflow.com/questions/76435306/babel-preset-react-app-is-importing-the-babel-plugin-proposal-private-propert",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72146352,
+      "title": "Vitest defineConfig, &#39;test&#39; does not exist in type &#39;UserConfigExport&#39;",
+      "body": "Trying to setup vitest on an already existing vite (vue 3, typescript) project. My vite.config.ts looks like this: But in VS code it complains: On hover I see: Argument of type '{ test: { globals: boolean; environment: string; }; plugins: Plugin[]; }' is not assignable to parameter of type 'UserConfigExport'. Object li",
+      "tags": [
+        "typescript",
+        "vite",
+        "vitest"
+      ],
+      "owner": {
+        "account_id": 1348581,
+        "reputation": 6902,
+        "user_id": 9242225,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/084d353933084ad0d1266529dfd72b29?s=256&d=identicon&r=PG",
+        "display_name": "WillD",
+        "link": "https://stackoverflow.com/users/9242225/willd"
+      },
+      "score": 158,
+      "answer_count": 20,
+      "is_answered": true,
+      "creation_date": 1651864337,
+      "view_count": 88103,
+      "link": "https://stackoverflow.com/questions/72146352/vitest-defineconfig-test-does-not-exist-in-type-userconfigexport",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 74421327,
+      "title": "NextRouter was not mounted Next.JS",
+      "body": "Using as throws \"Argument of type '{ pathname: string; query: { search: string; }; }' is not assignable to parameter of type 'string'.\" NextJS documentation From docs: A component used useRouter outside a Next.js application, or was rendered outside a Next.js application. This can happen when doing unit testing on comp",
+      "tags": [
+        "reactjs",
+        "typescript",
+        "next.js",
+        "next-router"
+      ],
+      "owner": {
+        "account_id": 20821982,
+        "reputation": 1679,
+        "user_id": 15293377,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/1d81a80d02bbcda2a6c07dd1339b17c3?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "thewb",
+        "link": "https://stackoverflow.com/users/15293377/thewb"
+      },
+      "score": 152,
+      "answer_count": 15,
+      "is_answered": true,
+      "creation_date": 1668345456,
+      "view_count": 257676,
+      "link": "https://stackoverflow.com/questions/74421327/nextrouter-was-not-mounted-next-js",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72013449,
+      "title": "Upgrading Jest to v29 - Error Test environment jest-environment-jsdom cannot be found",
+      "body": "Has anyone successfully upgraded to latest Jest version ? I'm receiving an error:",
+      "tags": [
+        "javascript",
+        "node.js",
+        "typescript",
+        "jestjs",
+        "ts-jest"
+      ],
+      "owner": {
+        "account_id": 17810515,
+        "reputation": 5556,
+        "user_id": 12935256,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/6d04b6b400ca7ac97eb33e720afe0f1f?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "marko424",
+        "link": "https://stackoverflow.com/users/12935256/marko424"
+      },
+      "score": 149,
+      "answer_count": 1,
+      "is_answered": true,
+      "creation_date": 1650973879,
+      "view_count": 101234,
+      "link": "https://stackoverflow.com/questions/72013449/upgrading-jest-to-v29-error-test-environment-jest-environment-jsdom-cannot-be",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71791347,
+      "title": "NPM package cannot be used as a JSX Component - Type errors",
+      "body": "Ive been getting these strange type errors on my typescript project for certain packages. Ex: I don't get these type errors on my local windows machine but they keep occurring in my linux virtual machine. I've deleted the project many times, cloned my repo and installed packages again in different versions of node and ",
+      "tags": [
+        "typescript",
+        "npm",
+        "typescript-typings"
+      ],
+      "owner": {
+        "account_id": 8366638,
+        "reputation": 1738,
+        "user_id": 6283102,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/efcd6b7b16d82cd70b388c47eb2726d3?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Ray",
+        "link": "https://stackoverflow.com/users/6283102/ray"
+      },
+      "score": 141,
+      "answer_count": 19,
+      "is_answered": true,
+      "creation_date": 1649388316,
+      "view_count": 120608,
+      "link": "https://stackoverflow.com/questions/71791347/npm-package-cannot-be-used-as-a-jsx-component-type-errors",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71713405,
+      "title": "Cannot find module &#39;react-dom/client&#39; from &#39;node_modules/@testing-library/react/dist/pure.js&#39;",
+      "body": "While running I got following error: All necessary packages seem to be installed. I reinstalled , but it didn't help. Below providing imports used in my test file: Additionally providing my :",
+      "tags": [
+        "reactjs",
+        "typescript",
+        "unit-testing"
+      ],
+      "owner": {
+        "account_id": 23057700,
+        "reputation": 1561,
+        "user_id": 17173516,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/35cee493be2bc5f6422cb9a6795227c5?s=256&d=identicon&r=PG",
+        "display_name": "Myroslava",
+        "link": "https://stackoverflow.com/users/17173516/myroslava"
+      },
+      "score": 140,
+      "answer_count": 4,
+      "is_answered": true,
+      "creation_date": 1648852953,
+      "view_count": 126429,
+      "link": "https://stackoverflow.com/questions/71713405/cannot-find-module-react-dom-client-from-node-modules-testing-library-react",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 70564950,
+      "title": "VSCode prettier adds `value` to imports in TypeScript React",
+      "body": "After configuring prettier with the plugin in VSCode the format on save function adds weird keywords to every non-default import in my React+TS code. Like this: With this TS complains about Could anyone help me with this? Not sure why this is happening and how to solve it. Running doesn't add the keywords. My package.j",
+      "tags": [
+        "reactjs",
+        "typescript",
+        "vs-code",
+        "eslint",
+        "prettier"
+      ],
+      "owner": {
+        "account_id": 19136854,
+        "reputation": 1552,
+        "user_id": 13977690,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/98f08ac69cdd834044b55e58ff9e2b1b?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Kibartas",
+        "link": "https://stackoverflow.com/users/13977690/kibartas"
+      },
+      "score": 139,
+      "answer_count": 5,
+      "is_answered": true,
+      "creation_date": 1641208520,
+      "view_count": 25273,
+      "link": "https://stackoverflow.com/questions/70564950/vscode-prettier-adds-value-to-imports-in-typescript-react",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 77454741,
+      "title": "Why doesn&#39;t App Module exist in Angular 17?",
+      "body": "I have downloaded with npm the new version of Angular and I haven't seen the app.module.ts file. Has it been eliminated from the project structure? . I have tried creating a new one. It seems odd.",
+      "tags": [
+        "javascript",
+        "angular",
+        "typescript"
+      ],
+      "owner": {
+        "account_id": 10061590,
+        "reputation": 1507,
+        "user_id": 7438078,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/7c954701bc07188f8cb28a55bf5ccbc6?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "rippleytrigger",
+        "link": "https://stackoverflow.com/users/7438078/rippleytrigger"
+      },
+      "score": 137,
+      "answer_count": 5,
+      "is_answered": true,
+      "creation_date": 1699546446,
+      "view_count": 293601,
+      "link": "https://stackoverflow.com/questions/77454741/why-doesnt-app-module-exist-in-angular-17",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75263047,
+      "title": "Duplicate class in Kotlin Android",
+      "body": "I kept on getting an error that there is a duplicate error in classes. This is what I have under org.jetbrains.kotlin folder .idea/libraries It seems like the problem is because there is two different dependencies for Kotlin, from stdlib and stdlibjdk8 , but I don't know how to remove either one from my module/project ",
+      "tags": [
+        "java",
+        "android",
+        "kotlin",
+        "dependencies"
+      ],
+      "owner": {
+        "account_id": 27591481,
+        "reputation": 4521,
+        "user_id": 21058541,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a/AEdFTp7BZPLlc03DqtFlIuJtBYM_rEdbosHH7KzQ_mQS=k-s256",
+        "display_name": "midnighthowlers",
+        "link": "https://stackoverflow.com/users/21058541/midnighthowlers"
+      },
+      "score": 453,
+      "answer_count": 70,
+      "is_answered": true,
+      "creation_date": 1674851299,
+      "view_count": 307628,
+      "link": "https://stackoverflow.com/questions/75263047/duplicate-class-in-kotlin-android",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 74634321,
+      "title": "Fixing the &quot;Build Type contains custom BuildConfig fields, but the feature is disabled&quot; error w/ buildConfigField",
+      "body": "In the new version of Android Studio (Flamingo | 2022.2.1 Canary 9) with the org.jetbrains.kotlin (1.8.0-Beta) plugin and 8.0.0-alpha09 gradle plugin, a new build suddenly gets this error: Build Type 'release' contains custom BuildConfig fields, but the feature is disabled. Is there a way to make this go away?",
+      "tags": [
+        "java",
+        "android",
+        "android-studio",
+        "gradle",
+        "android-buildconfig"
+      ],
+      "owner": {
+        "account_id": 3641070,
+        "reputation": 9233,
+        "user_id": 3035127,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/DnBDm.png?s=256",
+        "display_name": "fattire",
+        "link": "https://stackoverflow.com/users/3035127/fattire"
+      },
+      "score": 172,
+      "answer_count": 9,
+      "is_answered": true,
+      "creation_date": 1669843400,
+      "view_count": 159926,
+      "link": "https://stackoverflow.com/questions/74634321/fixing-the-build-type-contains-custom-buildconfig-fields-but-the-feature-is-di",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71473553,
+      "title": "Action requested: Declare your Ad ID permission",
+      "body": "Today i have got this email: Last July, we announced Advertising policy changes to help bolster security and privacy. We added new restrictions on identifiers used by apps that target children. When users choose to delete their advertising ID in order to opt out of personalization advertising, developers will receive a",
+      "tags": [
+        "java",
+        "android",
+        "admob",
+        "google-play-console",
+        "google-advertising-id"
+      ],
+      "owner": {
+        "account_id": 23288910,
+        "reputation": 1671,
+        "user_id": 17371284,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/ac34ba2912e68c4ff7810b45d75861cf?s=256&d=identicon&r=PG",
+        "display_name": "Abdullah",
+        "link": "https://stackoverflow.com/users/17371284/abdullah"
+      },
+      "score": 160,
+      "answer_count": 13,
+      "is_answered": true,
+      "creation_date": 1647287915,
+      "view_count": 204895,
+      "link": "https://stackoverflow.com/questions/71473553/action-requested-declare-your-ad-id-permission",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72117858,
+      "title": "Incompatible because this component declares a component compatible with Java 11 and the consumer needed a component compatible with Java 10",
+      "body": "In my build.gradle file I upgraded the version of one dependency (namely: com.db:microservice-commons). After loading the gradle changes, I get the following error message: Line 50+ of file 'C:\\Projects\\Container\\mschmidt\\mount\\booking-service\\standalone\\build.gradle' looks as follows: I have no clue what to make of th",
+      "tags": [
+        "java",
+        "gradle",
+        "intellij-idea",
+        "java-11"
+      ],
+      "owner": {
+        "account_id": 14804062,
+        "reputation": 2651,
+        "user_id": 10691560,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/25b7e223af37293b2a37e3d2f8fbdc53?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Thomas_SO",
+        "link": "https://stackoverflow.com/users/10691560/thomas-so"
+      },
+      "score": 149,
+      "answer_count": 11,
+      "is_answered": true,
+      "creation_date": 1651689168,
+      "view_count": 205894,
+      "link": "https://stackoverflow.com/questions/72117858/incompatible-because-this-component-declares-a-component-compatible-with-java-11",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72335789,
+      "title": "Can not extract resource from com.android.aaptcompiler",
+      "body": "Can not extract resource from com.android.aaptcompiler.ParsedResource@636e1e76.",
+      "tags": [
+        "java",
+        "android"
+      ],
+      "owner": {
+        "account_id": 12070986,
+        "reputation": 1598,
+        "user_id": 8826361,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/VxT7J.jpg?s=256",
+        "display_name": "Shivendra Kr. Sahu",
+        "link": "https://stackoverflow.com/users/8826361/shivendra-kr-sahu"
+      },
+      "score": 137,
+      "answer_count": 23,
+      "is_answered": true,
+      "creation_date": 1653206424,
+      "view_count": 138059,
+      "link": "https://stackoverflow.com/questions/72335789/can-not-extract-resource-from-com-android-aaptcompiler",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 70890575,
+      "title": "Flutter &amp; Android: Your build is currently configured to use Java 17.0.2 and Gradle 7.0.2",
+      "body": "I got this on my android part of Flutter. Please kindly tell the solution to this. I would really appreciate your answer.",
+      "tags": [
+        "java",
+        "android",
+        "flutter",
+        "gradle",
+        "kotlin-multiplatform"
+      ],
+      "owner": {
+        "account_id": 19093004,
+        "reputation": 3809,
+        "user_id": 13942929,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/f522121737ddfa7a42dd1c5cb7f4d276?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Punreach Rany",
+        "link": "https://stackoverflow.com/users/13942929/punreach-rany"
+      },
+      "score": 136,
+      "answer_count": 13,
+      "is_answered": true,
+      "creation_date": 1643357384,
+      "view_count": 225286,
+      "link": "https://stackoverflow.com/questions/70890575/flutter-android-your-build-is-currently-configured-to-use-java-17-0-2-and-gra",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72381114,
+      "title": "Upgrading the deprecated WebSecurityConfigurerAdapter in Spring Boot 2.7.0",
+      "body": "I am trying to update the as it has been deprecated. The class is configured as follows: Now without the I redefine the same class like this: But unfortunately I get the following error:",
+      "tags": [
+        "java",
+        "spring",
+        "spring-boot",
+        "spring-security"
+      ],
+      "owner": {
+        "user_type": "does_not_exist",
+        "display_name": "user6197662"
+      },
+      "score": 122,
+      "answer_count": 11,
+      "is_answered": true,
+      "creation_date": 1653495285,
+      "view_count": 239646,
+      "link": "https://stackoverflow.com/questions/72381114/upgrading-the-deprecated-websecurityconfigureradapter-in-spring-boot-2-7-0",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 70722475,
+      "title": "error CS8773: &quot;Feature &#39;global using directive&#39; is not available in C# 9.0&quot; after downgrade from net6.0 to net5.0",
+      "body": "I have a project that was initially created for .NET 6 but then I needed to downgrade it to .NET 5. I changed Target framework in Project Properties and tried to compile. As a result I received a bunch of the errors: File GlobalUsings.g.cs is created automatically and it reappears every time after compilation.",
+      "tags": [
+        "c#",
+        "visual-studio",
+        ".net-core",
+        ".net-5",
+        ".net-6.0"
+      ],
+      "owner": {
+        "account_id": 6063567,
+        "reputation": 5131,
+        "user_id": 4734673,
+        "user_type": "registered",
+        "accept_rate": 42,
+        "profile_image": "https://www.gravatar.com/avatar/8b5a8714052d9082c194d39a226e98b3?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Yuriy Gavrishov",
+        "link": "https://stackoverflow.com/users/4734673/yuriy-gavrishov"
+      },
+      "score": 110,
+      "answer_count": 6,
+      "is_answered": true,
+      "creation_date": 1642258134,
+      "view_count": 74832,
+      "link": "https://stackoverflow.com/questions/70722475/error-cs8773-feature-global-using-directive-is-not-available-in-c-9-0-afte",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 74327225,
+      "title": "Why does sending via a UdpClient cause subsequent receiving to fail?",
+      "body": "I'm trying to create a UDP server which can send messages to all the clients that send messages to it. The real situation is a little more complex, but it's simplest to imagine it as a chat server: everyone who has sent a message before receives all the messages that are sent by other clients. All of this is done via ,",
+      "tags": [
+        "c#",
+        "udp",
+        "udpclient"
+      ],
+      "owner": {
+        "account_id": 11683,
+        "reputation": 1529870,
+        "user_id": 22656,
+        "user_type": "registered",
+        "accept_rate": 86,
+        "profile_image": "https://www.gravatar.com/avatar/6d8ebb117e8d83d74ea95fbdd0f87e13?s=256&d=identicon&r=PG",
+        "display_name": "Jon Skeet",
+        "link": "https://stackoverflow.com/users/22656/jon-skeet"
+      },
+      "score": 108,
+      "answer_count": 2,
+      "is_answered": true,
+      "creation_date": 1667647065,
+      "view_count": 8116,
+      "link": "https://stackoverflow.com/questions/74327225/why-does-sending-via-a-udpclient-cause-subsequent-receiving-to-fail",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75146087,
+      "title": "Running Azure functions locally gives &quot;No runtime&quot; error after .NET7 upgrade",
+      "body": "Recently I wanted to upgrade my Azure functions to use .NET 7 . For some reasons, after doing all the required steps, when I want to run any of the functions, I keep getting this error message box telling There is no Functions runtime available that matches the version project specified by the project I checked to have",
+      "tags": [
+        "c#",
+        ".net",
+        "azure",
+        "visual-studio",
+        "function"
+      ],
+      "owner": {
+        "account_id": 11155581,
+        "reputation": 5125,
+        "user_id": 8187400,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/YjA4bewx.jpg?s=256",
+        "display_name": "Gabriel Stancu",
+        "link": "https://stackoverflow.com/users/8187400/gabriel-stancu"
+      },
+      "score": 90,
+      "answer_count": 3,
+      "is_answered": true,
+      "creation_date": 1673956715,
+      "view_count": 36070,
+      "link": "https://stackoverflow.com/questions/75146087/running-azure-functions-locally-gives-no-runtime-error-after-net7-upgrade",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71080354,
+      "title": "getting &quot;The bucket does not allow ACLs&quot; Error",
+      "body": "This is my bucket policy { \"Version\" : \"2012-10-17\", \"ID\" : \" \", \"Statement\" : [ { \"Sid\" : \" \", \"Effect\" : \"Allow\", \"Principar\" : \" \", \"Action\" : [ \"s3:PutObject\", \"s3:PutObjectAcl\", \"s3:GetObject\", \"s3:GetObjectAcl\" ], \"Resource\" : \" ***********************\" } ] } and here's the code I used to upload image: and gettin",
+      "tags": [
+        "c#",
+        "amazon-web-services",
+        "amazon-s3"
+      ],
+      "owner": {
+        "account_id": 24226337,
+        "reputation": 813,
+        "user_id": 18180770,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/aa940bdf36f502044c680121d0533881?s=256&d=identicon&r=PG",
+        "display_name": "Anshu4298",
+        "link": "https://stackoverflow.com/users/18180770/anshu4298"
+      },
+      "score": 81,
+      "answer_count": 5,
+      "is_answered": true,
+      "creation_date": 1644583714,
+      "view_count": 136668,
+      "link": "https://stackoverflow.com/questions/71080354/getting-the-bucket-does-not-allow-acls-error",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 77302452,
+      "title": "How to &quot;properly&quot; (idiomatic) avoid CS9107 when passing primary constructor parameters to base",
+      "body": "With C# 12, we get primary constructors for normal classes. Consider the following code: This gives the following warning for the parameter to the primary constructor: Program.cs(8,42): Warning CS9107 : Parameter 'string name' is captured into the state of the enclosing type and its value is also passed to the base con",
+      "tags": [
+        "c#",
+        ".net",
+        "c#-12.0"
+      ],
+      "owner": {
+        "account_id": 213,
+        "reputation": 394634,
+        "user_id": 267,
+        "user_type": "registered",
+        "accept_rate": 87,
+        "profile_image": "https://www.gravatar.com/avatar/1b11262da6d1cd26b1b0bc99a2620cee?s=256&d=identicon&r=PG",
+        "display_name": "Lasse V. Karlsen",
+        "link": "https://stackoverflow.com/users/267/lasse-v-karlsen"
+      },
+      "score": 79,
+      "answer_count": 6,
+      "is_answered": true,
+      "creation_date": 1697463419,
+      "view_count": 21574,
+      "link": "https://stackoverflow.com/questions/77302452/how-to-properly-idiomatic-avoid-cs9107-when-passing-primary-constructor-para",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71954271,
+      "title": "How can I read the appsettings.json in a .NET 6 console application?",
+      "body": "I try to create a .NET 6 Console Application but having troubles reading my appsettings.json file. In a web application I could use this... But what would I use in a console application? I get this error when trying to add it to program.cs.",
+      "tags": [
+        "c#",
+        "json",
+        "console-application",
+        ".net-6.0"
+      ],
+      "owner": {
+        "account_id": 2471689,
+        "reputation": 2471,
+        "user_id": 2153383,
+        "user_type": "registered",
+        "accept_rate": 44,
+        "profile_image": "https://www.gravatar.com/avatar/baf6dcd721c5b19dd315d566a3d4cc11?s=256&d=identicon&r=PG",
+        "display_name": "MTplus",
+        "link": "https://stackoverflow.com/users/2153383/mtplus"
+      },
+      "score": 78,
+      "answer_count": 9,
+      "is_answered": true,
+      "creation_date": 1650543107,
+      "view_count": 113747,
+      "link": "https://stackoverflow.com/questions/71954271/how-can-i-read-the-appsettings-json-in-a-net-6-console-application",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73608378,
+      "title": "VS2022 - Can&#39;t view values of variables when exception thrown - Local variables and arguments are not available in &#39;[Exception]&#39; call stack frames",
+      "body": "I'm getting an InvalidOperationException thrown (which should be easy to fix). However when the exception is thrown, I can't view any of the current values in the Locals debug window. They all have the same message: Not sure why this is happening (maybe something to do with async?) but this is relatively simple code an",
+      "tags": [
+        "c#",
+        "exception",
+        "visual-studio-debugging",
+        "visual-studio-2022"
+      ],
+      "owner": {
+        "account_id": 356,
+        "reputation": 26507,
+        "user_id": 445,
+        "user_type": "registered",
+        "accept_rate": 74,
+        "profile_image": "https://www.gravatar.com/avatar/c7f06957d979dd92fb7d64b7d7d002bf?s=256&d=identicon&r=PG",
+        "display_name": "Calanus",
+        "link": "https://stackoverflow.com/users/445/calanus"
+      },
+      "score": 64,
+      "answer_count": 5,
+      "is_answered": true,
+      "creation_date": 1662376008,
+      "view_count": 12294,
+      "link": "https://stackoverflow.com/questions/73608378/vs2022-cant-view-values-of-variables-when-exception-thrown-local-variables",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72177535,
+      "title": "How can I include a C header that uses a C++ keyword as an identifier in C++?",
+      "body": "I've been using C++ and compiling with clang++. I would like to include the <xcb/xkb.h> header for an X11 program I am writing. Unfortunately this header uses for some field names (such as line 727) and that is a keyword in C++. Is there anyway to deal with this? xcb/xkb.h :",
+      "tags": [
+        "c++",
+        "c",
+        "clang"
+      ],
+      "owner": {
+        "account_id": 25195588,
+        "reputation": 817,
+        "user_id": 19035179,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/7c27bbc7b9f3bdcad723e21c481ac4dc?s=256&d=identicon&r=PG",
+        "display_name": "CLearner",
+        "link": "https://stackoverflow.com/users/19035179/clearner"
+      },
+      "score": 75,
+      "answer_count": 4,
+      "is_answered": true,
+      "creation_date": 1652126035,
+      "view_count": 7199,
+      "link": "https://stackoverflow.com/questions/72177535/how-can-i-include-a-c-header-that-uses-a-c-keyword-as-an-identifier-in-c",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73095254,
+      "title": "How is vector&lt;vector&lt;int&gt;&gt; &quot;heavier&quot; than vector&lt;pair&lt;int,int&gt;&gt;?",
+      "body": "During a recent interview, I suggested using over since we only wanted to store two values for every entry in the vector. I said something to the tune of \"we should use over since the latter is heavier than the former\". After the coding session was over, they said it was a good idea to use pair over a vector and asked ",
+      "tags": [
+        "c++",
+        "algorithm",
+        "vector"
+      ],
+      "owner": {
+        "account_id": 11140687,
+        "reputation": 857,
+        "user_id": 18175624,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/e76d5cde9e6fd61f9df7dfb633061610?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "J. Doe",
+        "link": "https://stackoverflow.com/users/18175624/j-doe"
+      },
+      "score": 69,
+      "answer_count": 7,
+      "is_answered": true,
+      "creation_date": 1658626757,
+      "view_count": 7402,
+      "link": "https://stackoverflow.com/questions/73095254/how-is-vectorvectorint-heavier-than-vectorpairint-int",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 74102654,
+      "title": "Compiler optimizations may cause integer overflow. Is that okay?",
+      "body": "I have an . For simplicity, say s occupy the range -2^31 to 2^31-1. I want to compute . I allow to be any value 0 <= <= 2^30. If I compute 2*(2^30), I get 2^31, which is an integer overflow. One solution is to compute . There's one more subtraction than I want, but this shouldn't overflow. However, the compiler will op",
+      "tags": [
+        "c++",
+        "compiler-optimization",
+        "undefined-behavior",
+        "integer-overflow",
+        "integer-arithmetic"
+      ],
+      "owner": {
+        "account_id": 26276212,
+        "reputation": 865,
+        "user_id": 19945342,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/95bf58bef385fb321fc0b5c102fffe2c?s=256&d=identicon&r=PG",
+        "display_name": "mbang",
+        "link": "https://stackoverflow.com/users/19945342/mbang"
+      },
+      "score": 65,
+      "answer_count": 4,
+      "is_answered": true,
+      "creation_date": 1666037115,
+      "view_count": 8291,
+      "link": "https://stackoverflow.com/questions/74102654/compiler-optimizations-may-cause-integer-overflow-is-that-okay",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73877384,
+      "title": "std::is_same different results between compilers",
+      "body": "The above code has different results using different compilers. Is this a compiler bug or am I missing something? clang 1 1 ( https://godbolt.org/z/s43T55rxq ) msvc 1 1 ( https://godbolt.org/z/YnKfKh41q ) gcc 0 1 ( https://godbolt.org/z/91xdfv93c ) Side by side gcc vs clang demo",
+      "tags": [
+        "c++",
+        "boolean",
+        "rvalue",
+        "lvalue",
+        "value-categories"
+      ],
+      "owner": {
+        "account_id": 980026,
+        "reputation": 1678,
+        "user_id": 999986,
+        "user_type": "registered",
+        "accept_rate": 50,
+        "profile_image": "https://www.gravatar.com/avatar/552c507622e61c693fb2368a0d9db4d2?s=256&d=identicon&r=PG",
+        "display_name": "Nir",
+        "link": "https://stackoverflow.com/users/999986/nir"
+      },
+      "score": 60,
+      "answer_count": 1,
+      "is_answered": true,
+      "creation_date": 1664348366,
+      "view_count": 2572,
+      "link": "https://stackoverflow.com/questions/73877384/stdis-same-different-results-between-compilers",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 76261546,
+      "title": "Why do none of the major compilers optimize this conditional store that checks if the value is already set?",
+      "body": "I stumbled across this Reddit post which is a joke on the following code snippet, saying that the two functions are not equivalent to 'the compiler'. I was convinced that any of the major C++ compilers would optimize the conditional assignment away to an unconditional store, thus emitting the same assembly code for and",
+      "tags": [
+        "c++",
+        "compiler-optimization",
+        "micro-optimization"
+      ],
+      "owner": {
+        "account_id": 27876379,
+        "reputation": 2866,
+        "user_id": 21285803,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/e3a90bc6821ba0dbcde1e40d369f8059?s=256&d=identicon&r=PG",
+        "display_name": "chrysante",
+        "link": "https://stackoverflow.com/users/21285803/chrysante"
+      },
+      "score": 57,
+      "answer_count": 4,
+      "is_answered": true,
+      "creation_date": 1684230050,
+      "view_count": 6248,
+      "link": "https://stackoverflow.com/questions/76261546/why-do-none-of-the-major-compilers-optimize-this-conditional-store-that-checks-i",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71039947,
+      "title": "Is if(A | B) always faster than if(A || B)?",
+      "body": "I am reading this book by Fedor Pikus and he has some very very interesting examples which for me were a surprise. Particularly this benchmark caught me, where the only difference is that in one of them we use || in if and in another we use |. I will not go in all the details explained in the book why the latter is fas",
+      "tags": [
+        "c++",
+        "optimization",
+        "benchmarking",
+        "branch-prediction"
+      ],
+      "owner": {
+        "account_id": 2085300,
+        "reputation": 6676,
+        "user_id": 1856429,
+        "user_type": "registered",
+        "accept_rate": 96,
+        "profile_image": "https://i.sstatic.net/D87u9.jpg?s=256",
+        "display_name": "Eduard Rostomyan",
+        "link": "https://stackoverflow.com/users/1856429/eduard-rostomyan"
+      },
+      "score": 56,
+      "answer_count": 9,
+      "is_answered": true,
+      "creation_date": 1644349254,
+      "view_count": 10484,
+      "link": "https://stackoverflow.com/questions/71039947/is-ifa-b-always-faster-than-ifa-b",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 74798626,
+      "title": "Why is log(inf + inf j) equal to (inf + 0.785398 j), In C++/Python/NumPy?",
+      "body": "I've been finding a strange behaviour of functions in C++ and numpy about the behaviour of function handling complex infinite numbers. Specifically, equals when I expect it to be . When taking the log of a complex number, the real part is the log of the absolute value of the input and the imaginary part is the phase of",
+      "tags": [
+        "python",
+        "c++",
+        "numpy",
+        "complex-numbers",
+        "infinity"
+      ],
+      "owner": {
+        "account_id": 1705643,
+        "reputation": 948,
+        "user_id": 1564730,
+        "user_type": "registered",
+        "accept_rate": 75,
+        "profile_image": "https://www.gravatar.com/avatar/81f8bd69726693149da7f75f0655e5b4?s=256&d=identicon&r=PG",
+        "display_name": "Firman",
+        "link": "https://stackoverflow.com/users/1564730/firman"
+      },
+      "score": 56,
+      "answer_count": 3,
+      "is_answered": true,
+      "creation_date": 1671022480,
+      "view_count": 4200,
+      "link": "https://stackoverflow.com/questions/74798626/why-is-loginf-inf-j-equal-to-inf-0-785398-j-in-c-python-numpy",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71706064,
+      "title": "React 18: Hydration failed because the initial UI does not match what was rendered on the server",
+      "body": "I'm trying to get SSR working in my app, but I get the error: Hydration failed because the initial UI does not match what was rendered on the server. Live demo code is here . Live demo of problem is here (open dev tools console to see the errors): File App.js File index.js The HTML template shown in the live demo is se",
+      "tags": [
+        "reactjs",
+        "next.js"
+      ],
+      "owner": {
+        "account_id": 1299431,
+        "reputation": 7707,
+        "user_id": 1249664,
+        "user_type": "registered",
+        "accept_rate": 85,
+        "profile_image": "https://www.gravatar.com/avatar/d3953712d5da8a78f5fe5a6f6b37ef4d?s=256&d=identicon&r=PG",
+        "display_name": "auser",
+        "link": "https://stackoverflow.com/users/1249664/auser"
+      },
+      "score": 341,
+      "answer_count": 70,
+      "is_answered": true,
+      "creation_date": 1648811823,
+      "view_count": 690280,
+      "link": "https://stackoverflow.com/questions/71706064/react-18-hydration-failed-because-the-initial-ui-does-not-match-what-was-render",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72401421,
+      "title": "Message &quot;npm WARN config global `--global`, `--local` are deprecated. Use `--location=global` instead&quot;",
+      "body": "I already installed Node.js on my machine, but when I try to run it shows me this warning:",
+      "tags": [
+        "reactjs",
+        "npm",
+        "create-react-app",
+        "warnings"
+      ],
+      "owner": {
+        "account_id": 18457895,
+        "reputation": 3167,
+        "user_id": 13446150,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a-/AOh14GgznydMPAQnb0Cnhrmx4ZzsS6m3ZooV9jhEXlTxvQ=k-s256",
+        "display_name": "uttam kamar",
+        "link": "https://stackoverflow.com/users/13446150/uttam-kamar"
+      },
+      "score": 316,
+      "answer_count": 24,
+      "is_answered": true,
+      "creation_date": 1653633659,
+      "view_count": 488648,
+      "link": "https://stackoverflow.com/questions/72401421/message-npm-warn-config-global-global-local-are-deprecated-use-loc",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 74471642,
+      "title": "&lt;button onClick={}&gt; Event handlers cannot be passed to Client Component props",
+      "body": "Error: Event handlers cannot be passed to Client Component props. ^^^^^^^^^^ If you need interactivity, consider converting part of this to a Client Component. Search NextJS 13 Official Document and about Server/Client Render",
+      "tags": [
+        "javascript",
+        "reactjs",
+        "next.js",
+        "server-side-rendering"
+      ],
+      "owner": {
+        "account_id": 20236759,
+        "reputation": 1545,
+        "user_id": 14841697,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a-/AOh14Gi6tGDOlweiTRCkcEnijvd85qdCcA8FDwSH9uGy=k-s256",
+        "display_name": "밍원MinGWon",
+        "link": "https://stackoverflow.com/users/14841697/%eb%b0%8d%ec%9b%90mingwon"
+      },
+      "score": 154,
+      "answer_count": 9,
+      "is_answered": true,
+      "creation_date": 1668670106,
+      "view_count": 197633,
+      "link": "https://stackoverflow.com/questions/74471642/button-onclick-event-handlers-cannot-be-passed-to-client-component-props",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 74297001,
+      "title": "Type &#39;MutableRefObject&lt;HTMLInputElement | undefined&gt;&#39; is not assignable to type &#39;LegacyRef&lt;HTMLInputElement&gt; | undefined&#39;",
+      "body": "Given this very simple component : I have this error : What does this mean? How to fix this error?",
+      "tags": [
+        "reactjs",
+        "typescript"
+      ],
+      "owner": {
+        "account_id": 125128,
+        "reputation": 53925,
+        "user_id": 320700,
+        "user_type": "registered",
+        "accept_rate": 74,
+        "profile_image": "https://www.gravatar.com/avatar/8c777e5759d803864d1be827dfdde2db?s=256&d=identicon&r=PG",
+        "display_name": "Yanick Rochon",
+        "link": "https://stackoverflow.com/users/320700/yanick-rochon"
+      },
+      "score": 137,
+      "answer_count": 2,
+      "is_answered": true,
+      "creation_date": 1667435657,
+      "view_count": 98299,
+      "link": "https://stackoverflow.com/questions/74297001/type-mutablerefobjecthtmlinputelement-undefined-is-not-assignable-to-type",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 74965849,
+      "title": "You&#39;re importing a component that needs useState. It only works in a Client Component, but none of its parents are marked with &quot;use client&quot;",
+      "body": "The simple below component is throwing the following error in Next.js's directory when I use : × You're importing a component that needs useState. It only works in a Client Component but none of its parents are marked with \"use client\", so they're Server Components by default.",
+      "tags": [
+        "javascript",
+        "reactjs",
+        "next.js"
+      ],
+      "owner": {
+        "account_id": 20815818,
+        "reputation": 47700,
+        "user_id": 15288641,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/JpR3RiD2.jpg?s=256",
+        "display_name": "Youssouf Oumar",
+        "link": "https://stackoverflow.com/users/15288641/youssouf-oumar"
+      },
+      "score": 134,
+      "answer_count": 4,
+      "is_answered": true,
+      "creation_date": 1672434956,
+      "view_count": 226548,
+      "link": "https://stackoverflow.com/questions/74965849/youre-importing-a-component-that-needs-usestate-it-only-works-in-a-client-comp",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 76996326,
+      "title": "Parsing error: DeprecationError: &#39;originalKeywordKind&#39; has been deprecated since v5.0.0 and can no longer be used",
+      "body": "When upgrading an existing React project I'm getting the following error at line 0 of every .tsx file. How can I diagnose and remove the error?",
+      "tags": [
+        "reactjs",
+        "typescript",
+        "eslint"
+      ],
+      "owner": {
+        "account_id": 9479262,
+        "reputation": 1473,
+        "user_id": 8312711,
+        "user_type": "registered",
+        "profile_image": "https://lh4.googleusercontent.com/-F4rWx92SWoA/AAAAAAAAAAI/AAAAAAAABuI/y-RUjm7GU5A/s256-rj/photo.jpg",
+        "display_name": "Dwaine",
+        "link": "https://stackoverflow.com/users/8312711/dwaine"
+      },
+      "score": 131,
+      "answer_count": 14,
+      "is_answered": true,
+      "creation_date": 1693261204,
+      "view_count": 89179,
+      "link": "https://stackoverflow.com/questions/76996326/parsing-error-deprecationerror-originalkeywordkind-has-been-deprecated-since",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72596908,
+      "title": "Could not resolve dependency error peer react@&quot;^16.8.0 || ^17.0.0&quot; from @material-ui/core@4.12.4",
+      "body": "While trying to install , I am getting below error, how to resolve it? $ // package.json",
+      "tags": [
+        "reactjs",
+        "react-hooks"
+      ],
+      "owner": {
+        "account_id": 6194445,
+        "reputation": 12135,
+        "user_id": 4826215,
+        "user_type": "registered",
+        "accept_rate": 78,
+        "profile_image": "https://www.gravatar.com/avatar/43a0e166958eb51641a5334016d700cf?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "soccerway",
+        "link": "https://stackoverflow.com/users/4826215/soccerway"
+      },
+      "score": 112,
+      "answer_count": 11,
+      "is_answered": true,
+      "creation_date": 1655082507,
+      "view_count": 209702,
+      "link": "https://stackoverflow.com/questions/72596908/could-not-resolve-dependency-error-peer-react16-8-0-17-0-0-from-materia",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73509984,
+      "title": "ESLint: TypeError: this.libOptions.parse is not a function",
+      "body": "I was getting started with Next.js on WebStorm 2022.2.1 Build #WS-222.3739.57. I created a new Next.js project with TypeScript enabled, and that's all. The error is shown below: My Node.js version is v16.15.1, and the ESLint version is 8.23.0. This is what my devDependencies look like; My .eslintrc.json file:",
+      "tags": [
+        "node.js",
+        "eslint",
+        "webstorm",
+        "eslintrc",
+        "typescript-eslint"
+      ],
+      "owner": {
+        "account_id": 19518371,
+        "reputation": 2681,
+        "user_id": 14280772,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/wo9Gf.png?s=256",
+        "display_name": "Thebluedragon",
+        "link": "https://stackoverflow.com/users/14280772/thebluedragon"
+      },
+      "score": 253,
+      "answer_count": 7,
+      "is_answered": true,
+      "creation_date": 1661594113,
+      "view_count": 131345,
+      "link": "https://stackoverflow.com/questions/73509984/eslint-typeerror-this-liboptions-parse-is-not-a-function",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71844271,
+      "title": "&quot;vite is not recognized ...&quot; on &quot;npm run dev&quot;",
+      "body": "I'm using Node.js and npm for the first time, I'm trying to get Vite working, following the tutorials and documentation. But every time I run into the problem: 'vite' is not recognized as an internal or external command, operable program or batch file. I am unable to find a solution. I tried restarting pc, reinstalling",
+      "tags": [
+        "node.js",
+        "npm",
+        "vite"
+      ],
+      "owner": {
+        "account_id": 16437844,
+        "reputation": 1815,
+        "user_id": 11874998,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/50235d940327ab7aea0c303af7af3f31?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "MaN0fy",
+        "link": "https://stackoverflow.com/users/11874998/man0fy"
+      },
+      "score": 177,
+      "answer_count": 31,
+      "is_answered": true,
+      "creation_date": 1649772883,
+      "view_count": 548801,
+      "link": "https://stackoverflow.com/questions/71844271/vite-is-not-recognized-on-npm-run-dev",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72921215,
+      "title": "Getting GLIBC_2.28 not found",
+      "body": "I running the node -v command, getting the error: node: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by node) Is there a solution?",
+      "tags": [
+        "node.js",
+        "ubuntu"
+      ],
+      "owner": {
+        "account_id": 19678991,
+        "reputation": 3145,
+        "user_id": 14406495,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/t0Z5v.jpg?s=256",
+        "display_name": "Abhay Kumar Upadhyay",
+        "link": "https://stackoverflow.com/users/14406495/abhay-kumar-upadhyay"
+      },
+      "score": 154,
+      "answer_count": 22,
+      "is_answered": true,
+      "creation_date": 1657368291,
+      "view_count": 441422,
+      "link": "https://stackoverflow.com/questions/72921215/getting-glibc-2-28-not-found",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73958968,
+      "title": "&quot;Cannot use import statement outside a module&quot; with Axios",
+      "body": "I have a Vue.js application where two files contain: These files are located in src/lib within the application and include the import statement on their first line. Running tests on Github causes Axios 1.0.0 to be installed, no matter what the package.json says, and now any test involving these files fails with the abo",
+      "tags": [
+        "node.js",
+        "vue.js",
+        "axios"
+      ],
+      "owner": {
+        "account_id": 1230494,
+        "reputation": 2959,
+        "user_id": 1195207,
+        "user_type": "registered",
+        "accept_rate": 92,
+        "profile_image": "https://www.gravatar.com/avatar/abfecec49e4871d38bfeedf7590c06ed?s=256&d=identicon&r=PG",
+        "display_name": "knirirr",
+        "link": "https://stackoverflow.com/users/1195207/knirirr"
+      },
+      "score": 152,
+      "answer_count": 21,
+      "is_answered": true,
+      "creation_date": 1664965098,
+      "view_count": 126770,
+      "link": "https://stackoverflow.com/questions/73958968/cannot-use-import-statement-outside-a-module-with-axios",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72866798,
+      "title": "Error message &quot;node: --openssl-legacy-provider is not allowed in NODE_OPTIONS&quot;",
+      "body": "This problem appeared after an update, , on Ubuntu 20.04 (Focal Fossa). Previously, I worked on versions Node.js v18.0.0 and npm 8.7.0, but after the update there was a problem. I ran command , but it did not help. Now I use npm v8.12.1 and Node.js v18.4.0. When running the command , I receive the message: part of a fi",
+      "tags": [
+        "node.js",
+        "npm",
+        "node-modules"
+      ],
+      "owner": {
+        "account_id": 17243763,
+        "reputation": 1175,
+        "user_id": 12485499,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/e24a5da5c736e865b7e6c26b25c7bf39?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "loki",
+        "link": "https://stackoverflow.com/users/12485499/loki"
+      },
+      "score": 106,
+      "answer_count": 18,
+      "is_answered": true,
+      "creation_date": 1657012214,
+      "view_count": 390672,
+      "link": "https://stackoverflow.com/questions/72866798/error-message-node-openssl-legacy-provider-is-not-allowed-in-node-options",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 70577085,
+      "title": "nodejs will not enable corepack: operation not permitted",
+      "body": "I have installed nodejs and i am trying to enable corepack with but it gives me this error on windows: I can not find the pnpm folder is is refering to in the nodejs folder and i have tried to which did install pnpm how do I fix this?",
+      "tags": [
+        "node.js",
+        "pnpm"
+      ],
+      "owner": {
+        "account_id": 20990921,
+        "reputation": 1037,
+        "user_id": 15423804,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/7e15d9aea4b43f3155a9587cb17687e6?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Nadia Hansen",
+        "link": "https://stackoverflow.com/users/15423804/nadia-hansen"
+      },
+      "score": 78,
+      "answer_count": 6,
+      "is_answered": true,
+      "creation_date": 1641290977,
+      "view_count": 59939,
+      "link": "https://stackoverflow.com/questions/70577085/nodejs-will-not-enable-corepack-operation-not-permitted",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 74131595,
+      "title": "Error: error:1E08010C:DECODER routines::unsupported with Google auth library",
+      "body": "I've recently ran into this error with the google cloud storage SDK on Node.js. I know for a fact that this worked in the past without any changes, but I haven't touched the code in a while and might be wrong. Here's the error itself: The code that throws this error is the following: The contains all the right values, ",
+      "tags": [
+        "node.js",
+        "google-cloud-storage",
+        "google-api-nodejs-client"
+      ],
+      "owner": {
+        "account_id": 14449822,
+        "reputation": 1790,
+        "user_id": 10437727,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/6f318d7fd2f04cc30ee05c13fb7be4c9?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Fares",
+        "link": "https://stackoverflow.com/users/10437727/fares"
+      },
+      "score": 77,
+      "answer_count": 17,
+      "is_answered": true,
+      "creation_date": 1666211753,
+      "view_count": 115337,
+      "link": "https://stackoverflow.com/questions/74131595/error-error1e08010cdecoder-routinesunsupported-with-google-auth-library",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 74110708,
+      "title": "Postgres 15. permission denied for schema public",
+      "body": "Can't create tables in public schema as non-superuser postgres - super user. What I've done: privileges: what I got: How to create tables in public schema?",
+      "tags": [
+        "sql",
+        "postgresql",
+        "pgadmin",
+        "postgresql-15"
+      ],
+      "owner": {
+        "account_id": 18690719,
+        "reputation": 933,
+        "user_id": 20272255,
+        "user_type": "registered",
+        "profile_image": "https://lh6.googleusercontent.com/-C0E78HmiZ_g/AAAAAAAAAAI/AAAAAAAAAAA/AMZuucn6UVoFtD4Hkx25fwGcSKBUvCnylA/s256-rj/photo.jpg",
+        "display_name": "Merkalov Anton",
+        "link": "https://stackoverflow.com/users/20272255/merkalov-anton"
+      },
+      "score": 83,
+      "answer_count": 5,
+      "is_answered": true,
+      "creation_date": 1666094797,
+      "view_count": 132604,
+      "link": "https://stackoverflow.com/questions/74110708/postgres-15-permission-denied-for-schema-public",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73772996,
+      "title": "STRING_AGG aggregation result exceeded the limit of 8000 bytes error",
+      "body": "I need to combine texts by group. I found a function called . But I am getting the following error: STRING_AGG aggregation result exceeded the limit of 8000 bytes. Use LOB types to avoid result truncation.",
+      "tags": [
+        "sql",
+        "sql-server",
+        "string",
+        "aggregate",
+        "string-aggregation"
+      ],
+      "owner": {
+        "account_id": 7605236,
+        "reputation": 1005,
+        "user_id": 5768285,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/d53e72aea3d9970606af6a07151502f4?s=256&d=identicon&r=PG",
+        "display_name": "Eren G.",
+        "link": "https://stackoverflow.com/users/5768285/eren-g"
+      },
+      "score": 75,
+      "answer_count": 2,
+      "is_answered": true,
+      "creation_date": 1663588538,
+      "view_count": 145618,
+      "link": "https://stackoverflow.com/questions/73772996/string-agg-aggregation-result-exceeded-the-limit-of-8000-bytes-error",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 70821501,
+      "title": "how to upsert many fields in prisma ORM",
+      "body": "How can I upsert many fields in prisma ORM with one query? I don't want to use upsert fields one by one. Can I upsert all of them with one query?",
+      "tags": [
+        "javascript",
+        "sql",
+        "node.js",
+        "prisma",
+        "prisma2"
+      ],
+      "owner": {
+        "account_id": 19872412,
+        "reputation": 463,
+        "user_id": 14558228,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/-AtWNTbCT8mk/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuckDsUBdwg6thsHHZlQPh_eKZSDT1Q/s96-c/s256-rj/photo.jpg",
+        "display_name": "xander karimi",
+        "link": "https://stackoverflow.com/users/14558228/xander-karimi"
+      },
+      "score": 35,
+      "answer_count": 4,
+      "is_answered": true,
+      "creation_date": 1642936776,
+      "view_count": 34945,
+      "link": "https://stackoverflow.com/questions/70821501/how-to-upsert-many-fields-in-prisma-orm",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73399168,
+      "title": "How can I create an enum column in Supabase?",
+      "body": "I want to create an enum column in a Supabase table. Supabase uses Postgres under the hood, so I understand that technically it is possible if I do it manually using SQL. But is there any way I can do it via the frontend in an easier manner?",
+      "tags": [
+        "sql",
+        "database",
+        "postgresql",
+        "supabase",
+        "supabase-database"
+      ],
+      "owner": {
+        "account_id": 7706688,
+        "reputation": 1343,
+        "user_id": 5837426,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/FtspY.jpg?s=256",
+        "display_name": "Sumit Ghosh",
+        "link": "https://stackoverflow.com/users/5837426/sumit-ghosh"
+      },
+      "score": 26,
+      "answer_count": 2,
+      "is_answered": true,
+      "creation_date": 1660808331,
+      "view_count": 14867,
+      "link": "https://stackoverflow.com/questions/73399168/how-can-i-create-an-enum-column-in-supabase",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71374815,
+      "title": "The driver could not establish a secure connection to SQL Server by using Secure Sockets Layer (SSL) encryption. Error: &quot;PKIX path building failed:",
+      "body": "I'm new to SQL(Microsoft SQL Server Management) and I am trying to connect it with IntelliJ I am getting the following error: com.microsoft.sqlserver.jdbc.SQLServerException: The driver could not establish a secure connection to SQL Server by using Secure Sockets Layer (SSL) encryption. Error: \"PKIX path building faile",
+      "tags": [
+        "java",
+        "sql",
+        "intellij-idea"
+      ],
+      "owner": {
+        "account_id": 23620927,
+        "reputation": 331,
+        "user_id": 17654231,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/b5dd31d0bf47d9b230254a4004c6de24?s=256&d=identicon&r=PG",
+        "display_name": "seal",
+        "link": "https://stackoverflow.com/users/17654231/seal"
+      },
+      "score": 23,
+      "answer_count": 4,
+      "is_answered": true,
+      "creation_date": 1646606860,
+      "view_count": 78021,
+      "link": "https://stackoverflow.com/questions/71374815/the-driver-could-not-establish-a-secure-connection-to-sql-server-by-using-secure",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72980204,
+      "title": "ASP.NET Core 6.0 Web API error status: 400 title: &quot;One or more validation errors occurred.&quot; for POST Request due to Foreign Keys",
+      "body": "I have been working on a project that uses .NET 6.0 and SQL and have been running into a status: 400 title: \"One or more validation errors occurred.\" error whenever I try to make a POST request for my Treatments table as shown below (using Swagger). The project follows this ERD: The API was scaffolded using Visual Stud",
+      "tags": [
+        "c#",
+        "sql",
+        "asp.net-core-webapi",
+        "asp.net-core-6.0"
+      ],
+      "owner": {
+        "account_id": 25807585,
+        "reputation": 173,
+        "user_id": 19548900,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/4dedd93d3e22ab8915006eb0e8609beb?s=256&d=identicon&r=PG",
+        "display_name": "Kilo",
+        "link": "https://stackoverflow.com/users/19548900/kilo"
+      },
+      "score": 17,
+      "answer_count": 2,
+      "is_answered": true,
+      "creation_date": 1657800304,
+      "view_count": 31551,
+      "link": "https://stackoverflow.com/questions/72980204/asp-net-core-6-0-web-api-error-status-400-title-one-or-more-validation-errors",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72084303,
+      "title": "Filtering in count function - Postgresql",
+      "body": "I have the following query which gives me the amount of referrals users have. However, I would like to only count the referral if the referred user has activated the premium plan. How could this be achieved? Dbfiddle here . I am using PostgreSQL version 14.",
+      "tags": [
+        "sql",
+        "postgresql",
+        "postgresql-14"
+      ],
+      "owner": {
+        "account_id": 20999923,
+        "reputation": 1041,
+        "user_id": 15430925,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/56f7c3eb50948a2c85102279398accf8?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Santeri Sarle",
+        "link": "https://stackoverflow.com/users/15430925/santeri-sarle"
+      },
+      "score": 17,
+      "answer_count": 1,
+      "is_answered": true,
+      "creation_date": 1651481090,
+      "view_count": 29560,
+      "link": "https://stackoverflow.com/questions/72084303/filtering-in-count-function-postgresql",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75830783,
+      "title": "Why are connections to GitHub over SSH throwing an error &quot;Warning: Remote Host Identification Has Changed&quot;?",
+      "body": "Just sometime ago I started getting this warning when pushing to GitHub. Is this normal and how do I resolve it?",
+      "tags": [
+        "git",
+        "github",
+        "ssh",
+        "ssh-keys"
+      ],
+      "owner": {
+        "account_id": 55332,
+        "reputation": 29073,
+        "user_id": 165674,
+        "user_type": "registered",
+        "accept_rate": 67,
+        "profile_image": "https://www.gravatar.com/avatar/73d5cadd09acc6b8c5f6303a8188d88b?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Dheeraj Vepakomma",
+        "link": "https://stackoverflow.com/users/165674/dheeraj-vepakomma"
+      },
+      "score": 671,
+      "answer_count": 10,
+      "is_answered": true,
+      "creation_date": 1679641135,
+      "view_count": 105420,
+      "link": "https://stackoverflow.com/questions/75830783/why-are-connections-to-github-over-ssh-throwing-an-error-warning-remote-host-i",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72978485,
+      "title": "&quot;git submodule update&quot; failed with &#39;fatal: detected dubious ownership in repository at...&#39;",
+      "body": "I mounted a new hard disk drive in my Linux workstation. It looks like it is working well. I want to download some repository in the new disk. So I execute , and it works well. But when I cd in the folder, and execute . It failed with I thought maybe it's just a slight warning, so I just executed . However, when I exec",
+      "tags": [
+        "linux",
+        "git",
+        "ubuntu",
+        "filesystems",
+        "cve-2022-24765"
+      ],
+      "owner": {
+        "account_id": 24655620,
+        "reputation": 4349,
+        "user_id": 18552325,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/80a22602a7c6d4626c5a3940cc783d11?s=256&d=identicon&r=PG",
+        "display_name": "Huihua Jiang",
+        "link": "https://stackoverflow.com/users/18552325/huihua-jiang"
+      },
+      "score": 424,
+      "answer_count": 34,
+      "is_answered": true,
+      "creation_date": 1657791856,
+      "view_count": 842690,
+      "link": "https://stackoverflow.com/questions/72978485/git-submodule-update-failed-with-fatal-detected-dubious-ownership-in-reposit",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71768999,
+      "title": "How to merge when you get error &quot;Hint: You have divergent branches and need to specify how to reconcile them.&quot;",
+      "body": "I'm working with one other developer who has created a branch that needs to be merged with master . I get this error when attempting to pull in Git in Visual Studio Community (not Visual Studio Code) to a Bitbucket repository. If I attempt to push, it says \"unable to push because your local branch is behind the remote ",
+      "tags": [
+        "git",
+        "visual-studio",
+        "git-pull"
+      ],
+      "owner": {
+        "account_id": 2603123,
+        "reputation": 13169,
+        "user_id": 2254951,
+        "user_type": "registered",
+        "accept_rate": 70,
+        "profile_image": "https://i.sstatic.net/7bRC5.jpg?s=256",
+        "display_name": "niico",
+        "link": "https://stackoverflow.com/users/2254951/niico"
+      },
+      "score": 239,
+      "answer_count": 8,
+      "is_answered": true,
+      "creation_date": 1649256787,
+      "view_count": 334573,
+      "link": "https://stackoverflow.com/questions/71768999/how-to-merge-when-you-get-error-hint-you-have-divergent-branches-and-need-to-s",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71378839,
+      "title": "How can I solve &quot;fatal: Invalid credentials&quot; error when pushing to Bitbucket?",
+      "body": "My Bitbucket password is correct because I can easily log in with this password. When I try to push a project or file to Bitbucket it shows \"Invalid credentials error\" . How can I solve this issue?",
+      "tags": [
+        "git",
+        "bitbucket"
+      ],
+      "owner": {
+        "account_id": 9649349,
+        "reputation": 2366,
+        "user_id": 9096834,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/OipFZ.jpg?s=256",
+        "display_name": "Zahidul Islam",
+        "link": "https://stackoverflow.com/users/9096834/zahidul-islam"
+      },
+      "score": 211,
+      "answer_count": 17,
+      "is_answered": true,
+      "creation_date": 1646645024,
+      "view_count": 176219,
+      "link": "https://stackoverflow.com/questions/71378839/how-can-i-solve-fatal-invalid-credentials-error-when-pushing-to-bitbucket",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 70663523,
+      "title": "The unauthenticated git protocol on port 9418 is no longer supported",
+      "body": "I have been using github actions for quite sometime but today my deployments started failing. Below is the error from github action logs Upon investigation, it appears that below section in my yml file is causing the issue. I have looked into this change log but can't seem to comprehend the issue. Additional Details: S",
+      "tags": [
+        "git",
+        "github",
+        "deployment",
+        "github-actions"
+      ],
+      "owner": {
+        "account_id": 7886619,
+        "reputation": 1978,
+        "user_id": 5958424,
+        "user_type": "registered",
+        "accept_rate": 60,
+        "profile_image": "https://i.sstatic.net/IxrBH.png?s=256",
+        "display_name": "monofal",
+        "link": "https://stackoverflow.com/users/5958424/monofal"
+      },
+      "score": 95,
+      "answer_count": 10,
+      "is_answered": true,
+      "creation_date": 1641888743,
+      "view_count": 83371,
+      "link": "https://stackoverflow.com/questions/70663523/the-unauthenticated-git-protocol-on-port-9418-is-no-longer-supported",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71941020,
+      "title": "&#39;credential-manager&#39; is not a git command",
+      "body": "Am on Windows 10 64-bit running git version 2.33.1.windows.1 against Azure repos. Since my last update I get the following error when cloning a rep using TortoiseGit v2.13.0.1 (latest version). Does anyone have a simply explanation of how to get rid of this?",
+      "tags": [
+        "git",
+        "credential-manager"
+      ],
+      "owner": {
+        "account_id": 15984086,
+        "reputation": 953,
+        "user_id": 11535067,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/e567bd463b1b79365d53c2c30c248578?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "oceanclub",
+        "link": "https://stackoverflow.com/users/11535067/oceanclub"
+      },
+      "score": 71,
+      "answer_count": 14,
+      "is_answered": true,
+      "creation_date": 1650463033,
+      "view_count": 134950,
+      "link": "https://stackoverflow.com/questions/71941020/credential-manager-is-not-a-git-command",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71951105,
+      "title": "How to change current branch in git from master to main",
+      "body": "It is common to change main branches from the old pattern to . This can be easily done remotely (GitHub offers a graphical way to do it), but... what should be done with working copies?",
+      "tags": [
+        "git",
+        "branching-and-merging"
+      ],
+      "owner": {
+        "account_id": 1268178,
+        "reputation": 3569,
+        "user_id": 1225007,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/bb867552994775eb5b94525142c5f6e3?s=256&d=identicon&r=PG",
+        "display_name": "MagMax",
+        "link": "https://stackoverflow.com/users/1225007/magmax"
+      },
+      "score": 64,
+      "answer_count": 7,
+      "is_answered": true,
+      "creation_date": 1650529249,
+      "view_count": 136948,
+      "link": "https://stackoverflow.com/questions/71951105/how-to-change-current-branch-in-git-from-master-to-main",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73285601,
+      "title": "Docker : exec /usr/bin/sh: exec format error",
+      "body": "I created a custom docker image and push it to docker hub but when I run it in CI/CD it gives me this error. Where : Dockerfile .gitlab-ci.yml Output any thoughts on this to resolve the error?",
+      "tags": [
+        "docker",
+        "gitlab",
+        "gitlab-ci",
+        "gitlab-ci-runner",
+        "dockerhub"
+      ],
+      "owner": {
+        "account_id": 4871868,
+        "reputation": 4249,
+        "user_id": 3928061,
+        "user_type": "registered",
+        "accept_rate": 89,
+        "profile_image": "https://www.gravatar.com/avatar/980b9e9cdb92d00e018cdf2e3483f7b3?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "rkevx21",
+        "link": "https://stackoverflow.com/users/3928061/rkevx21"
+      },
+      "score": 205,
+      "answer_count": 14,
+      "is_answered": true,
+      "creation_date": 1660008368,
+      "view_count": 406724,
+      "link": "https://stackoverflow.com/questions/73285601/docker-exec-usr-bin-sh-exec-format-error",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71040681,
+      "title": "qemu-x86_64: Could not open &#39;/lib64/ld-linux-x86-64.so.2&#39;: No such file or directory",
+      "body": "I have a Rancher Deskop(dockerd) on M1 MacOS and when I am trying to build below dockerfile I am getting an error such as below. Here is the command how I am trying to build the image I tried to change the platforms but nonae of them worked for me. I am a bit lost about this platform issue for M1 but any help will be a",
+      "tags": [
+        "docker",
+        "go",
+        "apple-m1",
+        "rancher"
+      ],
+      "owner": {
+        "account_id": 17300781,
+        "reputation": 4731,
+        "user_id": 12530530,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/X2iIC.jpg?s=256",
+        "display_name": "semural",
+        "link": "https://stackoverflow.com/users/12530530/semural"
+      },
+      "score": 157,
+      "answer_count": 8,
+      "is_answered": true,
+      "creation_date": 1644353236,
+      "view_count": 187468,
+      "link": "https://stackoverflow.com/questions/71040681/qemu-x86-64-could-not-open-lib64-ld-linux-x86-64-so-2-no-such-file-or-direc",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72191560,
+      "title": "ImportError: cannot import name &#39;soft_unicode&#39; from &#39;markupsafe&#39;",
+      "body": "I am trying to build a docker container with Airflow and Postgres nevertheless getting many errors during build as shown below. I've tried to downgrade in my as shown below, but it didn't help. What can I do to solve the issue? Error message: My : My : Full stack trace:",
+      "tags": [
+        "python",
+        "docker",
+        "docker-compose",
+        "dependencies",
+        "importerror"
+      ],
+      "owner": {
+        "account_id": 3369545,
+        "reputation": 3621,
+        "user_id": 2829150,
+        "user_type": "registered",
+        "accept_rate": 51,
+        "profile_image": "https://www.gravatar.com/avatar/1e9c788890b3d2a8e468ed2773864b2c?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Arie",
+        "link": "https://stackoverflow.com/users/2829150/arie"
+      },
+      "score": 143,
+      "answer_count": 15,
+      "is_answered": true,
+      "creation_date": 1652208276,
+      "view_count": 214253,
+      "link": "https://stackoverflow.com/questions/72191560/importerror-cannot-import-name-soft-unicode-from-markupsafe",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 70963985,
+      "title": "Error: Failed to download metadata for repo &#39;appstream&#39;: Cannot prepare internal mirrorlist: No URLs in mirrorlist",
+      "body": "I am trying to download java using yum on centOs which I specified in a Dockerfile. After pulling centOs image the run crashed and threw this error!? also to mention that my server instance is AWS EC2!",
+      "tags": [
+        "docker",
+        "centos",
+        "devops",
+        "yum"
+      ],
+      "owner": {
+        "account_id": 19606876,
+        "reputation": 3573,
+        "user_id": 14350333,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/NvQIE.png?s=256",
+        "display_name": "Yusuf",
+        "link": "https://stackoverflow.com/users/14350333/yusuf"
+      },
+      "score": 123,
+      "answer_count": 13,
+      "is_answered": true,
+      "creation_date": 1643842861,
+      "view_count": 322258,
+      "link": "https://stackoverflow.com/questions/70963985/error-failed-to-download-metadata-for-repo-appstream-cannot-prepare-internal",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 79817033,
+      "title": "Sudden Docker error about &quot;client API version&quot;",
+      "body": "I've been successfully using TestContainers with Docker for quite a while now. All of a sudden today, I started getting this error: What could explain such a sudden breakage?",
+      "tags": [
+        "docker",
+        "ubuntu",
+        "testcontainers"
+      ],
+      "owner": {
+        "account_id": 55989,
+        "reputation": 19567,
+        "user_id": 167745,
+        "user_type": "registered",
+        "accept_rate": 76,
+        "profile_image": "https://i.sstatic.net/wBebv.jpg?s=256",
+        "display_name": "Stewart",
+        "link": "https://stackoverflow.com/users/167745/stewart"
+      },
+      "score": 98,
+      "answer_count": 13,
+      "is_answered": true,
+      "creation_date": 1762887614,
+      "view_count": 88787,
+      "link": "https://stackoverflow.com/questions/79817033/sudden-docker-error-about-client-api-version",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72695311,
+      "title": "Failure starting Docker container. &quot;failed to create shim task: OCI runtime create failed: runc create failed&quot;",
+      "body": "I am new to Ubuntu and new to Docker. I am running a command that was given to me in an explanation of how to start the project. I want to start my Docker containers and they fail with an error. Some notes: It is a new Ubuntu laptop. I added Docker to have privileges. yields among the list it responds with. Here's the ",
+      "tags": [
+        "docker",
+        "docker-compose"
+      ],
+      "owner": {
+        "account_id": 21481623,
+        "reputation": 2267,
+        "user_id": 15828895,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/7b067a3a1677df3e7da9c5d3c8e6e118?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "plutownium",
+        "link": "https://stackoverflow.com/users/15828895/plutownium"
+      },
+      "score": 92,
+      "answer_count": 9,
+      "is_answered": true,
+      "creation_date": 1655785366,
+      "view_count": 452972,
+      "link": "https://stackoverflow.com/questions/72695311/failure-starting-docker-container-failed-to-create-shim-task-oci-runtime-crea",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 74804296,
+      "title": "Docker endpoint for &quot;default&quot; not found",
+      "body": "I did clone a project and in the first step when I tried to start the container, I did run windows CMD in my project root and I type this command: and this message is shown to me: docker endpoint for \"default\" not found. I'll be more than happy if somebody helps me. When I write this command for the first time I had an",
+      "tags": [
+        "windows",
+        "docker",
+        "docker-compose"
+      ],
+      "owner": {
+        "account_id": 25868984,
+        "reputation": 993,
+        "user_id": 19600130,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/86e9741f78248eedb81dc6498128189a?s=256&d=identicon&r=PG",
+        "display_name": "HesamHashemi",
+        "link": "https://stackoverflow.com/users/19600130/hesamhashemi"
+      },
+      "score": 87,
+      "answer_count": 9,
+      "is_answered": true,
+      "creation_date": 1671052860,
+      "view_count": 51172,
+      "link": "https://stackoverflow.com/questions/74804296/docker-endpoint-for-default-not-found",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72133316,
+      "title": "libssl.so.1.1: cannot open shared object file: No such file or directory",
+      "body": "I've just updated to Ubuntu 22.04 LTS and my libs using OpenSSL just stopped working. Looks like Ubuntu switched to the version 3.0 of OpenSSL. For example, poetry stopped working: Is there an easy fix ? For example, having available without having to uninstall OpenSSL 3 (I don't know if it's even possible).",
+      "tags": [
+        "python",
+        "linux",
+        "openssl",
+        "python-poetry"
+      ],
+      "owner": {
+        "account_id": 7489950,
+        "reputation": 5744,
+        "user_id": 5692012,
+        "user_type": "registered",
+        "accept_rate": 50,
+        "profile_image": "https://i.sstatic.net/a3FwR.gif?s=256",
+        "display_name": "RobinFrcd",
+        "link": "https://stackoverflow.com/users/5692012/robinfrcd"
+      },
+      "score": 147,
+      "answer_count": 16,
+      "is_answered": true,
+      "creation_date": 1651782719,
+      "view_count": 365735,
+      "link": "https://stackoverflow.com/questions/72133316/libssl-so-1-1-cannot-open-shared-object-file-no-such-file-or-directory",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71940179,
+      "title": "Error /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.34&#39; not found",
+      "body": "firstly, I google'd a lot but nothing I found related to my case, I have an ELF executable file I'm trying to run it in my Ubuntu WSL, I've changed the permissions ( ), when I run it, this error shows up and when I use ld command this shows up to me and when I tried to upgrade GLIBC it says it's up-do-date and then I t",
+      "tags": [
+        "linux",
+        "ubuntu",
+        "windows-subsystem-for-linux",
+        "elf",
+        "glibc"
+      ],
+      "owner": {
+        "account_id": 24880210,
+        "reputation": 945,
+        "user_id": 18753528,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/d4abe7851a5774f788043f258c07f278?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "IVs",
+        "link": "https://stackoverflow.com/users/18753528/ivs"
+      },
+      "score": 83,
+      "answer_count": 10,
+      "is_answered": true,
+      "creation_date": 1650459764,
+      "view_count": 503691,
+      "link": "https://stackoverflow.com/questions/71940179/error-lib-x86-64-linux-gnu-libc-so-6-version-glibc-2-34-not-found",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72540359,
+      "title": "&#39;GLIBCXX_3.4.30&#39; not found for librosa in conda virtual environment (after trying out a lot of solutions)?",
+      "body": "I am trying to , but I am thrown with this error: I tried the following to fix it based on the other similar questions that I browsed through: It's output: libstdc++6 is already the newest version (10.2.1-6). It's output: 0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded. It's output: GLIBCXX version up to ",
+      "tags": [
+        "linux",
+        "anaconda",
+        "librosa"
+      ],
+      "owner": {
+        "account_id": 17359048,
+        "reputation": 961,
+        "user_id": 12575770,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a-/AAuE7mCVwrffGJnXf7k7QZgGwR0WyyxuO98Kek2IVojM=k-s256",
+        "display_name": "ChaoS Adm",
+        "link": "https://stackoverflow.com/users/12575770/chaos-adm"
+      },
+      "score": 67,
+      "answer_count": 11,
+      "is_answered": true,
+      "creation_date": 1654665182,
+      "view_count": 139914,
+      "link": "https://stackoverflow.com/questions/72540359/glibcxx-3-4-30-not-found-for-librosa-in-conda-virtual-environment-after-tryin",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72152446,
+      "title": "WARNING: The requested image&#39;s platform (linux/amd64) does not match the detected host platform (linux/arm64/v8)",
+      "body": "WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested docker: Error response from daemon: could not select device driver \"\" with capabilities: [[gpu]]. I am facing this error on mac while trying to run this command How to ",
+      "tags": [
+        "django",
+        "linux",
+        "docker",
+        "nginx"
+      ],
+      "owner": {
+        "account_id": 22348960,
+        "reputation": 862,
+        "user_id": 16567472,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a-/AOh14Ginr-3Jbjpg8EcCv6kPaSoQ18T-FLi4VtTq37vf9Q=k-s256",
+        "display_name": "Mansi Mishra",
+        "link": "https://stackoverflow.com/users/16567472/mansi-mishra"
+      },
+      "score": 66,
+      "answer_count": 10,
+      "is_answered": true,
+      "creation_date": 1651926137,
+      "view_count": 182991,
+      "link": "https://stackoverflow.com/questions/72152446/warning-the-requested-images-platform-linux-amd64-does-not-match-the-detecte",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71939532,
+      "title": "npm run dev --host network: not exposed",
+      "body": "I want to expose my svelte app on LAN using the command but it shows:",
+      "tags": [
+        "linux",
+        "npm",
+        "server",
+        "sveltekit",
+        "npm-run"
+      ],
+      "owner": {
+        "account_id": 24438498,
+        "reputation": 879,
+        "user_id": 18362468,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a/AATXAJyIrrKJfimZ7UAkZIYk7eM0EfJEU3heF_KrorM7dw=k-s256",
+        "display_name": "blest",
+        "link": "https://stackoverflow.com/users/18362468/blest"
+      },
+      "score": 65,
+      "answer_count": 5,
+      "is_answered": true,
+      "creation_date": 1650457134,
+      "view_count": 163895,
+      "link": "https://stackoverflow.com/questions/71939532/npm-run-dev-host-network-not-exposed",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71538752,
+      "title": "When are quotes needed in .env file?",
+      "body": "For instance, Symfony's configuring-environment-variables-in-env-files documents provides examples: Why are quotes (aka parentheses) used for the first example and not the second? If the applicable answer is dependent upon the application parsing the .env file, please base it on Symfony.",
+      "tags": [
+        "php",
+        "linux",
+        "symfony",
+        "environment-variables",
+        "dotenv"
+      ],
+      "owner": {
+        "account_id": 1022546,
+        "reputation": 26647,
+        "user_id": 1032531,
+        "user_type": "registered",
+        "accept_rate": 78,
+        "profile_image": "https://www.gravatar.com/avatar/938ce772de83dc07272b66f4b12a5453?s=256&d=identicon&r=PG",
+        "display_name": "user1032531",
+        "link": "https://stackoverflow.com/users/1032531/user1032531"
+      },
+      "score": 54,
+      "answer_count": 1,
+      "is_answered": true,
+      "creation_date": 1647698372,
+      "view_count": 62374,
+      "link": "https://stackoverflow.com/questions/71538752/when-are-quotes-needed-in-env-file",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 79119461,
+      "title": "An empty program that does nothing in C++ needs a heap of 204 KB, but not in C",
+      "body": "Consider this empty program: If I compile it with C++ with , and analyze the output with , I observed that the last lines of the output are (you can add -O3 that the effect is the same): However, if I do instead: As you see, in C++ there's an extra that extends the heap by exactly 204 KB (0xF05000 - 0xED2000 = 204 KB a",
+      "tags": [
+        "c++",
+        "c",
+        "linux",
+        "gcc",
+        "heap-memory"
+      ],
+      "owner": {
+        "account_id": 1999735,
+        "reputation": 12621,
+        "user_id": 1794803,
+        "user_type": "registered",
+        "accept_rate": 64,
+        "profile_image": "https://i.sstatic.net/DstSQ.png?s=256",
+        "display_name": "ABu",
+        "link": "https://stackoverflow.com/users/1794803/abu"
+      },
+      "score": 48,
+      "answer_count": 3,
+      "is_answered": true,
+      "creation_date": 1729711985,
+      "view_count": 5845,
+      "link": "https://stackoverflow.com/questions/79119461/an-empty-program-that-does-nothing-in-c-needs-a-heap-of-204-kb-but-not-in-c",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72634225,
+      "title": "onBackPressed() is deprecated. What is the alternative?",
+      "body": "I have upgraded and to . I am now getting a warning telling me that onBackPressed is deprecated. I see suggestions to use android.window.OnBackInvokedCallback or androidx.activity.OnBackPressedCallback to handle back navigation instead. Can anyone can help me use the updated method? Example Use Case I use inside the on",
+      "tags": [
+        "android",
+        "kotlin",
+        "navigation",
+        "deprecation-warning",
+        "android-tiramisu"
+      ],
+      "owner": {
+        "account_id": 2647431,
+        "reputation": 13247,
+        "user_id": 2289835,
+        "user_type": "registered",
+        "accept_rate": 38,
+        "profile_image": "https://i.sstatic.net/iGNvO.jpg?s=256",
+        "display_name": "Rumit Patel",
+        "link": "https://stackoverflow.com/users/2289835/rumit-patel"
+      },
+      "score": 248,
+      "answer_count": 27,
+      "is_answered": true,
+      "creation_date": 1655307730,
+      "view_count": 185021,
+      "link": "https://stackoverflow.com/questions/72634225/onbackpressed-is-deprecated-what-is-the-alternative",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72224454,
+      "title": "Execution failed for task &#39;:app:mapDebugSourceSetPaths&#39;. &gt; Error while evaluating property &#39;extraGeneratedResDir&#39; of task",
+      "body": "I've checked this answer: https://stackoverflow.com/a/34834772/13519865 It tells us to remove this line Removing the line as asked completes the build, but I can't use Firebase (ofc!), it caused a new error, which tells me to add the line: https://stackoverflow.com/a/40085096/13519865 So, I'm stuck in a loop here. Rela",
+      "tags": [
+        "android",
+        "firebase",
+        "google-cloud-platform",
+        "android-gradle-plugin",
+        "google-play-services"
+      ],
+      "owner": {
+        "account_id": 15062152,
+        "reputation": 2100,
+        "user_id": 13519865,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/-jVgkXYFM378/AAAAAAAAAAI/AAAAAAAAAAA/AKxrwcZxEr3UNFrc7QRPVcWA5Oe1bMFeWg/mo/s256-rj/photo.jpg",
+        "display_name": "Cyber Avater",
+        "link": "https://stackoverflow.com/users/13519865/cyber-avater"
+      },
+      "score": 192,
+      "answer_count": 26,
+      "is_answered": true,
+      "creation_date": 1652416101,
+      "view_count": 175241,
+      "link": "https://stackoverflow.com/questions/72224454/execution-failed-for-task-appmapdebugsourcesetpaths-error-while-evaluatin",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73129574,
+      "title": "You can&#39;t submit updates as some information about your app is incomplete (Google Play)",
+      "body": "I cannot update my app in Google Play since it says: This release includes the com.google.android.gms.permission.AD_ID permission but your declaration on Play Console says your app doesn't use advertising ID. You must update your advertising ID declaration. The app not using ads. The library which is injecting the perm",
+      "tags": [
+        "android",
+        "google-play",
+        "android-manifest",
+        "google-advertising-id"
+      ],
+      "owner": {
+        "account_id": 4470307,
+        "reputation": 7823,
+        "user_id": 3636806,
+        "user_type": "registered",
+        "accept_rate": 81,
+        "profile_image": "https://i.sstatic.net/Xa6Uo.jpg?s=256",
+        "display_name": "EAK TEAM",
+        "link": "https://stackoverflow.com/users/3636806/eak-team"
+      },
+      "score": 191,
+      "answer_count": 7,
+      "is_answered": true,
+      "creation_date": 1658868456,
+      "view_count": 92328,
+      "link": "https://stackoverflow.com/questions/73129574/you-cant-submit-updates-as-some-information-about-your-app-is-incomplete-googl",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 76108428,
+      "title": "How do I fix &#39;namespace not specified&#39; error in Android Studio?",
+      "body": "I am getting this error after upgrading to Android Studio Flamingo and after giving AGP Upgrade Assistant from 7.4.2 to 8.0.0. This is for an ionic project so the namespace is already specified in the build.gradle file like so, build.gradle I tried adding the namespace to AndroidManifest.xml as a package name and as a ",
+      "tags": [
+        "android",
+        "android-studio",
+        "ionic-framework"
+      ],
+      "owner": {
+        "account_id": 6742262,
+        "reputation": 2014,
+        "user_id": 5811759,
+        "user_type": "registered",
+        "profile_image": "https://lh5.googleusercontent.com/-dKH8x6X4Ybg/AAAAAAAAAAI/AAAAAAAACy4/woGGtkJLse0/s256-rj/photo.jpg",
+        "display_name": "Sriharish S",
+        "link": "https://stackoverflow.com/users/5811759/sriharish-s"
+      },
+      "score": 157,
+      "answer_count": 22,
+      "is_answered": true,
+      "creation_date": 1682495986,
+      "view_count": 213005,
+      "link": "https://stackoverflow.com/questions/76108428/how-do-i-fix-namespace-not-specified-error-in-android-studio",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75480173,
+      "title": "Android Studio build error - compileDebugJavaWithJavac task (current target is 1.8) and kaptGenerateStubsDebugKotlin task (current target is 17)",
+      "body": "Getting the following build error in Android Studio during the kaptGenerateStubsDebugKotlin step of project build in Android Studio Am on Android Studio Giraffe | 2022.3.1 Canary 3 Full stack trace below",
+      "tags": [
+        "android",
+        "android-studio",
+        "kotlin",
+        "gradle",
+        "android-gradle-plugin"
+      ],
+      "owner": {
+        "account_id": 115538,
+        "reputation": 14458,
+        "user_id": 303347,
+        "user_type": "registered",
+        "accept_rate": 52,
+        "profile_image": "https://www.gravatar.com/avatar/508b6e7bd360b4096447ffe8545f4878?s=256&d=identicon&r=PG",
+        "display_name": "Arunabh Das",
+        "link": "https://stackoverflow.com/users/303347/arunabh-das"
+      },
+      "score": 152,
+      "answer_count": 25,
+      "is_answered": true,
+      "creation_date": 1676607050,
+      "view_count": 127653,
+      "link": "https://stackoverflow.com/questions/75480173/android-studio-build-error-compiledebugjavawithjavac-task-current-target-is-1",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 70857476,
+      "title": "Unable to load class AndroidComponentsExtension after upgrading the Android Gradle Plugin 7.1",
+      "body": "I recently downloaded Android Studio Bumblebee and it helpfully asked whether I wanted to upgrade to Android Gradle Plugin 7.1.0, the version that shipped alongside Android Studio Bumblebee. After upgrading, I get a build error: And looking at the file, I see: Which means I can't run my app and I need to downgrade the ",
+      "tags": [
+        "android",
+        "android-gradle-plugin",
+        "android-architecture-navigation",
+        "firebase-performance",
+        "android-safe-args"
+      ],
+      "owner": {
+        "account_id": 1849514,
+        "reputation": 201755,
+        "user_id": 1676363,
+        "user_type": "registered",
+        "accept_rate": 100,
+        "profile_image": "https://www.gravatar.com/avatar/44dac57d3bb65805bc3df4409d019c83?s=256&d=identicon&r=PG",
+        "display_name": "Ian Lake",
+        "link": "https://stackoverflow.com/users/1676363/ian-lake"
+      },
+      "score": 151,
+      "answer_count": 13,
+      "is_answered": true,
+      "creation_date": 1643157920,
+      "view_count": 74408,
+      "link": "https://stackoverflow.com/questions/70857476/unable-to-load-class-androidcomponentsextension-after-upgrading-the-android-grad",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71199143,
+      "title": "Action Required: Your app is not compliant with Google Play Policies , what is the solution?",
+      "body": "Issue found: Invalid Data safety section We reviewed your app's Data safety section in Play Console and found discrepancies between it and how the app collects and shares user data. All apps are required to complete an accurate Data safety section that discloses their data collection and sharing practices - this is a r",
+      "tags": [
+        "android",
+        "app-store",
+        "store",
+        "playback"
+      ],
+      "owner": {
+        "account_id": 17193706,
+        "reputation": 1649,
+        "user_id": 12446991,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/PmgG3.jpg?s=256",
+        "display_name": "Abdul Momen",
+        "link": "https://stackoverflow.com/users/12446991/abdul-momen"
+      },
+      "score": 150,
+      "answer_count": 4,
+      "is_answered": true,
+      "creation_date": 1645394041,
+      "view_count": 241586,
+      "link": "https://stackoverflow.com/questions/71199143/action-required-your-app-is-not-compliant-with-google-play-policies-what-is-t",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75574268,
+      "title": "Missing file libarclite_iphoneos.a (Xcode 14.3)",
+      "body": "After installing Xcode 14.3 in order to run my app on my iOS 16.3 iPhone XS . I get the following error: File not found: /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/arc/libarclite_iphoneos.a How can I fix it?",
+      "tags": [
+        "ios",
+        "xcode",
+        "xcode14"
+      ],
+      "owner": {
+        "account_id": 1183467,
+        "reputation": 4791,
+        "user_id": 1157878,
+        "user_type": "registered",
+        "accept_rate": 50,
+        "profile_image": "https://i.sstatic.net/OHgIa.jpg?s=256",
+        "display_name": "Justin A",
+        "link": "https://stackoverflow.com/users/1157878/justin-a"
+      },
+      "score": 418,
+      "answer_count": 38,
+      "is_answered": true,
+      "creation_date": 1677437232,
+      "view_count": 331895,
+      "link": "https://stackoverflow.com/questions/75574268/missing-file-libarclite-iphoneos-a-xcode-14-3",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 76590131,
+      "title": "error while build iOS app in Xcode : Sandbox: rsync.samba (13105) deny(1) file-write-create, Flutter failed to write to a file",
+      "body": "while building iOS app on Xcode I got these 2 errors, I tried to build the iOS on visual studio code and I got the same errors. the operating system macOS 14.0 beta. processor M1 Pro Could downgrading the operating system fix that issue?",
+      "tags": [
+        "ios",
+        "flutter",
+        "xcode",
+        "macos",
+        "build"
+      ],
+      "owner": {
+        "account_id": 28923676,
+        "reputation": 3893,
+        "user_id": 22154032,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a/AAcHTtdbPEyMurGD0Y-37a-zSsNkTJa-btSmfl9vvd6l8pB3hKI=k-s256",
+        "display_name": "Gamal A",
+        "link": "https://stackoverflow.com/users/22154032/gamal-a"
+      },
+      "score": 392,
+      "answer_count": 12,
+      "is_answered": true,
+      "creation_date": 1688137445,
+      "view_count": 199278,
+      "link": "https://stackoverflow.com/questions/76590131/error-while-build-ios-app-in-xcode-sandbox-rsync-samba-13105-deny1-file-w",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 78163859,
+      "title": "ITMS-91053: Missing API declaration - Privacy",
+      "body": "Why am I all of a sudden getting this on successful builds with Apple? Although submission for App Store review was successful, you may want to correct the following issues in your next submission for App Store review. Once you've corrected the issues, upload a new binary to App Store Connect. ITMS-91053: Missing API d",
+      "tags": [
+        "ios",
+        "app-store",
+        "plist",
+        "appstore-approval",
+        "privacy-manifest"
+      ],
+      "owner": {
+        "account_id": 105082,
+        "reputation": 23463,
+        "user_id": 280602,
+        "user_type": "registered",
+        "accept_rate": 76,
+        "profile_image": "https://i.sstatic.net/wHKmF.jpg?s=256",
+        "display_name": "Mike Flynn",
+        "link": "https://stackoverflow.com/users/280602/mike-flynn"
+      },
+      "score": 270,
+      "answer_count": 13,
+      "is_answered": true,
+      "creation_date": 1710456918,
+      "view_count": 113490,
+      "link": "https://stackoverflow.com/questions/78163859/itms-91053-missing-api-declaration-privacy",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75980685,
+      "title": "Xcode 14.3 build error &quot;unable to initiate PIF transfer session (operation in progress?)&quot;",
+      "body": "Ran into this build error in Xcode 14.3 that prevents me from building my app. Build service could not create build operation: unknown error while handling message: MsgHandlingError(message: \"unable to initiate PIF transfer session (operation in progress?)\") There isn't more detail than that--deleting derived data, res",
+      "tags": [
+        "ios",
+        "xcode",
+        "swift-package-manager",
+        "xcode14.3"
+      ],
+      "owner": {
+        "account_id": 5159808,
+        "reputation": 5395,
+        "user_id": 4131889,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/ec42f6627e27e0f4e9908adc7882a190?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Flantasy Flan",
+        "link": "https://stackoverflow.com/users/4131889/flantasy-flan"
+      },
+      "score": 202,
+      "answer_count": 23,
+      "is_answered": true,
+      "creation_date": 1681160373,
+      "view_count": 212970,
+      "link": "https://stackoverflow.com/questions/75980685/xcode-14-3-build-error-unable-to-initiate-pif-transfer-session-operation-in-pr",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72289521,
+      "title": "Swift pods cannot yet be integrated as static libraries FirebaseCoreInternal-library",
+      "body": "I am building an app by Flutter. I got this error message when doing \" \" or \" \" or \" \" and the pod install failed and stopped. The error message: [!] The following Swift pods cannot yet be integrated as static libraries: The Swift pod depends upon , which does not define modules. To opt into those targets generating mo",
+      "tags": [
+        "ios",
+        "firebase",
+        "flutter",
+        "cocoapods"
+      ],
+      "owner": {
+        "account_id": 9205220,
+        "reputation": 1762,
+        "user_id": 6840782,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/74Yjj.jpg?s=256",
+        "display_name": "Ivan Tsaryk",
+        "link": "https://stackoverflow.com/users/6840782/ivan-tsaryk"
+      },
+      "score": 156,
+      "answer_count": 29,
+      "is_answered": true,
+      "creation_date": 1652878178,
+      "view_count": 209127,
+      "link": "https://stackoverflow.com/questions/72289521/swift-pods-cannot-yet-be-integrated-as-static-libraries-firebasecoreinternal-lib",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71320584,
+      "title": "Flutter build iOS got error: Requested but did not find extension point with identifier",
+      "body": "I just upgraded to Xcode 13.3-beta, running a flutter project got this error: Now, I am confused, I am running a iOS app on simulator, why throughs out errors like watchOS? And I totally don't know how to resolve this error. Any one could help me?",
+      "tags": [
+        "ios",
+        "xcode",
+        "flutter"
+      ],
+      "owner": {
+        "account_id": 9055947,
+        "reputation": 2599,
+        "user_id": 6744309,
+        "user_type": "registered",
+        "accept_rate": 25,
+        "profile_image": "https://lh4.googleusercontent.com/-tQAOMTpSTTU/AAAAAAAAAAI/AAAAAAAAABY/A1YqSem_VsI/s256-rj/photo.jpg",
+        "display_name": "Nicholas Jela",
+        "link": "https://stackoverflow.com/users/6744309/nicholas-jela"
+      },
+      "score": 138,
+      "answer_count": 44,
+      "is_answered": true,
+      "creation_date": 1646214536,
+      "view_count": 105940,
+      "link": "https://stackoverflow.com/questions/71320584/flutter-build-ios-got-error-requested-but-did-not-find-extension-point-with-ide",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72768245,
+      "title": "TypeError: cli.init is not a function for react native",
+      "body": "While running npx react-native init appName in MacBook air M1 chip",
+      "tags": [
+        "javascript",
+        "ios",
+        "react-native",
+        "typeerror",
+        "apple-m1"
+      ],
+      "owner": {
+        "account_id": 10677093,
+        "reputation": 2304,
+        "user_id": 7860211,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/hjGFQ.jpg?s=256",
+        "display_name": "Bandish Kumar",
+        "link": "https://stackoverflow.com/users/7860211/bandish-kumar"
+      },
+      "score": 124,
+      "answer_count": 22,
+      "is_answered": true,
+      "creation_date": 1656314201,
+      "view_count": 166169,
+      "link": "https://stackoverflow.com/questions/72768245/typeerror-cli-init-is-not-a-function-for-react-native",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71707325,
+      "title": "Migration to PHP 8.1 - how to fix Deprecated Passing null to parameter error",
+      "body": "PHP 8.1 has deprecated passing as a parameter to a lot of core functions. My main problem is with functions like and , where is no longer silently converted to the empty string. To fix this issue without going through a huge amount of code I was trying to rename the original built-in functions and replace them with wra",
+      "tags": [
+        "php",
+        "null",
+        "migration",
+        "deprecated",
+        "php-8.1"
+      ],
+      "owner": {
+        "account_id": 3729049,
+        "reputation": 1163,
+        "user_id": 18371415,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a/AATXAJykwjbq53pZ5sE5rbRVSoBRbhfWBodLP7TK8GHx=k-s256",
+        "display_name": "Janis T",
+        "link": "https://stackoverflow.com/users/18371415/janis-t"
+      },
+      "score": 105,
+      "answer_count": 14,
+      "is_answered": true,
+      "creation_date": 1648818034,
+      "view_count": 289164,
+      "link": "https://stackoverflow.com/questions/71707325/migration-to-php-8-1-how-to-fix-deprecated-passing-null-to-parameter-error",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71688125,
+      "title": "ODBC Driver 18 for SQL Server]SSL Provider: [error:1416F086]",
+      "body": "I have the following error while trying to connect SQL Server: I'm on Ubuntu 20, PHP 7.4 FPM, nginx. When I: I get: CONNECTED(00000003) My openssl library version is: OpenSSL 1.1.1f 31 Mar 2020 (Library: OpenSSL 1.1.1k 25 Mar 2021) I have tried many things, like forcing system to use TLS1 in /etc/ssl/openssl.cnf or ngi",
+      "tags": [
+        "php",
+        "sql-server",
+        "ubuntu",
+        "openssl"
+      ],
+      "owner": {
+        "account_id": 22297780,
+        "reputation": 687,
+        "user_id": 16523529,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a-/AOh14GjLXQIRKGPmZBpTpyJ1WWKbw2I_0Az80yY7MAEe=k-s256",
+        "display_name": "Matt",
+        "link": "https://stackoverflow.com/users/16523529/matt"
+      },
+      "score": 69,
+      "answer_count": 11,
+      "is_answered": true,
+      "creation_date": 1648709710,
+      "view_count": 152471,
+      "link": "https://stackoverflow.com/questions/71688125/odbc-driver-18-for-sql-serverssl-provider-error1416f086",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 74878889,
+      "title": "PHP Warning Deprecated: Creation of dynamic property is deprecated",
+      "body": "I'm seeing this more and more, and I'm not sure what I need to do to stop this warning: Deprecated: Creation of dynamic property ... is deprecated This is my class: This is how I'm instantiating it. Which gives me two messages: Deprecated: Creation of dynamic property database::$database is deprecated Deprecated: Creat",
+      "tags": [
+        "php"
+      ],
+      "owner": {
+        "account_id": 4493426,
+        "reputation": 869,
+        "user_id": 3653925,
+        "user_type": "registered",
+        "accept_rate": 100,
+        "profile_image": "https://i.sstatic.net/6uCBd.png?s=256",
+        "display_name": "Johnny 3653925",
+        "link": "https://stackoverflow.com/users/3653925/johnny-3653925"
+      },
+      "score": 68,
+      "answer_count": 9,
+      "is_answered": true,
+      "creation_date": 1671639516,
+      "view_count": 251344,
+      "link": "https://stackoverflow.com/questions/74878889/php-warning-deprecated-creation-of-dynamic-property-is-deprecated",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73045616,
+      "title": "Vite manifest not found",
+      "body": "I'm working on a project that is using and with , In the Dev environment everything works fine, but in production on the cPanel server I have the following issue: I tried to solve the problem but nothing work, I need to change the public folder and the sup folder build file place from vite.config.js but I don't find th",
+      "tags": [
+        "php",
+        "laravel",
+        "vite",
+        "laravel-9"
+      ],
+      "owner": {
+        "account_id": 20415323,
+        "reputation": 869,
+        "user_id": 14977674,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/63301c416302e82c1cef2d328659045f?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "sos5020",
+        "link": "https://stackoverflow.com/users/14977674/sos5020"
+      },
+      "score": 66,
+      "answer_count": 22,
+      "is_answered": true,
+      "creation_date": 1658287205,
+      "view_count": 200862,
+      "link": "https://stackoverflow.com/questions/73045616/vite-manifest-not-found",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71133749,
+      "title": "Reference: Return type of ... should either be compatible with ..., or the #[\\ReturnTypeWillChange] attribute should be used",
+      "body": "In PHP 8.1, the following code, which worked in previous versions: Raises a deprecation notice: Deprecated: Return type of Example::count() should either be compatible with Countable::count(): int, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice What does this mean, and how s",
+      "tags": [
+        "php",
+        "php-8.1"
+      ],
+      "owner": {
+        "account_id": 52839,
+        "reputation": 100240,
+        "user_id": 157957,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/MBRE7.jpg?s=256",
+        "display_name": "IMSoP",
+        "link": "https://stackoverflow.com/users/157957/imsop"
+      },
+      "score": 45,
+      "answer_count": 1,
+      "is_answered": true,
+      "creation_date": 1644961311,
+      "view_count": 62723,
+      "link": "https://stackoverflow.com/questions/71133749/reference-return-type-of-should-either-be-compatible-with-or-the-re",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75122899,
+      "title": "Creation of dynamic property CI_URI::$config is deprecated",
+      "body": "A PHP Error was encountered Severity: 8192 Message: Creation of dynamic property CI_URI::$config is deprecated Filename: core/URI.php Line Number: 102 Backtrace: File: C:\\xampp\\htdocs\\inv_perpus\\index.php Line: 288 Function: require_once",
+      "tags": [
+        "php",
+        "codeigniter"
+      ],
+      "owner": {
+        "account_id": 27532361,
+        "reputation": 431,
+        "user_id": 21010654,
+        "user_type": "registered",
+        "profile_image": "https://graph.facebook.com/1073262307405139/picture?type=large",
+        "display_name": "Hii",
+        "link": "https://stackoverflow.com/users/21010654/hii"
+      },
+      "score": 44,
+      "answer_count": 3,
+      "is_answered": true,
+      "creation_date": 1673756389,
+      "view_count": 172560,
+      "link": "https://stackoverflow.com/questions/75122899/creation-of-dynamic-property-ci-uriconfig-is-deprecated",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71239450,
+      "title": "GPG keys issue while installing mysql-community-server",
+      "body": "While Installing mysql-community-server getting bellow error: Command: Error: Can anyone help on this...",
+      "tags": [
+        "php",
+        "mysql",
+        "linux",
+        "package"
+      ],
+      "owner": {
+        "account_id": 14579054,
+        "reputation": 529,
+        "user_id": 11049021,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/-9QRu-Nd59ao/AAAAAAAAAAI/AAAAAAAAAC8/3oJhexm1eKM/s256-rj/photo.jpg",
+        "display_name": "jignesh kumar",
+        "link": "https://stackoverflow.com/users/11049021/jignesh-kumar"
+      },
+      "score": 41,
+      "answer_count": 9,
+      "is_answered": true,
+      "creation_date": 1645628996,
+      "view_count": 91923,
+      "link": "https://stackoverflow.com/questions/71239450/gpg-keys-issue-while-installing-mysql-community-server",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73929564,
+      "title": "&#39;EntryPoints&#39; object has no attribute &#39;get&#39; - Digital ocean",
+      "body": "I have made a deplyoment to Digital ocean, on staging (Heroku server) the app is working well, but Digital ocean it's failing with the error below, what could be the issue :",
+      "tags": [
+        "python",
+        "django",
+        "digital-ocean"
+      ],
+      "owner": {
+        "account_id": 8967886,
+        "reputation": 4050,
+        "user_id": 6687699,
+        "user_type": "registered",
+        "accept_rate": 58,
+        "profile_image": "https://i.sstatic.net/4Snxy.jpg?s=256",
+        "display_name": "Lutaaya Huzaifah Idris",
+        "link": "https://stackoverflow.com/users/6687699/lutaaya-huzaifah-idris"
+      },
+      "score": 76,
+      "answer_count": 6,
+      "is_answered": true,
+      "creation_date": 1664747002,
+      "view_count": 58404,
+      "link": "https://stackoverflow.com/questions/73929564/entrypoints-object-has-no-attribute-get-digital-ocean",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71712258,
+      "title": "ERROR: Could not build wheels for backports.zoneinfo, which is required to install pyproject.toml-based projects",
+      "body": "The Heroku Build is returning this error when I'm trying to deploy a Django application for the past few days. The Django Code and File Structure are the same as Django's Official Documentation and Procfile is added in the root folder. Log - Thanks.",
+      "tags": [
+        "python",
+        "django",
+        "heroku"
+      ],
+      "owner": {
+        "account_id": 16660311,
+        "reputation": 829,
+        "user_id": 12040445,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/ydOnG.jpg?s=256",
+        "display_name": "SarveshJoshi",
+        "link": "https://stackoverflow.com/users/12040445/sarveshjoshi"
+      },
+      "score": 73,
+      "answer_count": 11,
+      "is_answered": true,
+      "creation_date": 1648843469,
+      "view_count": 117238,
+      "link": "https://stackoverflow.com/questions/71712258/error-could-not-build-wheels-for-backports-zoneinfo-which-is-required-to-insta",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 70656495,
+      "title": "ImportError : cannot import name &#39;ugettext_lazy&#39;",
+      "body": "I'm trying to install suit, I entered this command : pip install https://github.com/darklow/django-suit/tarball/v2 and wrote this code : And added it : But when I added this last code I had this error : InvalidTemplateLibrary: Invalid template library specified. ImportError raised when trying to load 'suit.templatetags",
+      "tags": [
+        "python",
+        "python-3.x",
+        "django",
+        "django-settings",
+        "installed-applications"
+      ],
+      "owner": {
+        "user_type": "does_not_exist",
+        "display_name": "user17794736"
+      },
+      "score": 40,
+      "answer_count": 10,
+      "is_answered": true,
+      "creation_date": 1641835457,
+      "view_count": 65960,
+      "link": "https://stackoverflow.com/questions/70656495/importerror-cannot-import-name-ugettext-lazy",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 76327419,
+      "title": "ValueError: libcublas.so.*[0-9] not found in the system path",
+      "body": "I'm trying to import and use ultralytics library in my Django rest framework project, I use poetry as my dependency manager, I installed ultralytics using and on trying to import the library in my code I recieve this error how can I solve that?",
+      "tags": [
+        "django",
+        "django-rest-framework",
+        "cublas"
+      ],
+      "owner": {
+        "account_id": 27245459,
+        "reputation": 349,
+        "user_id": 20770835,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a/AEdFTp6c84j725pewloNUi8zwhZSkm88Ac3csQ2B-4n42UI=k-s256",
+        "display_name": "Mahmoud Aboelsoud",
+        "link": "https://stackoverflow.com/users/20770835/mahmoud-aboelsoud"
+      },
+      "score": 34,
+      "answer_count": 7,
+      "is_answered": true,
+      "creation_date": 1684962577,
+      "view_count": 26181,
+      "link": "https://stackoverflow.com/questions/76327419/valueerror-libcublas-so-0-9-not-found-in-the-system-path",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71058888,
+      "title": "ZoneInfoNotFoundError: &#39;No time zone found with key utc&#39;",
+      "body": "While trying to load my webpage on the browser, I got the message. A server error occurred. Please contact the administrator And when I go back to check my termimal, I see the message zoneinfo._common.ZoneInfoNotFoundError: 'No time zone found with key UTC' I have checked but don't know what's wrong. I even tried chang",
+      "tags": [
+        "python",
+        "django",
+        "timezone",
+        "utc",
+        "django-settings"
+      ],
+      "owner": {
+        "account_id": 24190560,
+        "reputation": 331,
+        "user_id": 18149809,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/62b6aaf505e31fdcea89865ec775cfd3?s=256&d=identicon&r=PG",
+        "display_name": "Cjdev",
+        "link": "https://stackoverflow.com/users/18149809/cjdev"
+      },
+      "score": 33,
+      "answer_count": 8,
+      "is_answered": true,
+      "creation_date": 1644457935,
+      "view_count": 53680,
+      "link": "https://stackoverflow.com/questions/71058888/zoneinfonotfounderror-no-time-zone-found-with-key-utc",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75495403,
+      "title": "Django returns &#39;TemplateDoesNotExist&#39; when using Crispy Forms",
+      "body": "Using Crispy Forms with Django, I can only get a error when using any feature of Crispy Forms. As I'm new to Crispy Forms (which seems to be universally recommended for quickly making forms look better), I have followed the instructions at https://django-crispy-forms.readthedocs.io/en/latest/install.html and as far as ",
+      "tags": [
+        "django",
+        "bootstrap-4",
+        "django-crispy-forms"
+      ],
+      "owner": {
+        "account_id": 20281361,
+        "reputation": 413,
+        "user_id": 14875045,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/43de2860b5cea2c419f75137e7da47c7?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Dave",
+        "link": "https://stackoverflow.com/users/14875045/dave"
+      },
+      "score": 32,
+      "answer_count": 6,
+      "is_answered": true,
+      "creation_date": 1676744098,
+      "view_count": 35666,
+      "link": "https://stackoverflow.com/questions/75495403/django-returns-templatedoesnotexist-when-using-crispy-forms",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73206939,
+      "title": "Heroku postgres postgis - django releases fail with: relation &quot;spatial_ref_sys&quot; does not exist",
+      "body": "Heroku changed their PostgreSQL extension schema management on 01 August 2022. ( https://devcenter.heroku.com/changelog-items/2446 ) Since then every deployment to Heroku of our existing django 4.0 application fails during the release phase, the build succeeds. Has anyone experienced the same issue? Is there a workarou",
+      "tags": [
+        "python",
+        "django",
+        "heroku",
+        "heroku-postgres"
+      ],
+      "owner": {
+        "account_id": 23462504,
+        "reputation": 423,
+        "user_id": 17517157,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a-/AOh14GjSPNoq8fq5_dqUtOtYJHK4E-kDCS1YkiW9O8mSsvs=k-s256",
+        "display_name": "Simon",
+        "link": "https://stackoverflow.com/users/17517157/simon"
+      },
+      "score": 32,
+      "answer_count": 8,
+      "is_answered": true,
+      "creation_date": 1659440493,
+      "view_count": 3175,
+      "link": "https://stackoverflow.com/questions/73206939/heroku-postgres-postgis-django-releases-fail-with-relation-spatial-ref-sys",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71082494,
+      "title": "Getting a warning when using a pyodbc Connection object with pandas",
+      "body": "I am trying to make sense of the following error that I started getting when I setup my python code to run on a VM server, which has 3.9.5 installed instead of 3.8.5 on my desktop. Not sure that matters, but it could be part of the reason. The error This is within a fairly simple .py file that imports pyodbc & sqlalche",
+      "tags": [
+        "sql-server",
+        "python-3.x",
+        "pandas",
+        "pyodbc"
+      ],
+      "owner": {
+        "account_id": 20621996,
+        "reputation": 1135,
+        "user_id": 15138794,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/df1b86fbeb8ce63cbb130d208caefac0?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Josh Knechtel",
+        "link": "https://stackoverflow.com/users/15138794/josh-knechtel"
+      },
+      "score": 104,
+      "answer_count": 7,
+      "is_answered": true,
+      "creation_date": 1644592927,
+      "view_count": 213565,
+      "link": "https://stackoverflow.com/questions/71082494/getting-a-warning-when-using-a-pyodbc-connection-object-with-pandas",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 77900971,
+      "title": "pandas FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version",
+      "body": "In order to print dataframes nicely using tabulate , so that and are printed as empty cells, I've been using this successfully: Now, this causes the following warning: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(c",
+      "tags": [
+        "python",
+        "pandas",
+        "downcast"
+      ],
+      "owner": {
+        "account_id": 7385421,
+        "reputation": 2802,
+        "user_id": 9640238,
+        "user_type": "registered",
+        "profile_image": "https://lh4.googleusercontent.com/-sUcnFnSAueY/AAAAAAAAAAI/AAAAAAAAKLE/M14r8QM7uts/s256-rj/photo.jpg",
+        "display_name": "mrgou",
+        "link": "https://stackoverflow.com/users/9640238/mrgou"
+      },
+      "score": 78,
+      "answer_count": 10,
+      "is_answered": true,
+      "creation_date": 1706543690,
+      "view_count": 95009,
+      "link": "https://stackoverflow.com/questions/77900971/pandas-futurewarning-downcasting-object-dtype-arrays-on-fillna-ffill-bfill",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 77969964,
+      "title": "Deprecation Warning with groupby.apply",
+      "body": "I have a python script that reads in data from a csv file The code runs fine, but everytime it runs I get this Deprecation message: the warning stems from this piece of code: to my understanding, I am performing the apply function on my groupings,but then I am disregarding the groupings and not using them anymore to be",
+      "tags": [
+        "python",
+        "pandas",
+        "dataframe"
+      ],
+      "owner": {
+        "account_id": 30352047,
+        "reputation": 2405,
+        "user_id": 23260297,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/1ef2ea4b0c8ce7b4ce9cf1659f79dbd0?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "iBeMeltin",
+        "link": "https://stackoverflow.com/users/23260297/ibemeltin"
+      },
+      "score": 69,
+      "answer_count": 8,
+      "is_answered": true,
+      "creation_date": 1707501046,
+      "view_count": 60168,
+      "link": "https://stackoverflow.com/questions/77969964/deprecation-warning-with-groupby-apply",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 76090979,
+      "title": "&#39;XlsxWriter&#39; object has no attribute &#39;save&#39;. Did you mean: &#39;_save&#39;?",
+      "body": "I'm trying to save data from a DataFrame to an Excel file using pandas. I tried the following code: But I get the following error: Does anyone know how to solve it?",
+      "tags": [
+        "python",
+        "pandas",
+        "excel",
+        "attributeerror",
+        "xlsxwriter"
+      ],
+      "owner": {
+        "account_id": 28397020,
+        "reputation": 671,
+        "user_id": 21722065,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/f3add5eda5b8d70ff0ae2ac33af92abe?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Straniero95",
+        "link": "https://stackoverflow.com/users/21722065/straniero95"
+      },
+      "score": 66,
+      "answer_count": 2,
+      "is_answered": true,
+      "creation_date": 1682332473,
+      "view_count": 117240,
+      "link": "https://stackoverflow.com/questions/76090979/xlsxwriter-object-has-no-attribute-save-did-you-mean-save",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 77254777,
+      "title": "Alternative to .concat() of empty dataframe, now that it is being deprecated?",
+      "body": "I have two dataframes that can both be empty, and I want to concat them. Before I could just do : But now I run into FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dty",
+      "tags": [
+        "python",
+        "pandas",
+        "dataframe",
+        "concatenation"
+      ],
+      "owner": {
+        "account_id": 18054961,
+        "reputation": 916,
+        "user_id": 13123667,
+        "user_type": "registered",
+        "profile_image": "https://i.sstatic.net/RjFCI.png?s=256",
+        "display_name": "Timothee W",
+        "link": "https://stackoverflow.com/users/13123667/timothee-w"
+      },
+      "score": 56,
+      "answer_count": 8,
+      "is_answered": true,
+      "creation_date": 1696788724,
+      "view_count": 83682,
+      "link": "https://stackoverflow.com/questions/77254777/alternative-to-concat-of-empty-dataframe-now-that-it-is-being-deprecated",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75309237,
+      "title": "read_sql_query() throws &quot;&#39;OptionEngine&#39; object has no attribute &#39;execute&#39;&quot; with SQLAlchemy 2.0.0",
+      "body": "First of all, I'm a totally new guys in the dev world I'm currently taking courses in AI / Data Science and one of my work is to use a SQL Database to make prediction using Prophet, then use these predition to make a PowerBI But currently, I'm stuck with the Python code, I'm not a developer initially, so I have no clue",
+      "tags": [
+        "python",
+        "pandas",
+        "sqlalchemy"
+      ],
+      "owner": {
+        "account_id": 27674750,
+        "reputation": 541,
+        "user_id": 21124805,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a/AEdFTp4Yw1STGhOJtSHst-arSmlHiFC3a6xUx17E1uff=k-s256",
+        "display_name": "Elu",
+        "link": "https://stackoverflow.com/users/21124805/elu"
+      },
+      "score": 53,
+      "answer_count": 8,
+      "is_answered": true,
+      "creation_date": 1675249354,
+      "view_count": 51404,
+      "link": "https://stackoverflow.com/questions/75309237/read-sql-query-throws-optionengine-object-has-no-attribute-execute-with",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73969269,
+      "title": "ERROR: Could not build wheels for hnswlib, which is required to install pyproject.toml-based projects",
+      "body": "I'm trying to install embeddinghub on mac (tried and ), but I get the same error saying \" .\" I can't find any solutions regarding hnswlib. I've tried a lot of solutions regarding PEP517 and building wheels for other things, but none of the solutions helped. Here's the full error: Error",
+      "tags": [
+        "python",
+        "pandas",
+        "pip"
+      ],
+      "owner": {
+        "account_id": 26542173,
+        "reputation": 511,
+        "user_id": 20172748,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/bc10ddffc030b5734b4ba2cb10dce38c?s=256&d=identicon&r=PG",
+        "display_name": "SilverXer0",
+        "link": "https://stackoverflow.com/users/20172748/silverxer0"
+      },
+      "score": 50,
+      "answer_count": 25,
+      "is_answered": true,
+      "creation_date": 1665036468,
+      "view_count": 129140,
+      "link": "https://stackoverflow.com/questions/73969269/error-could-not-build-wheels-for-hnswlib-which-is-required-to-install-pyprojec",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 76899023,
+      "title": "RDS while connection error: no pg_hba.conf entry for host",
+      "body": "I need assistance as I'm having trouble connecting to a managed Postgres database on RDS. I'm encountering the following error message: \"no pg_hba.conf entry for host '16.151.149.51', user 'analytics', database 'database', no encryption\" I have confirmed that encryption is functioning properly, and I've also added the ",
+      "tags": [
+        "postgresql",
+        "amazon-rds"
+      ],
+      "owner": {
+        "account_id": 2168451,
+        "reputation": 2230,
+        "user_id": 1921025,
+        "user_type": "registered",
+        "accept_rate": 52,
+        "profile_image": "https://www.gravatar.com/avatar/50efe7cf9586a94b1a2b4273f2ce8c0f?s=256&d=identicon&r=PG",
+        "display_name": "idan",
+        "link": "https://stackoverflow.com/users/1921025/idan"
+      },
+      "score": 72,
+      "answer_count": 15,
+      "is_answered": true,
+      "creation_date": 1692017005,
+      "view_count": 112723,
+      "link": "https://stackoverflow.com/questions/76899023/rds-while-connection-error-no-pg-hba-conf-entry-for-host",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 77557159,
+      "title": "Why pg_dump/psql throws &quot;FATAL: no PostgreSQL user name specified in startup packet&quot;?",
+      "body": "I am trying to run pg_dump (or even psql) over our postgresql server v13, with binaries from v13 and v16. Both don't work for me, but do work for my colleagues that are not on Mac, not sure if it's related to that. When I try to run: or even simple: I get the following: The user name is clearly specified as parameter a",
+      "tags": [
+        "postgresql",
+        "pg-dump"
+      ],
+      "owner": {
+        "account_id": 2167315,
+        "reputation": 1901,
+        "user_id": 1920149,
+        "user_type": "registered",
+        "accept_rate": 74,
+        "profile_image": "https://i.sstatic.net/oOhDT.jpg?s=256",
+        "display_name": "Ev0oD",
+        "link": "https://stackoverflow.com/users/1920149/ev0od"
+      },
+      "score": 33,
+      "answer_count": 2,
+      "is_answered": true,
+      "creation_date": 1701090597,
+      "view_count": 14300,
+      "link": "https://stackoverflow.com/questions/77557159/why-pg-dump-psql-throws-fatal-no-postgresql-user-name-specified-in-startup-pac",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 73214844,
+      "title": "ERROR: extension &quot;btree_gist&quot; must be installed in schema &quot;heroku_ext&quot;",
+      "body": "Heroku made a change to the way postgressql extensions gets installed This is screwing up new rails review apps in heroku with the following error. ERROR: extension \"btree_gist\" must be installed in schema \"heroku_ext\" This is screwing up things as I need to drop existing extensions and re-enable with heroku_ext schema",
+      "tags": [
+        "ruby-on-rails",
+        "postgresql",
+        "heroku",
+        "heroku-postgres"
+      ],
+      "owner": {
+        "account_id": 8051962,
+        "reputation": 131,
+        "user_id": 6070198,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/c9ad637271da1d75f8f9b82424c37bcf?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Raghu Varma",
+        "link": "https://stackoverflow.com/users/6070198/raghu-varma"
+      },
+      "score": 33,
+      "answer_count": 8,
+      "is_answered": true,
+      "creation_date": 1659483723,
+      "view_count": 5512,
+      "link": "https://stackoverflow.com/questions/73214844/error-extension-btree-gist-must-be-installed-in-schema-heroku-ext",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 77462578,
+      "title": "pgadmin error when restoring database from tar file",
+      "body": "I'm trying load a tar file using pgAdmin, but it's failing and all I get is exit code 3221225781. This code seems to indicate a missing dll What is exit code 3221225781 on windows? but I'm not sure why this would be or what dll to look for.",
+      "tags": [
+        "database",
+        "postgresql",
+        "pgadmin"
+      ],
+      "owner": {
+        "account_id": 1644376,
+        "reputation": 1555,
+        "user_id": 1516189,
+        "user_type": "registered",
+        "accept_rate": 100,
+        "profile_image": "https://www.gravatar.com/avatar/d33de36840c07629b0dfc5ecbc0ff2cf?s=256&d=identicon&r=PG",
+        "display_name": "Lukas Halim",
+        "link": "https://stackoverflow.com/users/1516189/lukas-halim"
+      },
+      "score": 29,
+      "answer_count": 4,
+      "is_answered": true,
+      "creation_date": 1699646378,
+      "view_count": 48498,
+      "link": "https://stackoverflow.com/questions/77462578/pgadmin-error-when-restoring-database-from-tar-file",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 78539678,
+      "title": "Using Postgres 16 with Spring Boot 3.3.0",
+      "body": "I just upgraded from spring-boot 3.2.3 -> 3.3.0. After the upgrade flyway refuses to connect to postgres: What is the expected way to connect to postgres 16 using spring-boot 3.3.0 and flyway?",
+      "tags": [
+        "postgresql",
+        "spring-boot",
+        "flyway",
+        "postgresql-16"
+      ],
+      "owner": {
+        "account_id": 24111,
+        "reputation": 2041,
+        "user_id": 61104,
+        "user_type": "registered",
+        "accept_rate": 85,
+        "profile_image": "https://www.gravatar.com/avatar/de357816d5d57debab13abc5999ab068?s=256&d=identicon&r=PG",
+        "display_name": "Kevin",
+        "link": "https://stackoverflow.com/users/61104/kevin"
+      },
+      "score": 29,
+      "answer_count": 3,
+      "is_answered": true,
+      "creation_date": 1716820353,
+      "view_count": 18295,
+      "link": "https://stackoverflow.com/questions/78539678/using-postgres-16-with-spring-boot-3-3-0",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 79129883,
+      "title": "Flyway Unsupported Database: PostgreSQL 17.0",
+      "body": "Flyway does not support Postgres 17, before it was 16 and the same error message occurred, I have changed the dependencies several times and it remains the same. Finally, I installed db 17 and the latest version of the flyway dependency 10.20.1, and it continues to give the same error. I don't know what to do anymore, ",
+      "tags": [
+        "spring",
+        "postgresql",
+        "spring-boot",
+        "flyway"
+      ],
+      "owner": {
+        "account_id": 24410443,
+        "reputation": 351,
+        "user_id": 28005119,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a-/AOh14Gi_d8V48-cbL-Lfc9UCJaWB8jE4VM_vc9qNhKw_PQ=k-s256",
+        "display_name": "Luis Felipe Rezende",
+        "link": "https://stackoverflow.com/users/28005119/luis-felipe-rezende"
+      },
+      "score": 25,
+      "answer_count": 5,
+      "is_answered": true,
+      "creation_date": 1730002120,
+      "view_count": 27981,
+      "link": "https://stackoverflow.com/questions/79129883/flyway-unsupported-database-postgresql-17-0",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 76220715,
+      "title": "Type &quot;vector&quot; does not exist on postgresql - langchain",
+      "body": "I was trying to embed some documents on postgresql with the help of pgvector extension and langchain . Unfortunately I'm having trouble with the following error: My environment info: pgvector docker image python , psycopg2 , pgvector List of installed extensions on postgres I've tried the following ways to resolve: Fre",
+      "tags": [
+        "python",
+        "postgresql",
+        "vectorization",
+        "langchain"
+      ],
+      "owner": {
+        "account_id": 8430094,
+        "reputation": 1103,
+        "user_id": 6326147,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/b35370d6310cb5e66850f4e58ad5a829?s=256&d=identicon&r=PG",
+        "display_name": "Rijoanul Hasan Shanto",
+        "link": "https://stackoverflow.com/users/6326147/rijoanul-hasan-shanto"
+      },
+      "score": 24,
+      "answer_count": 6,
+      "is_answered": true,
+      "creation_date": 1683736127,
+      "view_count": 56078,
+      "link": "https://stackoverflow.com/questions/76220715/type-vector-does-not-exist-on-postgresql-langchain",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 72711770,
+      "title": "flyway : Unsupported Database: MySQL 8.0",
+      "body": "I am using java 11, and I have added flyway in spring-boot application like below. and added properties as but it is producing an error that,",
+      "tags": [
+        "java",
+        "mysql",
+        "spring-boot",
+        "spring-mvc",
+        "flyway"
+      ],
+      "owner": {
+        "account_id": 13406436,
+        "reputation": 2537,
+        "user_id": 9895452,
+        "user_type": "registered",
+        "profile_image": "https://lh6.googleusercontent.com/-HhfwQd54SNE/AAAAAAAAAAI/AAAAAAAADeE/jTPy3AJ2Uqg/s256-rj/photo.jpg",
+        "display_name": "Sandeep Patel",
+        "link": "https://stackoverflow.com/users/9895452/sandeep-patel"
+      },
+      "score": 43,
+      "answer_count": 4,
+      "is_answered": true,
+      "creation_date": 1655885134,
+      "view_count": 39989,
+      "link": "https://stackoverflow.com/questions/72711770/flyway-unsupported-database-mysql-8-0",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 76875569,
+      "title": "WARNING: MYSQL_OPT_RECONNECT is deprecated and will be removed in a future version",
+      "body": "As I have seen here , Beginning with MySQL 8.0.34, the automatic reconnection feature is deprecated. I have a lot of Perl scripts that connect to a MySQL database with something like: Which are now throwing a warning: WARNING: MYSQL_OPT_RECONNECT is deprecated and will be removed in a future version. I have tried chang",
+      "tags": [
+        "mysql",
+        "perl",
+        "dbi"
+      ],
+      "owner": {
+        "account_id": 5477700,
+        "reputation": 2174,
+        "user_id": 4355253,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/19acab9e2de71bbc202323d8d34e8204?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Javier Elices",
+        "link": "https://stackoverflow.com/users/4355253/javier-elices"
+      },
+      "score": 23,
+      "answer_count": 2,
+      "is_answered": true,
+      "creation_date": 1691668834,
+      "view_count": 30296,
+      "link": "https://stackoverflow.com/questions/76875569/warning-mysql-opt-reconnect-is-deprecated-and-will-be-removed-in-a-future-versi",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 78938322,
+      "title": "MySQL Authentication Plugin Issues on macOS",
+      "body": "I’m working on a blog project using Python and Flask, and I’m using the MySQL database from XAMPP for user registration. The project worked perfectly on my Windows machine, but after switching to macOS, I’ve been encountering various issues with the registration process. I’ve managed to resolve most of the issues, but ",
+      "tags": [
+        "mysql"
+      ],
+      "owner": {
+        "account_id": 35361487,
+        "reputation": 251,
+        "user_id": 27159678,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/a5a180f344f5888bb350a4867352c403?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "dogualagoz",
+        "link": "https://stackoverflow.com/users/27159678/dogualagoz"
+      },
+      "score": 22,
+      "answer_count": 6,
+      "is_answered": true,
+      "creation_date": 1725222666,
+      "view_count": 63925,
+      "link": "https://stackoverflow.com/questions/78938322/mysql-authentication-plugin-issues-on-macos",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71874222,
+      "title": "SQLModel: sqlalchemy.exc.ArgumentError: Column expression or FROM clause expected,",
+      "body": "I am using the SQLModel library to do a simple like described on their official website. However I am getting error message this is my code: when I run app.py I get the message",
+      "tags": [
+        "mysql",
+        "python-3.x",
+        "sqlalchemy",
+        "pymysql",
+        "sqlmodel"
+      ],
+      "owner": {
+        "account_id": 24938536,
+        "reputation": 225,
+        "user_id": 18804772,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/f6c8015551dd112f59fe0fbdf3a9a838?s=256&d=identicon&r=PG",
+        "display_name": "joooet",
+        "link": "https://stackoverflow.com/users/18804772/joooet"
+      },
+      "score": 21,
+      "answer_count": 4,
+      "is_answered": true,
+      "creation_date": 1649950704,
+      "view_count": 56916,
+      "link": "https://stackoverflow.com/questions/71874222/sqlmodel-sqlalchemy-exc-argumenterror-column-expression-or-from-clause-expecte",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 70757210,
+      "title": "How do I connect to a MySQL instance without using the password?",
+      "body": "I trying to connect db I have set no password for the db I am leaving blank in the password field. But it's not connecting and showing error . Also I am using phpmyadmin as db so how to connect here is my code",
+      "tags": [
+        "mysql",
+        "go",
+        "authentication",
+        "authorization"
+      ],
+      "owner": {
+        "account_id": 13899219,
+        "reputation": 930,
+        "user_id": 10035190,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/2a7797b8aedf1ef222b70466b06949be?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "zircon",
+        "link": "https://stackoverflow.com/users/10035190/zircon"
+      },
+      "score": 20,
+      "answer_count": 3,
+      "is_answered": true,
+      "creation_date": 1642516041,
+      "view_count": 15285,
+      "link": "https://stackoverflow.com/questions/70757210/how-do-i-connect-to-a-mysql-instance-without-using-the-password",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71539122,
+      "title": "Network error in DBeaver mysql connection: `unable to find valid certification path to requested target`",
+      "body": "I have this message in my DBeaver Can you help me to fix the problem?",
+      "tags": [
+        "mysql",
+        "database",
+        "localhost",
+        "dbeaver"
+      ],
+      "owner": {
+        "account_id": 24611846,
+        "reputation": 199,
+        "user_id": 18513324,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a-/AOh14Gg398woWOSbSltyBa-58btLS0iJqcyRFQCbyDy5=k-s256",
+        "display_name": "Lo&#239;c YOLA",
+        "link": "https://stackoverflow.com/users/18513324/lo%c3%afc-yola"
+      },
+      "score": 19,
+      "answer_count": 9,
+      "is_answered": true,
+      "creation_date": 1647701039,
+      "view_count": 174675,
+      "link": "https://stackoverflow.com/questions/71539122/network-error-in-dbeaver-mysql-connection-unable-to-find-valid-certification-p",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75947475,
+      "title": "Prisma: TypeError: Do not know how to serialize a BigInt",
+      "body": "I'm trying to fetch data from database and this is my prisma model: So when i fetch data like this It throws error TypeError: Do not know how to serialize a BigInt at JSON.stringify(<anonymous>) And i don't even know how to deal with it, is there way to change data handler in method? If there is no rows in so it gives ",
+      "tags": [
+        "mysql",
+        "node.js",
+        "nestjs",
+        "prisma"
+      ],
+      "owner": {
+        "account_id": 20945731,
+        "reputation": 424,
+        "user_id": 16128472,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/162087aa08588a90599edc7ca84c65f5?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "bluepuper",
+        "link": "https://stackoverflow.com/users/16128472/bluepuper"
+      },
+      "score": 18,
+      "answer_count": 5,
+      "is_answered": true,
+      "creation_date": 1680770518,
+      "view_count": 26368,
+      "link": "https://stackoverflow.com/questions/75947475/prisma-typeerror-do-not-know-how-to-serialize-a-bigint",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 76187256,
+      "title": "ImportError: urllib3 v2.0 only supports OpenSSL 1.1.1+, currently the &#39;ssl&#39; module is compiled with LibreSSL 2.8.3",
+      "body": "After , when I try to , it shows this error: the 'ssl' module of urllib3 is compile with LibreSSL not OpenSSL I just followed a tutorial on a project about using API of OpenAI. But when I get to the first step which is the install and import OpenAI, I got stuck. And I tried to find the solution for this error but I fou",
+      "tags": [
+        "python",
+        "openai-api",
+        "urllib3"
+      ],
+      "owner": {
+        "account_id": 11229285,
+        "reputation": 1943,
+        "user_id": 8237910,
+        "user_type": "registered",
+        "profile_image": "https://lh5.googleusercontent.com/-OajeBMxDGMo/AAAAAAAAAAI/AAAAAAAAAmQ/8vm8L0FQK1c/s256-rj/photo.jpg",
+        "display_name": "maimai",
+        "link": "https://stackoverflow.com/users/8237910/maimai"
+      },
+      "score": 183,
+      "answer_count": 21,
+      "is_answered": true,
+      "creation_date": 1683349902,
+      "view_count": 448448,
+      "link": "https://stackoverflow.com/questions/76187256/importerror-urllib3-v2-0-only-supports-openssl-1-1-1-currently-the-ssl-modu",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 74711107,
+      "title": "OpenAI API continuing conversation in a dialogue",
+      "body": "I am playing around with the openAI API and I am trying to continue a conversation. For example: This produces a Haiku in the following format: Which is great. However, what if I now want to ask to \"write me another\"? If I use the the openAI playground chat or chatGPT, I am able to continue the conversation. I would li",
+      "tags": [
+        "python",
+        "openai-api"
+      ],
+      "owner": {
+        "account_id": 19934883,
+        "reputation": 837,
+        "user_id": 14607802,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/ebb1a082fb58622f567e9f8ba1b480ca?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Charmalade",
+        "link": "https://stackoverflow.com/users/14607802/charmalade"
+      },
+      "score": 61,
+      "answer_count": 6,
+      "is_answered": true,
+      "creation_date": 1670380288,
+      "view_count": 56484,
+      "link": "https://stackoverflow.com/questions/74711107/openai-api-continuing-conversation-in-a-dialogue",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 77444332,
+      "title": "OpenAI Python Package Error: &#39;ChatCompletion&#39; object is not subscriptable",
+      "body": "After updating my OpenAI package to version 1.1.1, I got this error when trying to read the ChatGPT API response: 'ChatCompletion' object is not subscriptable Here is my code: How can I resolve this error?",
+      "tags": [
+        "python",
+        "typeerror",
+        "openai-api",
+        "chatgpt-api"
+      ],
+      "owner": {
+        "account_id": 2933849,
+        "reputation": 2912,
+        "user_id": 2513309,
+        "user_type": "registered",
+        "accept_rate": 86,
+        "profile_image": "https://i.sstatic.net/7UNAO.jpg?s=256",
+        "display_name": "Sadegh Ghanbari",
+        "link": "https://stackoverflow.com/users/2513309/sadegh-ghanbari"
+      },
+      "score": 54,
+      "answer_count": 2,
+      "is_answered": true,
+      "creation_date": 1699436153,
+      "view_count": 68425,
+      "link": "https://stackoverflow.com/questions/77444332/openai-python-package-error-chatcompletion-object-is-not-subscriptable",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 71873182,
+      "title": "No module named openai",
+      "body": "I've installed openai on my laptop with . Have installed on my laptop and after installed on the same folder where my code file is. But when I try to run the code I get This is the code from the file. Pretty simple: What am I doing wrong?",
+      "tags": [
+        "python",
+        "visual-studio",
+        "openai-api"
+      ],
+      "owner": {
+        "account_id": 14370010,
+        "reputation": 662,
+        "user_id": 13734323,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/570ec51882f91cdc425aca750ab58d56?s=256&d=identicon&r=PG&f=y&so-version=2",
+        "display_name": "Zaesar",
+        "link": "https://stackoverflow.com/users/13734323/zaesar"
+      },
+      "score": 49,
+      "answer_count": 17,
+      "is_answered": true,
+      "creation_date": 1649946176,
+      "view_count": 188457,
+      "link": "https://stackoverflow.com/questions/71873182/no-module-named-openai",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75396481,
+      "title": "OpenAI GPT-3 API error: &quot;This model&#39;s maximum context length is 4097 tokens&quot;",
+      "body": "I am making a request to the completions endpoint. My prompt is 1360 tokens, as verified by the Playground and the Tokenizer. I won't show the prompt as it's a little too long for this question. Here is my request to openai in Nodejs using the openai npm package. When testing in the playground my total tokens after res",
+      "tags": [
+        "openai-api",
+        "gpt-3"
+      ],
+      "owner": {
+        "account_id": 12261482,
+        "reputation": 1919,
+        "user_id": 8949058,
+        "user_type": "registered",
+        "profile_image": "https://graph.facebook.com/10156475672619057/picture?type=large",
+        "display_name": "Kane Hooper",
+        "link": "https://stackoverflow.com/users/8949058/kane-hooper"
+      },
+      "score": 45,
+      "answer_count": 3,
+      "is_answered": true,
+      "creation_date": 1675934320,
+      "view_count": 113451,
+      "link": "https://stackoverflow.com/questions/75396481/openai-gpt-3-api-error-this-models-maximum-context-length-is-4097-tokens",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75774873,
+      "title": "OpenAI API error: &quot;This is a chat model and not supported in the v1/completions endpoint&quot;",
+      "body": "I try to use diferent way to access the API key, including adding to enviroment variables. What else can I try or where I'm going wrong, pretty new to programming. Error message: openai.error.AuthenticationError: No API key provided. You can set your API key in code using 'openai.api_key = ', or you can set the environ",
+      "tags": [
+        "python",
+        "discord",
+        "openai-api",
+        "chatgpt-api"
+      ],
+      "owner": {
+        "account_id": 18185845,
+        "reputation": 527,
+        "user_id": 13266105,
+        "user_type": "registered",
+        "profile_image": "https://lh3.googleusercontent.com/a-/AOh14Gg2KRTv4dUm18nF5ZPnUnIKIOs0Q1suQIPXQRBtsw=k-s256",
+        "display_name": "RAFA 04128",
+        "link": "https://stackoverflow.com/users/13266105/rafa-04128"
+      },
+      "score": 42,
+      "answer_count": 9,
+      "is_answered": true,
+      "creation_date": 1679130687,
+      "view_count": 128953,
+      "link": "https://stackoverflow.com/questions/75774873/openai-api-error-this-is-a-chat-model-and-not-supported-in-the-v1-completions",
+      "content_license": "CC BY-SA 4.0"
+    },
+    {
+      "question_id": 75740652,
+      "title": "FastAPI StreamingResponse not streaming with generator function",
+      "body": "I have a relatively simple FastAPI app that accepts a query and streams back the response from ChatGPT's API. ChatGPT is streaming back the result and I can see this being printed to console as it comes in. What's not working is the back from FastAPI. The response gets sent all together instead. I'm really at a loss as",
+      "tags": [
+        "python",
+        "python-requests",
+        "streaming",
+        "fastapi",
+        "openai-api"
+      ],
+      "owner": {
+        "account_id": 1648417,
+        "reputation": 523,
+        "user_id": 1519468,
+        "user_type": "registered",
+        "profile_image": "https://www.gravatar.com/avatar/bb68d61d2daa55d041633eb739b6de13?s=256&d=identicon&r=PG",
+        "display_name": "Robert Ritz",
+        "link": "https://stackoverflow.com/users/1519468/robert-ritz"
+      },
+      "score": 42,
+      "answer_count": 5,
+      "is_answered": true,
+      "creation_date": 1678855713,
+      "view_count": 88472,
+      "link": "https://stackoverflow.com/questions/75740652/fastapi-streamingresponse-not-streaming-with-generator-function",
+      "content_license": "CC BY-SA 4.0"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+/**
+ * Everything a human can do. Each action is checked against the current state
+ * and then appended to the log — the orchestrator picks it up on its next tick.
+ */
+import fs from "node:fs";
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { project } from "@/engine/project";
+import { append, paths, readEvents } from "@/engine/store";
+
+export const dynamic = "force-dynamic";
+
+const id = z.string().trim().min(1).max(80);
+const Action = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("decide_gate"), gateId: id, decision: z.enum(["approve", "stop"]), note: z.string().max(2000).optional() }),
+  z.object({ type: z.literal("submit_task"), text: z.string().trim().min(10, "Describe the task in a sentence or two.").max(8000) }),
+  z.object({ type: z.literal("answer"), taskId: id, answers: z.record(z.string(), z.string().trim().min(1).max(2000)) }),
+  z.object({ type: z.literal("retry"), subject: id }),
+  z.object({ type: z.literal("halt"), taskId: id, reason: z.string().max(2000).optional() }),
+]);
+
+const bad = (error: string, status = 409) => NextResponse.json({ error }, { status });
+
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const { id: pid } = await ctx.params;
+  try {
+    if (!fs.existsSync(paths(pid).events)) return bad("No such project.", 404);
+  } catch {
+    return bad("No such project.", 404);
+  }
+  const parsed = Action.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) return bad(parsed.error.issues[0]?.message ?? "Invalid request.", 400);
+  const a = parsed.data;
+  const s = project(pid, readEvents(pid));
+
+  switch (a.type) {
+    case "decide_gate": {
+      const g = s.gates[a.gateId];
+      if (!g) return bad("That check doesn't exist.", 404);
+      if (g.decision) return bad(`This check was already ${g.decision === "approve" ? "approved" : "stopped"}.`);
+      // stopping a plan halts its task; stopping onboarding stops the project (see project.ts)
+      append(pid, { type: "gate.decided", gateId: a.gateId, decision: a.decision, note: a.note?.trim() || undefined });
+      break;
+    }
+    case "submit_task": {
+      if (s.stage !== "ready") return bad("Finish onboarding first — tasks start once the rules check is approved.");
+      const taskId = `T${s.taskOrder.length + 1}`;
+      append(pid, { type: "task.submitted", taskId, text: a.text });
+      return NextResponse.json({ ok: true, taskId });
+    }
+    case "answer": {
+      const t = s.tasks[a.taskId];
+      if (!t || t.stage !== "questions") return bad("This task isn't waiting on answers.");
+      const missing = t.spec!.questions.filter((q) => !a.answers[q.id]);
+      if (missing.length) return bad(`Answer every question (missing ${missing.map((q) => q.id).join(", ")}).`, 400);
+      append(pid, { type: "questions.answered", taskId: a.taskId, answers: a.answers });
+      break;
+    }
+    case "retry": {
+      if (!s.parked[a.subject]) return bad("That step isn't paused.");
+      append(pid, { type: "step.retried", subject: a.subject });
+      break;
+    }
+    case "halt": {
+      const t = s.tasks[a.taskId];
+      if (!t) return bad("No such task.", 404);
+      if (t.stage === "landed" || t.stage === "halted") return bad("This task has already finished.");
+      append(pid, { type: "task.halted", taskId: a.taskId, reason: a.reason?.trim() || "You stopped this task." });
+      break;
+    }
+  }
+  return NextResponse.json({ ok: true });
+}

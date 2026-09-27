@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+/* Target colours, not SaaS pastels: fletching green = clear/landed, target red =
+   critical, target blue = in flight, bullseye gold = waiting on you. */
+:root {
+  --paper: #f4f6f9;
+  --panel: #ffffff;
+  --ink: #1b2433;
+  --ink-2: #4a5568;
+  --ink-3: #6f7b8e;
+  --rule: #dce1e8;
+  --rule-strong: #b9c1cd;
+  --green: #1e8a5a;
+  --green-soft: #e3f3eb;
+  --red: #c8362d;
+  --red-soft: #fbe9e7;
+  --blue: #2b59d6;
+  --blue-soft: #e7edfc;
+  --gold: #e3ae12;
+  --gold-ink: #7d5c00;
+  --gold-soft: #fbf3d9;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #111722;
+    --panel: #172030;
+    --ink: #e7ebf1;
+    --ink-2: #b4bdca;
+    --ink-3: #8c97a8;
+    --rule: #283346;
+    --rule-strong: #3a475e;
+    --green: #3db37c;
+    --green-soft: #15302a;
+    --red: #e45a4f;
+    --red-soft: #3a1c1c;
+    --blue: #6189f2;
+    --blue-soft: #1a2747;
+    --gold: #f0c23a;
+    --gold-ink: #f0c23a;
+    --gold-soft: #33290f;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-panel: var(--panel);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-green: var(--green);
+  --color-green-soft: var(--green-soft);
+  --color-red: var(--red);
+  --color-red-soft: var(--red-soft);
+  --color-blue: var(--blue);
+  --color-blue-soft: var(--blue-soft);
+  --color-gold: var(--gold);
+  --color-gold-ink: var(--gold-ink);
+  --color-gold-soft: var(--gold-soft);
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+}
+body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Archivo's width axis carries the voice: expanded for names and headings, normal for reading */
+.display {
+  font-stretch: 125%;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+}
+.heading {
+  font-stretch: 112%;
+  font-weight: 650;
+  letter-spacing: -0.005em;
+}
+.measure {
+  max-width: 68ch;
+}
+
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
